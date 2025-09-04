@@ -1,15 +1,29 @@
-import cors from "cors";
-import dotenv from "dotenv";
-import express from "express";
+import dotenv from 'dotenv';
 dotenv.config({
-    quiet: true,
+    quiet: true
 });
+
+import cors from 'cors';
+import express from 'express';
+import swaggerUi from 'swagger-ui-express';
+import routes from './routes';
+import { Logger } from './utils/logger';
+import { swaggerDocument } from './utils/swagger';
 
 const app = express();
 
-app.use(cors({}));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-app.listen(process.env.PORT, () => {
-    console.log(`Server is running on port ${process.env.PORT}`);
+app.use(cors({ origin: '*' }));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+app.use('/api/v1/products', routes.productRoute);
+app.use('/api/v1/markets', routes.marketRoute);
+app.use('/api/v1/users', routes.userRoute);
+
+const PORT = process.env.PORT || 8080;
+
+app.listen(PORT, () => {
+    Logger.info('Server', 'Server running on port', { url: `http://localhost:${PORT}`, apiDocs: `http://localhost:${PORT}/api-docs` });
 });
