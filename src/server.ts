@@ -21,6 +21,8 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use('/api/v1/products', routes.productRoute);
 app.use('/api/v1/markets', routes.marketRoute);
 app.use('/api/v1/users', routes.userRoute);
+app.use('/api/v1/categories', routes.categoriesRouter);
+
 
 const PORT = process.env.PORT || 8080;
 
