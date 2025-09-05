@@ -37,8 +37,17 @@ model User {
 }
 
 model Categories {
-  id   String @id @default(auto()) @map("_id") @db.ObjectId
-  name String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  name         String        @unique
+  slug         String        @unique
+  description  String?
+  subCategories SubCategory[] // array de subcategorias embutidas
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+type SubCategory {
+  name        String
+  slug        String
+  description String?
 }

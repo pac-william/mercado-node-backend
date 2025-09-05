@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "ts-node src/server.ts",
     "build": "tsc",
+    "seed:categories": "ts-node prisma/seed/categories.ts",
     "start": "node dist/server.js"
   },
   "keywords": [],
