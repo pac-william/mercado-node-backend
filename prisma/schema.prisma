@@ -8,12 +8,13 @@ datasource db {
 }
 
 model Market {
-  id        String    @id @default(auto()) @map("_id") @db.ObjectId
-  name      String
-  address   String
-  products  Product[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  name           String
+  address        String
+  profilePicture String?
+  products       Product[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 }
 
 model Product {
@@ -22,6 +23,7 @@ model Product {
   price     Float
   marketId  String   @db.ObjectId
   market    Market   @relation(fields: [marketId], references: [id])
+  image     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -36,13 +38,13 @@ model User {
 }
 
 model Categories {
-  id           String        @id @default(auto()) @map("_id") @db.ObjectId
-  name         String        @unique
-  slug         String        @unique
-  description  String?
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  name          String        @unique
+  slug          String        @unique
+  description   String?
   subCategories SubCategory[] // array de subcategorias embutidas
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 }
 
 type SubCategory {

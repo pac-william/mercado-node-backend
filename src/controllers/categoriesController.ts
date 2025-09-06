@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { categoriesService } from "../services/categories.service";
+import { categoriesService } from "../services/categoriesService";
 
 export class CategoriesController {
     async get(_: Request, res: Response) {

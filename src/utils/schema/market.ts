@@ -393,7 +393,7 @@ export const marketSchemas = {
             "id": { "type": "string", "example": "507f1f77bcf86cd799439011" },
             "name": { "type": "string", "example": "Supermercado Central" },
             "address": { "type": "string", "example": "Rua das Flores, 123, Centro" },
-            "logo": { "type": "string", "example": "https://example.com/logo.png" },
+            "profilePicture": { "type": "string", "example": "https://example.com/logo.png" },
             "products": {
                 "type": "array",
                 "items": { "$ref": "#/components/schemas/Product" }
@@ -407,16 +407,16 @@ export const marketSchemas = {
         "properties": {
             "name": { "type": "string", "example": "Supermercado Central" },
             "address": { "type": "string", "example": "Rua das Flores, 123, Centro" },
-            "logo": { "type": "string", "example": "https://example.com/logo.png" }
+            "profilePicture": { "type": "string", "example": "https://example.com/logo.png" }
         },
-        "required": ["name", "address", "logo"]
+        "required": ["name", "address", "profilePicture"]
     },
     "MarketUpdateDTO": {
         "type": "object",
         "properties": {
             "name": { "type": "string", "example": "Supermercado Central Atualizado" },
             "address": { "type": "string", "example": "Rua das Flores, 456, Centro" },
-            "logo": { "type": "string", "example": "https://example.com/new-logo.png" }
+            "profilePicture": { "type": "string", "example": "https://example.com/new-logo.png" }
         }
     },
     "MarketPaginatedResponse": {

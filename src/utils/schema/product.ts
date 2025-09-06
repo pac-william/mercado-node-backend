@@ -76,7 +76,7 @@ export const productPaths = {
         "post": {
             "tags": ["Products"],
             "summary": "Criar um novo produto",
-            "description": "Cria um novo produto.",
+            "description": "Cria um novo produto. Suporta imagens base64 com limite de 5MB.",
 
             "requestBody": {
                 "required": true,
@@ -254,7 +254,7 @@ export const productPaths = {
         "put": {
             "tags": ["Products"],
             "summary": "Atualizar um produto",
-            "description": "Atualiza um produto existente pelo ID.",
+            "description": "Atualiza um produto existente pelo ID. Suporta imagens base64 com limite de 5MB.",
 
             "parameters": [
                 {
@@ -335,7 +335,7 @@ export const productPaths = {
         "patch": {
             "tags": ["Products"],
             "summary": "Atualizar parcialmente um produto",
-            "description": "Atualiza parcialmente um produto existente pelo ID.",
+            "description": "Atualiza parcialmente um produto existente pelo ID. Suporta imagens base64 com limite de 5MB.",
 
             "parameters": [
                 {
@@ -475,6 +475,7 @@ export const productSchemas = {
             "price": { "type": "number", "format": "float", "example": 29.99 },
             "marketId": { "type": "string", "example": "507f1f77bcf86cd799439012" },
             "market": { "$ref": "#/components/schemas/Market" },
+            "image": { "type": "string", "description": "Imagem do produto em base64", "example": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQ..." },
             "createdAt": { "type": "string", "format": "date-time", "example": "2024-07-16T00:00:00Z" },
             "updatedAt": { "type": "string", "format": "date-time", "example": "2024-07-16T00:00:00Z" }
         }
@@ -484,7 +485,8 @@ export const productSchemas = {
         "properties": {
             "name": { "type": "string", "example": "Produto Exemplo" },
             "price": { "type": "number", "format": "float", "example": 29.99 },
-            "marketId": { "type": "string", "example": "507f1f77bcf86cd799439012" }
+            "marketId": { "type": "string", "example": "507f1f77bcf86cd799439012" },
+            "image": { "type": "string", "description": "Imagem do produto em base64", "example": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQ..." }
         },
         "required": ["name", "price", "marketId"]
     },
@@ -493,7 +495,8 @@ export const productSchemas = {
         "properties": {
             "name": { "type": "string", "example": "Produto Exemplo Atualizado" },
             "price": { "type": "number", "format": "float", "example": 39.99 },
-            "marketId": { "type": "string", "example": "507f1f77bcf86cd799439012" }
+            "marketId": { "type": "string", "example": "507f1f77bcf86cd799439012" },
+            "image": { "type": "string", "description": "Imagem do produto em base64", "example": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQ..." }
         }
     },
     "ProductPaginatedResponse": {
