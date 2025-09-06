@@ -1,3 +1,4 @@
+import { Product } from "../domain/productDomain";
 import { ProductDTO, ProductUpdateDTO } from "../dtos/productDTO";
 import { prisma } from "../utils/prisma";
 
@@ -9,18 +10,29 @@ class ProductRepository {
         return product;
     }
 
-    async getProducts(page: number, size: number, marketId?: string) {
-        const where = marketId ? { marketId } : {};
-        
+    async getProducts(page: number, size: number, marketId?: string, name?: string, minPrice?: number, maxPrice?: number) {
         const products = await prisma.product.findMany({
-            where,
+            where: {
+                marketId,
+                name: name ? { contains: name, mode: 'insensitive' } : undefined,
+                price: {
+                    gte: minPrice,
+                    lte: maxPrice,
+                },
+            },
             skip: (page - 1) * size,
             take: size,
-            include: {
-                market: true,
-            },
+            orderBy: {
+                name: 'asc',
+            }
         });
-        return products;
+        return products.map((product) => new Product(
+            product.id,
+            product.name,
+            product.price,
+            product.marketId,
+            product.image ?? undefined,
+        ));
     }
 
     async getProductById(id: string) {
@@ -63,6 +75,20 @@ class ProductRepository {
             },
         });
         return product;
+    }
+
+    async countProducts(marketId?: string, name?: string, minPrice?: number, maxPrice?: number) {
+        const products = await prisma.product.findMany({
+            where: {
+                marketId,
+                name: name ? { contains: name, mode: 'insensitive' } : undefined,
+                price: {
+                    gte: minPrice,
+                    lte: maxPrice,
+                },
+            },
+        });
+        return products.length;
     }
 }
 

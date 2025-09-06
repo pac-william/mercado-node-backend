@@ -8,13 +8,16 @@ export class ProductController {
     async getProducts(req: Request, res: Response) {
         Logger.controller('Product', 'getProducts', 'query', req.query);
         try {
-            const { page, size, marketId } = QueryBuilder.from(req.query)
+            const { page, size, marketId, name, minPrice, maxPrice } = QueryBuilder.from(req.query)
                 .withNumber('page', 1)
                 .withNumber('size', 10)
                 .withString('marketId')
+                .withString('name')
+                .withNumber('minPrice')
+                .withNumber('maxPrice')
                 .build();
 
-            const products = await productService.getProducts(page, size, marketId);
+            const products = await productService.getProducts(page, size, marketId, name, minPrice, maxPrice);
             Logger.successOperation('ProductController', 'getProducts');
             return res.status(200).json(products);
         } catch (error) {
