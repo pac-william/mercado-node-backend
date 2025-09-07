@@ -1,3 +1,5 @@
+import { MarketPaginatedResponse } from "../domain/marketDomain";
+import { Meta } from "../domain/metaDomain";
 import { MarketDTO, MarketUpdateDTO } from "../dtos/index";
 import { marketRepository } from "../repositories/marketRepository";
 
@@ -6,8 +8,10 @@ class MarketService {
         return await marketRepository.createMarket(marketDTO);
     }
 
-    async getMarkets(page: number, size: number) {
-        return await marketRepository.getMarkets(page, size);
+    async getMarkets(page: number, size: number, name?: string, address?: string) {
+        const count = await marketRepository.count(name, address);
+        const markets = await marketRepository.getMarkets(page, size, name, address);
+        return new MarketPaginatedResponse(markets, new Meta(page, size, count, Math.ceil(count / size), count));
     }
 
     async getMarketById(id: string) {

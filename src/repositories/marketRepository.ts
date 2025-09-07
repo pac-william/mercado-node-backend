@@ -1,3 +1,4 @@
+import { Market } from "../domain/marketDomain";
 import { MarketDTO, MarketUpdateDTO } from "../dtos/marketDTO";
 import { prisma } from "../utils/prisma";
 
@@ -9,15 +10,21 @@ class MarketRepository {
         return market;
     }
 
-    async getMarkets(page: number, size: number) {
+    async getMarkets(page: number, size: number, name?: string, address?: string) {
         const markets = await prisma.market.findMany({
             skip: (page - 1) * size,
             take: size,
-            include: {
-                products: true,
+            where: {
+                name: name ? { contains: name, mode: 'insensitive' } : undefined,
+                address: address ? { contains: address, mode: 'insensitive' } : undefined,
             },
         });
-        return markets;
+        return markets.map((market) => new Market(
+            market.id,
+            market.name,
+            market.address,
+            market.profilePicture ?? '',
+        ));
     }
 
     async getMarketById(id: string) {
@@ -60,6 +67,16 @@ class MarketRepository {
             },
         });
         return market;
+    }
+
+    async count(name?: string, address?: string) {
+        const count = await prisma.market.count({
+            where: {
+                name: name ? { contains: name, mode: 'insensitive' } : undefined,
+                address: address ? { contains: address, mode: 'insensitive' } : undefined,
+            },
+        });
+        return count;
     }
 }
 
