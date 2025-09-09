@@ -9,6 +9,8 @@ import swaggerUi from 'swagger-ui-express';
 import routes from './routes';
 import { Logger } from './utils/logger';
 import { swaggerDocument } from './utils/swagger';
+import { readFileSync } from 'fs';
+import path from 'path';
 
 const app = express();
 
@@ -23,6 +25,27 @@ app.use('/api/v1/markets', routes.marketRoute);
 app.use('/api/v1/users', routes.userRoute);
 app.use('/api/v1/categories', routes.categoriesRouter);
 
+// Health check route
+app.get('/health', (_req, res) => {
+    let version = 'unknown';
+    try {
+        const pkgPath = path.join(__dirname, '..', 'package.json');
+        const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8')) as { version?: string };
+        version = pkg.version ?? version;
+    } catch (err) {
+        // keep version as 'unknown' if reading fails
+    }
+
+    res.status(200).json({
+        success: true,
+        data: {
+            status: 'ok',
+            uptime: process.uptime(),
+            version,
+            timestamp: new Date().toISOString()
+        }
+    });
+});
 
 const PORT = process.env.PORT || 8080;
 
