@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { ProductDTO, ProductUpdateDTO } from "../dtos/productDTO";
+import { ProductDTO, ProductUpdateDTO, toProductResponseDTO } from "../dtos/productDTO";
 import { productService } from "../services/productService";
 import { Logger } from "../utils/logger";
 import { QueryBuilder } from "../utils/queryBuilder";
@@ -19,7 +19,10 @@ export class ProductController {
 
             const products = await productService.getProducts(page, size, marketId, name, minPrice, maxPrice);
             Logger.successOperation('ProductController', 'getProducts');
-            return res.status(200).json(products);
+            return res.status(200).json({
+                products: products.products.map(toProductResponseDTO),
+                meta: products.meta,
+            });
         } catch (error) {
             Logger.errorOperation('ProductController', 'getProducts', error);
             return res.status(500).json({ message: "Erro interno do servidor" });
@@ -32,7 +35,7 @@ export class ProductController {
             const productDTO = ProductDTO.parse(req.body);
             const product = await productService.createProduct(productDTO);
             Logger.successOperation('ProductController', 'createProduct');
-            return res.status(201).json(product);
+            return res.status(201).json(toProductResponseDTO(product));
         } catch (error) {
             Logger.errorOperation('ProductController', 'createProduct', error);
             return res.status(500).json({ message: "Erro interno do servidor" });
@@ -50,7 +53,10 @@ export class ProductController {
 
             const products = await productService.getProducts(page, size, marketId);
             Logger.successOperation('ProductController', 'getProductsByMarket');
-            return res.status(200).json(products);
+            return res.status(200).json({
+                products: products.products.map(toProductResponseDTO),
+                meta: products.meta,
+            });
         } catch (error) {
             Logger.errorOperation('ProductController', 'getProductsByMarket', error);
             return res.status(500).json({ message: "Erro interno do servidor" });
@@ -63,7 +69,7 @@ export class ProductController {
             const { id } = req.params;
             const product = await productService.getProductById(id);
             Logger.successOperation('ProductController', 'getProductById');
-            return res.status(200).json(product);
+            return res.status(200).json(toProductResponseDTO(product));
         } catch (error) {
             Logger.errorOperation('ProductController', 'getProductById', error);
             return res.status(500).json({ message: "Erro interno do servidor" });
@@ -77,7 +83,7 @@ export class ProductController {
             const productDTO = ProductDTO.parse(req.body);
             const product = await productService.updateProduct(id, productDTO);
             Logger.successOperation('ProductController', 'updateProduct');
-            return res.status(200).json(product);
+            return res.status(200).json(toProductResponseDTO(product));
         } catch (error) {
             Logger.errorOperation('ProductController', 'updateProduct', error);
             return res.status(500).json({ message: "Erro interno do servidor" });
@@ -91,7 +97,7 @@ export class ProductController {
             const productUpdateDTO = ProductUpdateDTO.parse(req.body);
             const product = await productService.updateProductPartial(id, productUpdateDTO);
             Logger.successOperation('ProductController', 'updateProductPartial');
-            return res.status(200).json(product);
+            return res.status(200).json(toProductResponseDTO(product));
         } catch (error) {
             Logger.errorOperation('ProductController', 'updateProductPartial', error);
             return res.status(500).json({ message: "Erro interno do servidor" });
@@ -104,7 +110,7 @@ export class ProductController {
             const { id } = req.params;
             const product = await productService.deleteProduct(id);
             Logger.successOperation('ProductController', 'deleteProduct');
-            return res.status(200).json(product);
+            return res.status(200).json(toProductResponseDTO(product));
         } catch (error) {
             Logger.errorOperation('ProductController', 'deleteProduct', error);
             return res.status(500).json({ message: "Erro interno do servidor" });

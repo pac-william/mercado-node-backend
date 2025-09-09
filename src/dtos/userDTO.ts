@@ -20,3 +20,11 @@ export const UserResponseDTO = z.object({
 });
 
 export type UserResponseDTO = z.infer<typeof UserResponseDTO>;
+
+export const toUserResponseDTO = (u: any): UserResponseDTO => ({
+    id: String(u.id),
+    name: u.name,
+    email: u.email,
+    createdAt: u.createdAt instanceof Date ? u.createdAt : new Date(u.createdAt),
+    updatedAt: u.updatedAt instanceof Date ? u.updatedAt : new Date(u.updatedAt),
+});
