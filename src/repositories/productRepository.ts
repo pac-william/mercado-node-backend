@@ -30,6 +30,7 @@ class ProductRepository {
             product.id,
             product.name,
             product.price,
+            product.unit ?? "unidade",
             product.marketId,
             product.image ?? undefined,
         ));

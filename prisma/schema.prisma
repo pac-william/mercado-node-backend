@@ -21,6 +21,7 @@ model Product {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   name      String
   price     Float
+  unit      String   @default("unidade")
   marketId  String   @db.ObjectId
   market    Market   @relation(fields: [marketId], references: [id])
   image     String?

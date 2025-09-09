@@ -3,6 +3,7 @@ import { z } from "zod";
 export const ProductDTO = z.object({
     name: z.string().min(1, { error: "Nome do produto é obrigatório" }),
     price: z.number({ error: "Preço do produto é obrigatório" }),
+    unit: z.string().default("unidade"),
     marketId: z.string({ error: "ID do mercado é obrigatório" }),
     image: z.string().optional(),
 });
@@ -16,6 +17,7 @@ export type ProductResponseDTO = {
     id: string;
     name: string;
     price: number;
+    unit: string;
     marketId: string;
     image?: string | null;
     createdAt?: Date;
@@ -26,6 +28,7 @@ export const toProductResponseDTO = (p: any): ProductResponseDTO => ({
     id: String(p.id),
     name: p.name,
     price: p.price,
+    unit: p.unit ?? "unidade",
     marketId: String(p.marketId),
     image: p.image ?? null,
     createdAt: p.createdAt ? (p.createdAt instanceof Date ? p.createdAt : new Date(p.createdAt)) : undefined,
