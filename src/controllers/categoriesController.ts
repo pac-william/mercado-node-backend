@@ -3,6 +3,7 @@ import { categoriesService } from "../services/categoriesService";
 import { toProductResponseDTO } from "../dtos/productDTO";
 import { Logger } from "../utils/logger";
 import { QueryBuilder } from "../utils/queryBuilder";
+import { CategoriesDTO, CategoriesUpdateDTO } from "../dtos/categoriesDTO";
 
 export class CategoriesController {
     async get(_: Request, res: Response) {
@@ -37,6 +38,78 @@ export class CategoriesController {
             });
         } catch (error) {
             Logger.errorOperation('CategoriesController', 'getProductsByCategory', error);
+            return res.status(500).json({ message: "Erro interno do servidor" });
+        }
+    }
+
+    async createCategory(req: Request, res: Response) {
+        Logger.controller('Categories', 'createCategory', 'body', req.body);
+        try {
+            const data: CategoriesDTO = req.body;
+            const category = await categoriesService.createCategory(data);
+            Logger.successOperation('CategoriesController', 'createCategory');
+            return res.status(201).json(category);
+        } catch (error) {
+            Logger.errorOperation('CategoriesController', 'createCategory', error);
+            if (error instanceof Error && error.message.includes("Unique constraint")) {
+                return res.status(409).json({ message: "Categoria com este nome já existe" });
+            }
+            return res.status(500).json({ message: "Erro interno do servidor" });
+        }
+    }
+
+    async updateCategory(req: Request, res: Response) {
+        Logger.controller('Categories', 'updateCategory', 'request received', { params: req.params, body: req.body });
+        try {
+            const { id } = req.params;
+            const data: CategoriesDTO = req.body;
+            const category = await categoriesService.updateCategory(id, data);
+            Logger.successOperation('CategoriesController', 'updateCategory');
+            return res.status(200).json(category);
+        } catch (error) {
+            Logger.errorOperation('CategoriesController', 'updateCategory', error);
+            if (error instanceof Error && error.message === "Categoria não encontrada") {
+                return res.status(404).json({ message: "Categoria não encontrada" });
+            }
+            if (error instanceof Error && error.message.includes("Unique constraint")) {
+                return res.status(409).json({ message: "Categoria com este nome já existe" });
+            }
+            return res.status(500).json({ message: "Erro interno do servidor" });
+        }
+    }
+
+    async updateCategoryPartial(req: Request, res: Response) {
+        Logger.controller('Categories', 'updateCategoryPartial', 'request received', { params: req.params, body: req.body });
+        try {
+            const { id } = req.params;
+            const data: CategoriesUpdateDTO = req.body;
+            const category = await categoriesService.updateCategoryPartial(id, data);
+            Logger.successOperation('CategoriesController', 'updateCategoryPartial');
+            return res.status(200).json(category);
+        } catch (error) {
+            Logger.errorOperation('CategoriesController', 'updateCategoryPartial', error);
+            if (error instanceof Error && error.message === "Categoria não encontrada") {
+                return res.status(404).json({ message: "Categoria não encontrada" });
+            }
+            if (error instanceof Error && error.message.includes("Unique constraint")) {
+                return res.status(409).json({ message: "Categoria com este nome já existe" });
+            }
+            return res.status(500).json({ message: "Erro interno do servidor" });
+        }
+    }
+
+    async deleteCategory(req: Request, res: Response) {
+        Logger.controller('Categories', 'deleteCategory', 'params', req.params);
+        try {
+            const { id } = req.params;
+            await categoriesService.deleteCategory(id);
+            Logger.successOperation('CategoriesController', 'deleteCategory');
+            return res.status(204).send();
+        } catch (error) {
+            Logger.errorOperation('CategoriesController', 'deleteCategory', error);
+            if (error instanceof Error && error.message === "Categoria não encontrada") {
+                return res.status(404).json({ message: "Categoria não encontrada" });
+            }
             return res.status(500).json({ message: "Erro interno do servidor" });
         }
     }
