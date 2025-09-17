@@ -47,6 +47,13 @@ export const productPaths = {
                     "description": "ID do mercado para filtrar produtos",
                     "required": false,
                     "schema": { "type": "string" }
+                },
+                {
+                    "name": "categoryId",
+                    "in": "query",
+                    "description": "ID da categoria para filtrar produtos",
+                    "required": false,
+                    "schema": { "type": "string" }
                 }
             ],
             "responses": {
@@ -160,6 +167,13 @@ export const productPaths = {
                     "description": "Tamanho da página",
                     "required": false,
                     "schema": { "type": "integer", "default": 10 }
+                },
+                {
+                    "name": "categoryId",
+                    "in": "query",
+                    "description": "ID da categoria para filtrar produtos",
+                    "required": false,
+                    "schema": { "type": "string" }
                 }
             ],
             "responses": {
@@ -473,7 +487,10 @@ export const productSchemas = {
             "id": { "type": "string", "example": "507f1f77bcf86cd799439011" },
             "name": { "type": "string", "example": "Produto Exemplo" },
             "price": { "type": "number", "format": "float", "example": 29.99 },
+            "unit": { "type": "string", "example": "unidade" },
             "marketId": { "type": "string", "example": "507f1f77bcf86cd799439012" },
+            "categoryId": { "type": "string", "example": "507f1f77bcf86cd799439013" },
+            "category": { "$ref": "#/components/schemas/Category" },
             "market": { "$ref": "#/components/schemas/Market" },
             "image": { "type": "string", "description": "Imagem do produto em base64", "example": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQ..." },
             "createdAt": { "type": "string", "format": "date-time", "example": "2024-07-16T00:00:00Z" },
@@ -485,7 +502,9 @@ export const productSchemas = {
         "properties": {
             "name": { "type": "string", "example": "Produto Exemplo" },
             "price": { "type": "number", "format": "float", "example": 29.99 },
+            "unit": { "type": "string", "example": "unidade" },
             "marketId": { "type": "string", "example": "507f1f77bcf86cd799439012" },
+            "categoryId": { "type": "string", "example": "507f1f77bcf86cd799439013" },
             "image": { "type": "string", "description": "Imagem do produto em base64", "example": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQ..." }
         },
         "required": ["name", "price", "marketId"]
@@ -495,7 +514,9 @@ export const productSchemas = {
         "properties": {
             "name": { "type": "string", "example": "Produto Exemplo Atualizado" },
             "price": { "type": "number", "format": "float", "example": 39.99 },
+            "unit": { "type": "string", "example": "unidade" },
             "marketId": { "type": "string", "example": "507f1f77bcf86cd799439012" },
+            "categoryId": { "type": "string", "example": "507f1f77bcf86cd799439013" },
             "image": { "type": "string", "description": "Imagem do produto em base64", "example": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQ..." }
         }
     },

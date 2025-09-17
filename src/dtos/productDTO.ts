@@ -5,6 +5,7 @@ export const ProductDTO = z.object({
     price: z.number({ error: "Preço do produto é obrigatório" }),
     unit: z.string().default("unidade"),
     marketId: z.string({ error: "ID do mercado é obrigatório" }),
+    categoryId: z.string().optional(),
     image: z.string().optional(),
 });
 
@@ -19,6 +20,13 @@ export type ProductResponseDTO = {
     price: number;
     unit: string;
     marketId: string;
+    categoryId?: string | null;
+    category?: {
+        id: string;
+        name: string;
+        slug: string;
+        description?: string | null;
+    } | null;
     image?: string | null;
     createdAt?: Date;
     updatedAt?: Date;
@@ -30,6 +38,13 @@ export const toProductResponseDTO = (p: any): ProductResponseDTO => ({
     price: p.price,
     unit: p.unit ?? "unidade",
     marketId: String(p.marketId),
+    categoryId: p.categoryId ? String(p.categoryId) : null,
+    category: p.category ? {
+        id: String(p.category.id),
+        name: p.category.name,
+        slug: p.category.slug,
+        description: p.category.description ?? null,
+    } : null,
     image: p.image ?? null,
     createdAt: p.createdAt ? (p.createdAt instanceof Date ? p.createdAt : new Date(p.createdAt)) : undefined,
     updatedAt: p.updatedAt ? (p.updatedAt instanceof Date ? p.updatedAt : new Date(p.updatedAt)) : undefined,

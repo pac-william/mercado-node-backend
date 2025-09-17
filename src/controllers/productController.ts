@@ -8,16 +8,17 @@ export class ProductController {
     async getProducts(req: Request, res: Response) {
         Logger.controller('Product', 'getProducts', 'query', req.query);
         try {
-            const { page, size, marketId, name, minPrice, maxPrice } = QueryBuilder.from(req.query)
+            const { page, size, marketId, name, minPrice, maxPrice, categoryId } = QueryBuilder.from(req.query)
                 .withNumber('page', 1)
                 .withNumber('size', 10)
                 .withString('marketId')
                 .withString('name')
                 .withNumber('minPrice')
                 .withNumber('maxPrice')
+                .withString('categoryId')
                 .build();
 
-            const products = await productService.getProducts(page, size, marketId, name, minPrice, maxPrice);
+            const products = await productService.getProducts(page, size, marketId, name, minPrice, maxPrice, categoryId);
             Logger.successOperation('ProductController', 'getProducts');
             return res.status(200).json({
                 products: products.products.map(toProductResponseDTO),
@@ -46,12 +47,13 @@ export class ProductController {
         Logger.controller('Product', 'getProductsByMarket', 'query', req.query);
         try {
             const { marketId } = req.params;
-            const { page, size } = QueryBuilder.from(req.query)
+            const { page, size, categoryId } = QueryBuilder.from(req.query)
                 .withNumber('page', 1)
                 .withNumber('size', 10)
+                .withString('categoryId')
                 .build();
 
-            const products = await productService.getProducts(page, size, marketId);
+            const products = await productService.getProducts(page, size, marketId, undefined, undefined, undefined, categoryId);
             Logger.successOperation('ProductController', 'getProductsByMarket');
             return res.status(200).json({
                 products: products.products.map(toProductResponseDTO),

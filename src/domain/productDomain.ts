@@ -8,6 +8,7 @@ export class Product {
         public unit: string,
         public marketId: string,
         public image?: string,
+        public categoryId?: string,
     ) { }
 }
 

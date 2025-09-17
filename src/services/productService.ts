@@ -8,9 +8,9 @@ class ProductService {
         return await productRepository.createProduct(productDTO);
     }
 
-    async getProducts(page: number, size: number, marketId?: string, name?: string, minPrice?: number, maxPrice?: number) {
-        const count = await productRepository.countProducts(marketId, name, minPrice, maxPrice);
-        const products = await productRepository.getProducts(page, size, marketId, name, minPrice, maxPrice);
+    async getProducts(page: number, size: number, marketId?: string, name?: string, minPrice?: number, maxPrice?: number, categoryId?: string) {
+        const count = await productRepository.countProducts(marketId, name, minPrice, maxPrice, categoryId);
+        const products = await productRepository.getProducts(page, size, marketId, name, minPrice, maxPrice, categoryId);
         return new ProductPaginatedResponse(products, new Meta(page, size, count, Math.ceil(count / size), count));
     }
 

@@ -18,15 +18,17 @@ model Market {
 }
 
 model Product {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  name      String
-  price     Float
-  unit      String   @default("unidade")
-  marketId  String   @db.ObjectId
-  market    Market   @relation(fields: [marketId], references: [id])
-  image     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  price       Float
+  unit        String     @default("unidade")
+  marketId    String     @db.ObjectId
+  market      Market     @relation(fields: [marketId], references: [id])
+  categoryId  String?    @db.ObjectId
+  category    Categories? @relation(fields: [categoryId], references: [id])
+  image       String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 }
 
 model User {
@@ -44,6 +46,7 @@ model Categories {
   slug          String        @unique
   description   String?
   subCategories SubCategory[] // array de subcategorias embutidas
+  products      Product[]     // relação com produtos
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 }

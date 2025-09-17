@@ -6,14 +6,19 @@ class ProductRepository {
     async createProduct(productDTO: ProductDTO) {
         const product = await prisma.product.create({
             data: productDTO,
+            include: {
+                market: true,
+                category: true,
+            },
         });
         return product;
     }
 
-    async getProducts(page: number, size: number, marketId?: string, name?: string, minPrice?: number, maxPrice?: number) {
+    async getProducts(page: number, size: number, marketId?: string, name?: string, minPrice?: number, maxPrice?: number, categoryId?: string) {
         const products = await prisma.product.findMany({
             where: {
                 marketId,
+                categoryId,
                 name: name ? { contains: name, mode: 'insensitive' } : undefined,
                 price: {
                     gte: minPrice,
@@ -24,6 +29,10 @@ class ProductRepository {
             take: size,
             orderBy: {
                 name: 'asc',
+            },
+            include: {
+                market: true,
+                category: true,
             }
         });
         return products.map((product) => new Product(
@@ -33,6 +42,7 @@ class ProductRepository {
             product.unit ?? "unidade",
             product.marketId,
             product.image ?? undefined,
+            product.categoryId ?? undefined,
         ));
     }
 
@@ -41,6 +51,7 @@ class ProductRepository {
             where: { id },
             include: {
                 market: true,
+                category: true,
             },
         });
         return product;
@@ -52,6 +63,7 @@ class ProductRepository {
             data: productDTO,
             include: {
                 market: true,
+                category: true,
             },
         });
         return product;
@@ -63,6 +75,7 @@ class ProductRepository {
             data: productUpdateDTO,
             include: {
                 market: true,
+                category: true,
             },
         });
         return product;
@@ -73,15 +86,17 @@ class ProductRepository {
             where: { id },
             include: {
                 market: true,
+                category: true,
             },
         });
         return product;
     }
 
-    async countProducts(marketId?: string, name?: string, minPrice?: number, maxPrice?: number) {
+    async countProducts(marketId?: string, name?: string, minPrice?: number, maxPrice?: number, categoryId?: string) {
         const products = await prisma.product.findMany({
             where: {
                 marketId,
+                categoryId,
                 name: name ? { contains: name, mode: 'insensitive' } : undefined,
                 price: {
                     gte: minPrice,
