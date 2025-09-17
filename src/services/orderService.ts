@@ -2,10 +2,43 @@ import { Meta } from "../domain/metaDomain";
 import { OrderPaginatedResponse } from "../domain/orderDomain";
 import { OrderDTO, OrderUpdateDTO, AssignDelivererDTO } from "../dtos/orderDTO";
 import { orderRepository } from "../repositories/orderRepository";
+import { couponService } from './couponService';
 
 class OrderService {
     async createOrder(orderDTO: OrderDTO) {
-        return await orderRepository.createOrder(orderDTO);
+        let total = 0;
+        let discount = 0;
+        let couponId = null;
+
+        // Calcular total dos itens
+        for (const item of orderDTO.items) {
+            total += item.price * item.quantity;
+        }
+
+        // Aplicar cupom se fornecido
+        if (orderDTO.couponCode) {
+            try {
+                const couponResult = await couponService.applyCouponToOrder(
+                    orderDTO.couponCode,
+                    total,
+                    orderDTO.marketId
+                );
+                discount = couponResult.discount;
+                couponId = couponResult.coupon.id;
+                total = couponResult.finalValue;
+            } catch (error) {
+                throw new Error(`Erro ao aplicar cupom: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+            }
+        }
+
+        const orderData = {
+            ...orderDTO,
+            total,
+            discount,
+            couponId
+        };
+
+        return await orderRepository.createOrder(orderData);
     }
 
     async getOrders(page: number, size: number, status?: string, userId?: string, marketId?: string, delivererId?: string) {

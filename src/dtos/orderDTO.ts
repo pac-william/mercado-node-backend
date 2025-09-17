@@ -7,10 +7,15 @@ export const OrderItemDTO = z.object({
 });
 
 export const OrderDTO = z.object({
-    userId: z.string({ message: "ID do usuário é obrigatório" }),
-    marketId: z.string({ message: "ID do mercado é obrigatório" }),
-    deliveryAddress: z.string().min(1, { message: "Endereço de entrega é obrigatório" }),
-    items: z.array(OrderItemDTO).min(1, { message: "Pedido deve ter pelo menos um item" }),
+    userId: z.string({ error: "ID do usuário é obrigatório" }),
+    marketId: z.string({ error: "ID do mercado é obrigatório" }),
+    deliveryAddress: z.string({ error: "Endereço de entrega é obrigatório" }),
+    items: z.array(z.object({
+        productId: z.string({ error: "ID do produto é obrigatório" }),
+        quantity: z.number().int().positive({ error: "Quantidade deve ser um número inteiro positivo" }),
+        price: z.number().positive({ error: "Preço deve ser um número positivo" })
+    }), { error: "Itens do pedido são obrigatórios" }),
+    couponCode: z.string().optional() // Adicionar código do cupom
 });
 
 export type OrderDTO = z.infer<typeof OrderDTO>;
@@ -34,8 +39,17 @@ export type OrderResponseDTO = {
     userId: string;
     marketId: string;
     delivererId?: string | null;
+    couponId?: string | null;
+    coupon?: {
+        id: string;
+        code: string;
+        name: string;
+        type: string;
+        value: number;
+    } | null;
     status: string;
     total: number;
+    discount?: number | null;
     deliveryAddress: string;
     items: Array<{
         id: string;
@@ -77,8 +91,17 @@ export const toOrderResponseDTO = (o: any): OrderResponseDTO => ({
     userId: String(o.userId),
     marketId: String(o.marketId),
     delivererId: o.delivererId ? String(o.delivererId) : null,
+    couponId: o.couponId ? String(o.couponId) : null,
+    coupon: o.coupon ? {
+        id: String(o.coupon.id),
+        code: o.coupon.code,
+        name: o.coupon.name,
+        type: o.coupon.type,
+        value: o.coupon.value,
+    } : null,
     status: o.status,
     total: o.total,
+    discount: o.discount,
     deliveryAddress: o.deliveryAddress,
     items: o.items?.map((item: any) => ({
         id: String(item.id),

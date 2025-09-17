@@ -15,6 +15,7 @@ model Market {
   products       Product[]
   orders         Order[]
   users          User[]    // Usuários vinculados ao mercado
+  coupons        Coupon[]  // Cupons vinculados ao mercado
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 }
@@ -25,7 +26,6 @@ model User {
   email        String     @unique
   password     String
   orders       Order[]
-  aiSearches   AiSearch[]
   refreshToken String?
   role         UserRole   @default(CUSTOMER)
   marketId     String?    @db.ObjectId  // Vinculação com mercado
@@ -80,8 +80,11 @@ model Order {
   market       Market        @relation(fields: [marketId], references: [id])
   delivererId  String?       @db.ObjectId
   deliverer    Deliverer?    @relation(fields: [delivererId], references: [id])
+  couponId     String?       @db.ObjectId
+  coupon       Coupon?       @relation(fields: [couponId], references: [id])
   status       OrderStatus   @default(PENDING)
   total        Float
+  discount     Float?        // Valor do desconto aplicado
   items        OrderItem[]
   deliveryAddress String
   createdAt    DateTime      @default(now())
@@ -98,6 +101,27 @@ model OrderItem {
   price     Float
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Coupon {
+  id            String     @id @default(auto()) @map("_id") @db.ObjectId
+  code          String     @unique
+  name          String
+  description   String?
+  type          CouponType @default(PERCENTAGE)
+  value         Float      // Valor do desconto (percentual ou fixo)
+  minOrderValue Float?     // Valor mínimo do pedido para usar o cupom
+  maxDiscount   Float?     // Desconto máximo (para cupons percentuais)
+  usageLimit    Int?       // Limite de uso total
+  usedCount     Int        @default(0) // Quantas vezes foi usado
+  isActive      Boolean    @default(true)
+  validFrom     DateTime   @default(now())
+  validUntil    DateTime?
+  marketId      String?    @db.ObjectId
+  market        Market?    @relation(fields: [marketId], references: [id])
+  orders        Order[]    // Pedidos que usaram este cupom
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
 }
 
 type SubCategory {
@@ -130,4 +154,9 @@ enum OrderStatus {
 enum UserRole {
   CUSTOMER
   MARKET_ADMIN
+}
+
+enum CouponType {
+  PERCENTAGE
+  FIXED
 }
