@@ -1,13 +1,16 @@
 import { Router } from 'express';
 import { userController } from '../controllers/userController';
+import { authenticate, requireMarketAdmin, optionalAuth } from '../middleware/auth';
 
 const router = Router();
 
-router.post('/', userController.createUser);
-router.get('/', userController.getUsers);
-router.get('/:id', userController.getUserById);
-router.put('/:id', userController.updateUser);
-router.patch('/:id', userController.updateUserPartial);
-router.delete('/:id', userController.deleteUser);
+// Rotas públicas
+router.get('/', optionalAuth, userController.getUsers);
+router.get('/:id', optionalAuth, userController.getUserById);
+// Privadas
+router.post('/', authenticate, requireMarketAdmin, userController.createUser);
+router.put('/:id', authenticate, requireMarketAdmin, userController.updateUser);
+router.patch('/:id', authenticate, requireMarketAdmin, userController.updateUserPartial);
+router.delete('/:id', authenticate, requireMarketAdmin, userController.deleteUser);
 
 export default router;

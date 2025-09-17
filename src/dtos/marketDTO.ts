@@ -3,7 +3,7 @@ import { z } from "zod";
 export const MarketDTO = z.object({
     name: z.string({ error: "Nome do mercado é obrigatório" }),
     address: z.string({ error: "Endereço do mercado é obrigatório" }),
-    profilePicture: z.string({ error: "Logo do mercado é obrigatório" }),
+    profilePicture: z.string({ error: "Logo do mercado é obrigatório" }).optional(),
 });
 
 export type MarketDTO = z.infer<typeof MarketDTO>;

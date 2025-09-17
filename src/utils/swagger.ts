@@ -5,6 +5,7 @@ import { userPaths, userSchemas, userTags } from './schema/user';
 import { categoriesPaths, categoriesSchemas, categoriesTags } from './schema/categories';
 import { delivererPaths, delivererSchemas, delivererTags } from './schema/deliverer';
 import { orderPaths, orderSchemas, orderTags } from './schema/order';
+import { authPaths, authSchemas, authTags } from './schema/auth';
 
 export const swaggerDocument = {
     openapi: '3.0.0',
@@ -19,7 +20,7 @@ export const swaggerDocument = {
             description: 'Servidor de desenvolvimento'
         }
     ],
-        components: {
+    components: {
         securitySchemes: {
             bearerAuth: {
                 type: 'http',
@@ -34,7 +35,8 @@ export const swaggerDocument = {
             ...userSchemas,
             ...categoriesSchemas,
             ...delivererSchemas,
-            ...orderSchemas
+            ...orderSchemas,
+            ...authSchemas
         },
     },
     tags: [
@@ -43,7 +45,8 @@ export const swaggerDocument = {
         ...userTags,
         ...categoriesTags,
         ...delivererTags,
-        ...orderTags
+        ...orderTags,
+        ...authTags
     ],
     paths: {
         ...marketPaths,
@@ -51,6 +54,7 @@ export const swaggerDocument = {
         ...userPaths,
         ...categoriesPaths,
         ...delivererPaths,
-        ...orderPaths
+        ...orderPaths,
+        ...authPaths
     },
 };

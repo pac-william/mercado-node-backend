@@ -14,8 +14,35 @@ model Market {
   profilePicture String?
   products       Product[]
   orders         Order[]
+  users          User[]    // Usuários vinculados ao mercado
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
+}
+
+model User {
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  email        String     @unique
+  password     String
+  orders       Order[]
+  aiSearches   AiSearch[]
+  refreshToken String?
+  role         UserRole   @default(CUSTOMER)
+  marketId     String?    @db.ObjectId  // Vinculação com mercado
+  market       Market?    @relation(fields: [marketId], references: [id])
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+model Categories {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  name          String        @unique
+  slug          String        @unique
+  description   String?
+  subCategories SubCategory[] // array de subcategorias embutidas
+  products      Product[]     // relação com produtos
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 }
 
 model Product {
@@ -31,27 +58,6 @@ model Product {
   orderItems  OrderItem[]
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
-}
-
-model User {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  name      String
-  email     String   @unique
-  password  String
-  orders    Order[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Categories {
-  id            String        @id @default(auto()) @map("_id") @db.ObjectId
-  name          String        @unique
-  slug          String        @unique
-  description   String?
-  subCategories SubCategory[] // array de subcategorias embutidas
-  products      Product[]     // relação com produtos
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
 }
 
 model Deliverer {
@@ -119,4 +125,9 @@ enum OrderStatus {
   OUT_FOR_DELIVERY
   DELIVERED
   CANCELLED
+}
+
+enum UserRole {
+  CUSTOMER
+  MARKET_ADMIN
 }

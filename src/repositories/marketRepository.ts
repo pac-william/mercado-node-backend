@@ -18,6 +18,16 @@ class MarketRepository {
                 name: name ? { contains: name, mode: 'insensitive' } : undefined,
                 address: address ? { contains: address, mode: 'insensitive' } : undefined,
             },
+            include: {
+                users: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        role: true
+                    }
+                }
+            }
         });
         return markets.map((market) => new Market(
             market.id,
@@ -32,6 +42,14 @@ class MarketRepository {
             where: { id },
             include: {
                 products: true,
+                users: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        role: true
+                    }
+                }
             },
         });
         return market;
@@ -43,6 +61,14 @@ class MarketRepository {
             data: marketDTO,
             include: {
                 products: true,
+                users: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        role: true
+                    }
+                }
             },
         });
         return market;
@@ -54,6 +80,14 @@ class MarketRepository {
             data: marketUpdateDTO,
             include: {
                 products: true,
+                users: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        role: true
+                    }
+                }
             },
         });
         return market;
@@ -64,6 +98,14 @@ class MarketRepository {
             where: { id },
             include: {
                 products: true,
+                users: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        role: true
+                    }
+                }
             },
         });
         return market;
