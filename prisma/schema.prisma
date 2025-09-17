@@ -13,6 +13,7 @@ model Market {
   address        String
   profilePicture String?
   products       Product[]
+  orders         Order[]
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 }
@@ -27,6 +28,7 @@ model Product {
   categoryId  String?    @db.ObjectId
   category    Categories? @relation(fields: [categoryId], references: [id])
   image       String?
+  orderItems  OrderItem[]
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 }
@@ -36,6 +38,7 @@ model User {
   name      String
   email     String   @unique
   password  String
+  orders    Order[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -51,8 +54,69 @@ model Categories {
   updatedAt     DateTime      @updatedAt
 }
 
+model Deliverer {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  document    String   @unique
+  phone       String
+  status      DelivererStatus @default(ACTIVE)
+  vehicle     Vehicle
+  orders      Order[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Order {
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String        @db.ObjectId
+  user         User          @relation(fields: [userId], references: [id])
+  marketId     String        @db.ObjectId
+  market       Market        @relation(fields: [marketId], references: [id])
+  delivererId  String?       @db.ObjectId
+  deliverer    Deliverer?    @relation(fields: [delivererId], references: [id])
+  status       OrderStatus   @default(PENDING)
+  total        Float
+  items        OrderItem[]
+  deliveryAddress String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model OrderItem {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  orderId   String  @db.ObjectId
+  order     Order   @relation(fields: [orderId], references: [id])
+  productId String  @db.ObjectId
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 type SubCategory {
   name        String
   slug        String
   description String?
+}
+
+type Vehicle {
+  type        String // "bicicleta", "moto", "carro"
+  plate       String?
+  description String?
+}
+
+enum DelivererStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  READY_FOR_DELIVERY
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
 }
