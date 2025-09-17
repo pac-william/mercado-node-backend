@@ -26,6 +26,7 @@ app.use('/api/v1/users', routes.userRoute);
 app.use('/api/v1/categories', routes.categoriesRouter);
 app.use('/api/v1/deliverers', routes.delivererRoute);
 app.use('/api/v1/orders', routes.orderRoute);
+app.use('/api/v1/ai', routes.aiRoute);
 
 // Health check route
 app.get('/health', (_req, res) => {

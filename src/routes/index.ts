@@ -4,6 +4,7 @@ import userRoute from './userRoute';
 import categoriesRouter from './categories.router';
 import delivererRoute from './delivererRoute';
 import orderRoute from './orderRoute';
+import aiRoute from './aiRoute';
 
 export default {
     productRoute,
@@ -11,5 +12,6 @@ export default {
     userRoute,
     categoriesRouter,
     delivererRoute,
-    orderRoute
+    orderRoute,
+    aiRoute
 };
