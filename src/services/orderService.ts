@@ -10,12 +10,10 @@ class OrderService {
         let discount = 0;
         let couponId = null;
 
-        // Calcular total dos itens
         for (const item of orderDTO.items) {
             total += item.price * item.quantity;
         }
 
-        // Aplicar cupom se fornecido
         if (orderDTO.couponCode) {
             try {
                 const couponResult = await couponService.applyCouponToOrder(

@@ -142,7 +142,6 @@ export class AuthController {
             }
             const { accessToken: newAccessToken, refreshToken: newRefreshToken, role, marketId, market } = await authService.refreshAccessToken(refreshToken);
             
-            // Atualizar cookies
             res.cookie('accessToken', newAccessToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',

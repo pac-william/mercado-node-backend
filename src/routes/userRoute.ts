@@ -4,10 +4,9 @@ import { authenticate, requireMarketAdmin, optionalAuth } from '../middleware/au
 
 const router = Router();
 
-// Rotas públicas
+
 router.get('/', optionalAuth, userController.getUsers);
 router.get('/:id', optionalAuth, userController.getUserById);
-// Privadas
 router.post('/', authenticate, requireMarketAdmin, userController.createUser);
 router.put('/:id', authenticate, requireMarketAdmin, userController.updateUser);
 router.patch('/:id', authenticate, requireMarketAdmin, userController.updateUserPartial);

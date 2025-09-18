@@ -15,7 +15,7 @@ export const OrderDTO = z.object({
         quantity: z.number().int().positive({ error: "Quantidade deve ser um número inteiro positivo" }),
         price: z.number().positive({ error: "Preço deve ser um número positivo" })
     }), { error: "Itens do pedido são obrigatórios" }),
-    couponCode: z.string().optional() // Adicionar código do cupom
+    couponCode: z.string().optional() 
 });
 
 export type OrderDTO = z.infer<typeof OrderDTO>;

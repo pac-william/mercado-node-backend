@@ -5,12 +5,10 @@ import { authenticate, requireMarketAdmin, optionalAuth } from '../middleware/au
 const router = Router();
 const delivererController = new DelivererController();
 
-// Rotas públicas
+
 router.get('/', optionalAuth, delivererController.getDeliverers);
 router.get('/active', optionalAuth, delivererController.getActiveDeliverers);
 router.get('/:id', optionalAuth, delivererController.getDelivererById);
-
-// Rotas protegidas
 router.post('/', authenticate, requireMarketAdmin, delivererController.createDeliverer);
 router.put('/:id', authenticate, requireMarketAdmin, delivererController.updateDeliverer);
 router.patch('/:id', authenticate, requireMarketAdmin, delivererController.updateDelivererPartial);

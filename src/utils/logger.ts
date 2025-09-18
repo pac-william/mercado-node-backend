@@ -30,11 +30,9 @@ export class Logger {
             }
         }
         if (!callerLine) return '[unknown]';
-        // Tenta capturar qualquer caminho de arquivo entre parênteses
         const match = callerLine.match(/\(([^)]+)\)/) || callerLine.match(/at ([^ ]+)/);
         if (match && match[1]) {
             const fullPath = match[1];
-            // Se for <anonymous>, retorna explicitamente
             if (fullPath.includes('<anonymous>')) return '[anonymous]';
             const parts = fullPath.split(/[\\/]/);
             const lastParts = parts.slice(-2).join('/');
@@ -97,7 +95,6 @@ export class Logger {
         console.log(this.formatMessage(LogLevel.SUCCESS, context, message, data));
     }
 
-    // Métodos específicos para diferentes camadas da aplicação
     static controller(controllerName: string, method: string, message: string, data?: any) {
         this.info(`${controllerName}Controller`, `${method} - ${message}`, data);
     }
@@ -118,7 +115,6 @@ export class Logger {
         this.info('API', `${method} ${endpoint} - ${message}`, data);
     }
 
-    // Métodos para logs de sucesso e erro específicos
     static successOperation(context: string, operation: string, id?: string | number | number) {
         const message = id ? `success id: ${id}` : 'success';
         this.success(context, `${operation} - ${message}`);
@@ -128,7 +124,6 @@ export class Logger {
         this.error(context, `${operation} - error ${message ? `- ${message}` : ''}`, error);
     }
 
-    // Método para logs de performance
     static performance(context: string, operation: string, duration: number) {
         const color = duration > 1000 ? chalk.red : duration > 500 ? chalk.yellow : chalk.green;
         const durationText = color(`${duration}ms`);

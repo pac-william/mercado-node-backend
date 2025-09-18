@@ -45,7 +45,6 @@ export const authorizeRoles = (roles: Array<'CUSTOMER' | 'MARKET_ADMIN'>) => {
     };
 };
 
-// Middleware para autenticação opcional (para personalização de conteúdo)
 export const optionalAuth = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];

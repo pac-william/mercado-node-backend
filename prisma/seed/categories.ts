@@ -92,7 +92,7 @@ async function main() {
                 name: categoria.name,
                 slug: categoria.slug,
                 description: categoria.description,
-                subCategories: categoria.subCategories, // mapeando para o campo correto
+                subCategories: categoria.subCategories,
             },
         });
 

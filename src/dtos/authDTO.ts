@@ -4,7 +4,7 @@ export const AuthRegisterUserDTO = z.object({
     name: z.string().min(1, 'Nome é obrigatório'),
     email: z.string().email('Email inválido'),
     password: z.string().min(6, 'Senha deve ter pelo menos 6 caracteres'),
-    marketId: z.string().optional(), // Opcional para vinculação com mercado
+    marketId: z.string().optional(),
 });
 
 export const AuthLoginDTO = z.object({

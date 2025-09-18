@@ -4,11 +4,8 @@ import { authenticate, requireMarketAdmin, optionalAuth, requireMarketOwnership 
 
 const router = Router();
 
-// Rotas públicas
 router.get('/', optionalAuth, marketController.getMarkets);
 router.get('/:id', optionalAuth, marketController.getMarketById);
-
-// Rotas protegidas
 router.post('/', authenticate, requireMarketAdmin, marketController.createMarket);
 router.put('/:id', authenticate, requireMarketAdmin, requireMarketOwnership, marketController.updateMarket);
 router.patch('/:id', authenticate, requireMarketAdmin, requireMarketOwnership, marketController.updateMarketPartial);
