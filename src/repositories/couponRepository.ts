@@ -166,7 +166,7 @@ class CouponRepository {
         });
     }
 
-    async calculateDiscount(coupon: any, orderValue: number): number {
+    async calculateDiscount(coupon: any, orderValue: number) {
         let discount = 0;
 
         if (coupon.type === "PERCENTAGE") {
@@ -181,7 +181,7 @@ class CouponRepository {
             }
         }
 
-        return Math.round(discount * 100) / 100; // Arredonda para 2 casas decimais
+        return Math.round(discount * 100) / 100;
     }
 }
 
