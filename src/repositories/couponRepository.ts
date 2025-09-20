@@ -181,7 +181,7 @@ class CouponRepository {
             }
         }
 
-        return Math.round(discount * 100) / 100; // Arredonda para 2 casas decimais
+        return Math.round(discount * 100) / 100;
     }
 }
 
