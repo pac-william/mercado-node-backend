@@ -18,7 +18,14 @@ export class ProductController {
                 .withString('categoryId')
                 .build();
 
-            const products = await productService.getProducts(page, size, marketId, name, minPrice, maxPrice, categoryId);
+            const elasticSearchEnv = process.env.ELASTICSEARCH_URL;
+
+            let products;
+            if (name && elasticSearchEnv) {
+                products = await productService.getProductsElasticSearch(name, page, size);
+            } else {
+                products = await productService.getProducts(page, size, marketId, name, minPrice, maxPrice, categoryId);
+            }
             Logger.successOperation('ProductController', 'getProducts');
             return res.status(200).json({
                 products: products.products.map(toProductResponseDTO),

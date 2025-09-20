@@ -1,5 +1,5 @@
-import { prisma } from "../utils/prisma";
 import { CouponDTO, CouponUpdateDTO } from "../dtos/couponDTO";
+import { prisma } from "../utils/prisma";
 
 class CouponRepository {
     async create(data: CouponDTO) {
@@ -166,7 +166,7 @@ class CouponRepository {
         });
     }
 
-    async calculateDiscount(coupon: any, orderValue: number): number {
+    async calculateDiscount(coupon: any, orderValue: number): Promise<number> {
         let discount = 0;
 
         if (coupon.type === "PERCENTAGE") {

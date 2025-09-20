@@ -2,6 +2,7 @@ import { Meta } from "../domain/metaDomain";
 import { ProductPaginatedResponse } from "../domain/productDomain";
 import { ProductDTO, ProductUpdateDTO } from "../dtos/index";
 import { productRepository } from "../repositories/productRepository";
+import { productElasticSearch } from "../rest/productElasticSearch";
 
 class ProductService {
     async createProduct(productDTO: ProductDTO) {
@@ -12,6 +13,10 @@ class ProductService {
         const count = await productRepository.countProducts(marketId, name, minPrice, maxPrice, categoryId);
         const products = await productRepository.getProducts(page, size, marketId, name, minPrice, maxPrice, categoryId);
         return new ProductPaginatedResponse(products, new Meta(page, size, count, Math.ceil(count / size), count));
+    }
+
+    async getProductsElasticSearch(name: string, page: number, size: number) {
+        return await productElasticSearch.getProducts(name, page, size);
     }
 
     async getProductById(id: string) {
