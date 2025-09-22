@@ -1,11 +1,12 @@
-import marketRoute from './marketRoute';
-import productRoute from './productRoute';
-import userRoute from './userRoute';
-import categoriesRouter from './categories.router';
-import delivererRoute from './delivererRoute';
-import orderRoute from './orderRoute';
 import authRoute from './authRoute';
+import categoriesRouter from './categories.router';
 import couponRoute from './couponRoute';
+import delivererRoute from './delivererRoute';
+import marketRoute from './marketRoute';
+import orderRoute from './orderRoute';
+import productRoute from './productRoute';
+import suggestionRoute from './suggestionRoute';
+import userRoute from './userRoute';
 
 export default {
     productRoute,
@@ -15,5 +16,6 @@ export default {
     delivererRoute,
     orderRoute,
     authRoute,
-    couponRoute
+    couponRoute,
+    suggestionRoute
 };

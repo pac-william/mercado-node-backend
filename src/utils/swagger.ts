@@ -1,11 +1,12 @@
-import { marketPaths, marketSchemas, marketTags } from './schema/market';
-import { metaSchemas } from './schema/meta';
-import { productPaths, productSchemas, productTags } from './schema/product';
-import { userPaths, userSchemas, userTags } from './schema/user';
+import { authPaths, authSchemas, authTags } from './schema/auth';
 import { categoriesPaths, categoriesSchemas, categoriesTags } from './schema/categories';
 import { delivererPaths, delivererSchemas, delivererTags } from './schema/deliverer';
+import { marketPaths, marketSchemas, marketTags } from './schema/market';
+import { metaSchemas } from './schema/meta';
 import { orderPaths, orderSchemas, orderTags } from './schema/order';
-import { authPaths, authSchemas, authTags } from './schema/auth';
+import { productPaths, productSchemas, productTags } from './schema/product';
+import { suggestionPaths, suggestionSchemas, suggestionTags } from './schema/suggestion';
+import { userPaths, userSchemas, userTags } from './schema/user';
 
 export const swaggerDocument = {
     openapi: '3.0.0',
@@ -36,7 +37,8 @@ export const swaggerDocument = {
             ...categoriesSchemas,
             ...delivererSchemas,
             ...orderSchemas,
-            ...authSchemas
+            ...authSchemas,
+            ...suggestionSchemas
         },
     },
     tags: [
@@ -46,7 +48,8 @@ export const swaggerDocument = {
         ...categoriesTags,
         ...delivererTags,
         ...orderTags,
-        ...authTags
+        ...authTags,
+        ...suggestionTags
     ],
     paths: {
         ...marketPaths,
@@ -55,6 +58,7 @@ export const swaggerDocument = {
         ...categoriesPaths,
         ...delivererPaths,
         ...orderPaths,
-        ...authPaths
+        ...authPaths,
+        ...suggestionPaths
     },
 };
