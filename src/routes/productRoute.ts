@@ -1,18 +1,15 @@
 import { Router } from 'express';
 import { productController } from '../controllers/productController';
-import { authenticate, requireMarketAdmin, optionalAuth, requireMarketOwnership } from '../middleware/auth';
 
 const router = Router();
 
-// Rotas públicas
-router.get('/', optionalAuth, productController.getProducts);
-router.get('/markets/:marketId', optionalAuth, productController.getProductsByMarket);
-router.get('/:id', optionalAuth, productController.getProductById);
-
-// Rotas protegidas 
-router.post('/', authenticate, requireMarketAdmin, productController.createProduct);
-router.put('/:id', authenticate, requireMarketAdmin, requireMarketOwnership, productController.updateProduct);
-router.patch('/:id', authenticate, requireMarketAdmin, requireMarketOwnership, productController.updateProductPartial);
-router.delete('/:id', authenticate, requireMarketAdmin, requireMarketOwnership, productController.deleteProduct);
+// Rotas públicas (sem autenticação)
+router.get('/', productController.getProducts);
+router.get('/markets/:marketId', productController.getProductsByMarket);
+router.get('/:id', productController.getProductById);
+router.post('/', productController.createProduct);
+router.put('/:id', productController.updateProduct);
+router.patch('/:id', productController.updateProductPartial);
+router.delete('/:id', productController.deleteProduct);
 
 export default router;
