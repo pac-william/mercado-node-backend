@@ -9,26 +9,22 @@ class OrderRepository {
         const order = await prisma.order.create({
             data: {
                 ...orderData,
-                total: items.reduce((sum, item) => sum + (item.price * item.quantity), 0),
-                items: {
-                    create: items.map(item => ({
-                        productId: item.productId,
-                        quantity: item.quantity,
-                        price: item.price,
-                    }))
-                }
-            },
-            include: {
-                user: true,
-                market: true,
-                deliverer: true,
-                items: {
-                    include: {
-                        product: true,
-                    }
-                }
+                total: items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
             }
         });
+
+        // Criar os itens do pedido separadamente
+        if (items && items.length > 0) {
+            await prisma.orderItem.createMany({
+                data: items.map(item => ({
+                    orderId: order.id,
+                    productId: item.productId,
+                    quantity: item.quantity,
+                    price: item.price,
+                }))
+            });
+        }
+
         return order;
     }
 
@@ -44,16 +40,6 @@ class OrderRepository {
             take: size,
             orderBy: {
                 createdAt: 'desc',
-            },
-            include: {
-                user: true,
-                market: true,
-                deliverer: true,
-                items: {
-                    include: {
-                        product: true,
-                    }
-                }
             }
         });
         return orders.map((order) => new Order(
@@ -69,17 +55,7 @@ class OrderRepository {
 
     async getOrderById(id: string) {
         const order = await prisma.order.findUnique({
-            where: { id },
-            include: {
-                user: true,
-                market: true,
-                deliverer: true,
-                items: {
-                    include: {
-                        product: true,
-                    }
-                }
-            }
+            where: { id }
         });
         return order;
     }
@@ -87,17 +63,7 @@ class OrderRepository {
     async updateOrder(id: string, orderUpdateDTO: OrderUpdateDTO) {
         const order = await prisma.order.update({
             where: { id },
-            data: orderUpdateDTO,
-            include: {
-                user: true,
-                market: true,
-                deliverer: true,
-                items: {
-                    include: {
-                        product: true,
-                    }
-                }
-            }
+            data: orderUpdateDTO
         });
         return order;
     }
@@ -108,16 +74,6 @@ class OrderRepository {
             data: { 
                 delivererId,
                 status: "OUT_FOR_DELIVERY"
-            },
-            include: {
-                user: true,
-                market: true,
-                deliverer: true,
-                items: {
-                    include: {
-                        product: true,
-                    }
-                }
             }
         });
         return order;

@@ -17,14 +17,6 @@ class CouponRepository {
                 validFrom: data.validFrom || new Date(),
                 validUntil: data.validUntil,
                 marketId: data.marketId
-            },
-            include: {
-                market: {
-                    select: {
-                        id: true,
-                        name: true
-                    }
-                }
             }
         });
     }
@@ -46,14 +38,6 @@ class CouponRepository {
                 where,
                 skip,
                 take: size,
-                include: {
-                    market: {
-                        select: {
-                            id: true,
-                            name: true
-                        }
-                    }
-                },
                 orderBy: {
                     createdAt: 'desc'
                 }
@@ -66,29 +50,13 @@ class CouponRepository {
 
     async getById(id: string) {
         return await prisma.coupon.findUnique({
-            where: { id },
-            include: {
-                market: {
-                    select: {
-                        id: true,
-                        name: true
-                    }
-                }
-            }
+            where: { id }
         });
     }
 
     async getByCode(code: string) {
         return await prisma.coupon.findUnique({
-            where: { code: code.toUpperCase() },
-            include: {
-                market: {
-                    select: {
-                        id: true,
-                        name: true
-                    }
-                }
-            }
+            where: { code: code.toUpperCase() }
         });
     }
 
@@ -100,15 +68,7 @@ class CouponRepository {
 
         return await prisma.coupon.update({
             where: { id },
-            data: updateData,
-            include: {
-                market: {
-                    select: {
-                        id: true,
-                        name: true
-                    }
-                }
-            }
+            data: updateData
         });
     }
 

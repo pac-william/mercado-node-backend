@@ -1,3 +1,4 @@
+import { Category, SubCategory } from "../domain/categoryDomain";
 import { Product } from "../domain/productDomain";
 import { ProductDTO, ProductUpdateDTO } from "../dtos/productDTO";
 import { prisma } from "../utils/prisma";
@@ -6,10 +7,6 @@ class ProductRepository {
     async createProduct(productDTO: ProductDTO) {
         const product = await prisma.product.create({
             data: productDTO,
-            include: {
-                market: true,
-                category: true,
-            },
         });
         return product;
     }
@@ -29,42 +26,78 @@ class ProductRepository {
             take: size,
             orderBy: {
                 name: 'asc',
-            },
-            include: {
-                market: true,
-                category: true,
             }
         });
-        return products.map((product) => new Product(
-            product.id,
-            product.name,
-            product.price,
-            product.unit ?? "unidade",
-            product.marketId,
-            product.image ?? undefined,
-            product.categoryId ?? undefined,
+
+        const categoryIds = Array.from(new Set(products.map((p) => p.categoryId).filter(Boolean))) as string[];
+        const categoriesRaw = categoryIds.length > 0
+            ? await prisma.categories.findMany({ where: { id: { in: categoryIds } } })
+            : [];
+        const categoryById = new Map(
+            categoriesRaw.map((c) => [
+                c.id,
+                new Category(
+                    c.id,
+                    c.name,
+                    c.slug,
+                    c.description ?? "",
+                    (c.subCategories ?? []).map((sc) => new SubCategory(sc.name, sc.slug, sc.description ?? "")),
+                    c.createdAt,
+                    c.updatedAt,
+                ),
+            ])
+        );
+
+        return products.map((p) => new Product(
+            p.id,
+            p.name,
+            p.price,
+            p.unit ?? "unidade",
+            p.marketId,
+            p.image ?? null,
+            p.categoryId ?? undefined,
+            p.categoryId ? categoryById.get(p.categoryId) ?? null : null,
         ));
     }
 
     async getProductById(id: string) {
-        const product = await prisma.product.findUnique({
+        const p = await prisma.product.findUnique({
             where: { id },
-            include: {
-                market: true,
-                category: true,
-            },
         });
-        return product;
+        if (!p) return null;
+
+        let category: Category | null = null;
+        if (p.categoryId) {
+            const c = await prisma.categories.findUnique({ where: { id: p.categoryId } });
+            if (c) {
+                category = new Category(
+                    c.id,
+                    c.name,
+                    c.slug,
+                    c.description ?? "",
+                    (c.subCategories ?? []).map((sc) => new SubCategory(sc.name, sc.slug, sc.description ?? "")),
+                    c.createdAt,
+                    c.updatedAt,
+                );
+            }
+        }
+
+        return new Product(
+            p.id,
+            p.name,
+            p.price,
+            p.unit ?? "unidade",
+            p.marketId,
+            p.image ?? null,
+            p.categoryId ?? undefined,
+            category,
+        );
     }
 
     async updateProduct(id: string, productDTO: ProductDTO) {
         const product = await prisma.product.update({
             where: { id },
             data: productDTO,
-            include: {
-                market: true,
-                category: true,
-            },
         });
         return product;
     }
@@ -73,10 +106,6 @@ class ProductRepository {
         const product = await prisma.product.update({
             where: { id },
             data: productUpdateDTO,
-            include: {
-                market: true,
-                category: true,
-            },
         });
         return product;
     }
@@ -84,10 +113,6 @@ class ProductRepository {
     async deleteProduct(id: string) {
         const product = await prisma.product.delete({
             where: { id },
-            include: {
-                market: true,
-                category: true,
-            },
         });
         return product;
     }
