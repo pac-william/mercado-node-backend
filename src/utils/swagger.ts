@@ -1,5 +1,6 @@
 import { authPaths, authSchemas, authTags } from './schema/auth';
 import { categoriesPaths, categoriesSchemas, categoriesTags } from './schema/categories';
+import { couponPaths, couponSchemas, couponTags } from './schema/coupon';
 import { delivererPaths, delivererSchemas, delivererTags } from './schema/deliverer';
 import { marketPaths, marketSchemas, marketTags } from './schema/market';
 import { metaSchemas } from './schema/meta';
@@ -35,6 +36,7 @@ export const swaggerDocument = {
             ...productSchemas,
             ...userSchemas,
             ...categoriesSchemas,
+            ...couponSchemas,
             ...delivererSchemas,
             ...orderSchemas,
             ...authSchemas,
@@ -46,6 +48,7 @@ export const swaggerDocument = {
         ...productTags,
         ...userTags,
         ...categoriesTags,
+        ...couponTags,
         ...delivererTags,
         ...orderTags,
         ...authTags,
@@ -56,6 +59,7 @@ export const swaggerDocument = {
         ...productPaths,
         ...userPaths,
         ...categoriesPaths,
+        ...couponPaths,
         ...delivererPaths,
         ...orderPaths,
         ...authPaths,

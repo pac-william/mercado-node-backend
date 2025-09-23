@@ -232,48 +232,8 @@ export const orderSchemas = {
                     "properties": {
                         "id": { "type": "string" },
                         "productId": { "type": "string" },
-                        "product": {
-                            "type": "object",
-                            "properties": {
-                                "id": { "type": "string" },
-                                "name": { "type": "string" },
-                                "price": { "type": "number" },
-                                "unit": { "type": "string" }
-                            }
-                        },
                         "quantity": { "type": "integer" },
                         "price": { "type": "number" }
-                    }
-                }
-            },
-            "user": {
-                "type": "object",
-                "properties": {
-                    "id": { "type": "string" },
-                    "name": { "type": "string" },
-                    "email": { "type": "string" }
-                }
-            },
-            "market": {
-                "type": "object",
-                "properties": {
-                    "id": { "type": "string" },
-                    "name": { "type": "string" },
-                    "address": { "type": "string" }
-                }
-            },
-            "deliverer": {
-                "type": "object",
-                "properties": {
-                    "id": { "type": "string" },
-                    "name": { "type": "string" },
-                    "phone": { "type": "string" },
-                    "vehicle": {
-                        "type": "object",
-                        "properties": {
-                            "type": { "type": "string" },
-                            "plate": { "type": "string" }
-                        }
                     }
                 }
             },

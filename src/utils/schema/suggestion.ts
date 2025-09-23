@@ -5,12 +5,32 @@ export const suggestionPaths = {
             "summary": "Obter sugestões de produtos",
             "description": "Retorna sugestões de produtos essenciais, produtos comuns e utensílios baseados em IA.",
             "security": [{ "BearerAuth": [] }],
+            "parameters": [
+                {
+                    "name": "task",
+                    "in": "query",
+                    "required": true,
+                    "description": "Tarefa a ser realizada. Exemplo: quero fazer um pudim de leite",
+                    "schema": {
+                        "type": "string",
+                        "example": "Quero fazer um pudim de leite"
+                    }
+                }
+            ],
             "responses": {
                 "201": {
                     "description": "Sugestões retornadas com sucesso",
                     "content": {
                         "application/json": {
                             "schema": { "$ref": "#/components/schemas/SuggestionResponse" }
+                        }
+                    }
+                },
+                "400": {
+                    "description": "Tarefa não informada",
+                    "content": {
+                        "application/json": {
+                            "schema": { "type": "object", "properties": { "message": { "type": "string", "example": "Tarefa não informada" } } }
                         }
                     }
                 },

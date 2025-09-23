@@ -1,7 +1,13 @@
+export interface SuggestedItem {
+    name: string;
+    categoryId: string; // existing category id selected by the agent
+    categoryName: string; // human-readable category name
+}
+
 export interface SuggestionResponse {
-    essential_products: string[];
-    common_products: string[];
-    utensils: string[];
+    essential_products: SuggestedItem[];
+    common_products: SuggestedItem[];
+    utensils: SuggestedItem[];
     searchResults?: {
         productsBySearchTerm: {
             searchTerm: string;
@@ -63,31 +69,7 @@ export interface AISuggestionResponse {
             type: string;
             description: null;
             name: string;
-            schema: {
-                type: string;
-                properties: {
-                    essential_products: {
-                        type: string;
-                        items: {
-                            type: string;
-                        };
-                    };
-                    common_products: {
-                        type: string;
-                        items: {
-                            type: string;
-                        };
-                    };
-                    utensils: {
-                        type: string;
-                        items: {
-                            type: string;
-                        };
-                    };
-                };
-                required: string[];
-                additionalProperties: boolean;
-            };
+            schema: any; // schema varies by prompt; parsed downstream
             strict: boolean;
         };
         verbosity: string;
