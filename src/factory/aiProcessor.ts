@@ -1,138 +1,197 @@
 import { AISuggestionResponse, SuggestionResponse } from "../interfaces/suggestionInterface";
 import { productElasticSearch } from "../rest/productElasticSearch";
 import { categoriesService } from "../services/categoriesService";
+import { Logger } from "../utils/logger";
 
 class AiProcessor {
     async process(task: string): Promise<SuggestionResponse> {
+        Logger.debug('AiProcessor', 'process - Starting AI processing', { task });
 
-        const categoriesResponse = await categoriesService.getCategories(1, 1000);
-        const categories = categoriesResponse.categories.map(c => ({ id: c.id, name: c.name }));
+        try {
+            Logger.debug('AiProcessor', 'process - Fetching categories');
+            const categoriesResponse = await categoriesService.getCategories(1, 1000);
+            const categories = categoriesResponse.categories.map(c => ({ id: c.id, name: c.name }));
 
-        console.log(JSON.stringify(categories, null, 2));
+            Logger.debug('AiProcessor', 'process - Categories fetched', { 
+                totalCategories: categories.length,
+                categories: categories.slice(0, 5) // Log apenas as primeiras 5 para não poluir
+            });
 
-        const response = await fetch("https://api.openai.com/v1/responses", {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                model: "gpt-4o-2024-08-06",
-                input: [
-                    {
-                        role: "system",
-                        content: "Você é um agente de mercado, você gerencia o estoque de um mercado e irá ajudar o usuário a encontrar os produtos para a tarefa que ele irá te passar. Sua tarefa: gerar nomes de produtos e utensílios necessários (sem quantidades/mode de preparo) e, PARA CADA ITEM, escolher uma categoria EXISTENTE da lista fornecida seja consistente com qual categoria representa melhor o produto. Retorne somente no formato solicitado."
-                    },
-                    {
-                        role: "user",
-                        content: `Categorias disponíveis (use APENAS uma destas por item): ${JSON.stringify(categories, null, 2)}.\nAgora, liste itens para realizar a tarefa solicitada: ${task}, separados em essential_products, common_products e utensils. Para cada item gere: name (string), categoryId (um dos ids acima), categoryName (nome correspondente). Não inclua quantidades, medidas ou modo de preparo.`
-                    }
-                ],
-                text: {
-                    format: {
-                        type: "json_schema",
-                        name: "suggestion_schema",
-                        schema: {
-                            type: "object",
-                            properties: {
-                                essential_products: {
-                                    type: "array",
-                                    items: {
-                                        type: "object",
-                                        properties: {
-                                            name: { type: "string" },
-                                            categoryId: { type: "string" },
-                                            categoryName: { type: "string" }
-                                        },
-                                        required: ["name", "categoryId", "categoryName"],
-                                        additionalProperties: false
-                                    }
-                                },
-                                common_products: {
-                                    type: "array",
-                                    items: {
-                                        type: "object",
-                                        properties: {
-                                            name: { type: "string" },
-                                            categoryId: { type: "string" },
-                                            categoryName: { type: "string" }
-                                        },
-                                        required: ["name", "categoryId", "categoryName"],
-                                        additionalProperties: false
-                                    }
-                                },
-                                utensils: {
-                                    type: "array",
-                                    items: {
-                                        type: "object",
-                                        properties: {
-                                            name: { type: "string" },
-                                            categoryId: { type: "string" },
-                                            categoryName: { type: "string" }
-                                        },
-                                        required: ["name", "categoryId", "categoryName"],
-                                        additionalProperties: false
-                                    }
-                                }
-                            },
-                            required: ["essential_products", "common_products", "utensils"],
-                            additionalProperties: false
+            Logger.debug('AiProcessor', 'process - Making OpenAI API request');
+            const response = await fetch("https://api.openai.com/v1/responses", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    model: "gpt-4o-2024-08-06",
+                    input: [
+                        {
+                            role: "system",
+                            content: "Você é um agente de mercado, você gerencia o estoque de um mercado e irá ajudar o usuário a encontrar os produtos para a tarefa que ele irá te passar. Sua tarefa: gerar nomes de produtos e utensílios necessários (sem quantidades/mode de preparo) e, PARA CADA ITEM, escolher uma categoria EXISTENTE da lista fornecida seja consistente com qual categoria representa melhor o produto. Retorne somente no formato solicitado."
                         },
-                        strict: true
+                        {
+                            role: "user",
+                            content: `Categorias disponíveis (use APENAS uma destas por item): ${JSON.stringify(categories, null, 2)}.\nAgora, liste itens para realizar a tarefa solicitada: ${task}, separados em essential_products, common_products e utensils. Para cada item gere: name (string), categoryId (um dos ids acima), categoryName (nome correspondente). Não inclua quantidades, medidas ou modo de preparo.`
+                        }
+                    ],
+                    text: {
+                        format: {
+                            type: "json_schema",
+                            name: "suggestion_schema",
+                            schema: {
+                                type: "object",
+                                properties: {
+                                    essential_products: {
+                                        type: "array",
+                                        items: {
+                                            type: "object",
+                                            properties: {
+                                                name: { type: "string" },
+                                                categoryId: { type: "string" },
+                                                categoryName: { type: "string" }
+                                            },
+                                            required: ["name", "categoryId", "categoryName"],
+                                            additionalProperties: false
+                                        }
+                                    },
+                                    common_products: {
+                                        type: "array",
+                                        items: {
+                                            type: "object",
+                                            properties: {
+                                                name: { type: "string" },
+                                                categoryId: { type: "string" },
+                                                categoryName: { type: "string" }
+                                            },
+                                            required: ["name", "categoryId", "categoryName"],
+                                            additionalProperties: false
+                                        }
+                                    },
+                                    utensils: {
+                                        type: "array",
+                                        items: {
+                                            type: "object",
+                                            properties: {
+                                                name: { type: "string" },
+                                                categoryId: { type: "string" },
+                                                categoryName: { type: "string" }
+                                            },
+                                            required: ["name", "categoryId", "categoryName"],
+                                            additionalProperties: false
+                                        }
+                                    }
+                                },
+                                required: ["essential_products", "common_products", "utensils"],
+                                additionalProperties: false
+                            },
+                            strict: true
+                        }
+                    }
+                })
+            });
+
+            Logger.debug('AiProcessor', 'process - OpenAI API response received', { 
+                status: response.status, 
+                statusText: response.statusText,
+                ok: response.ok 
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                Logger.error('AiProcessor', 'process - OpenAI API error', { 
+                    status: response.status, 
+                    statusText: response.statusText,
+                    errorText 
+                });
+                throw new Error(`OpenAI API error: ${response.status} ${response.statusText} - ${errorText}`);
+            }
+
+            const data = await response.json() as AISuggestionResponse;
+            Logger.debug('AiProcessor', 'process - OpenAI response parsed', { 
+                hasOutput: !!data.output,
+                outputLength: data.output?.length || 0 
+            });
+
+            const outputData: SuggestionResponse = JSON.parse(data.output[0].content[0].text) as SuggestionResponse;
+            Logger.debug('AiProcessor', 'process - AI suggestion parsed', { 
+                essentialProducts: outputData.essential_products?.length || 0,
+                commonProducts: outputData.common_products?.length || 0,
+                utensils: outputData.utensils?.length || 0
+            });
+
+            const finalSuggestion: SuggestionResponse = {
+                essential_products: outputData.essential_products,
+                common_products: outputData.common_products,
+                utensils: outputData.utensils
+            };
+
+            // Concatena todos os itens em um array único
+            const allItems = [
+                ...outputData.essential_products,
+                ...outputData.common_products,
+                ...outputData.utensils
+            ];
+
+            Logger.debug('AiProcessor', 'process - Starting product search', { 
+                totalItems: allItems.length,
+                searchTerms: allItems.map(item => item.name)
+            });
+
+            // Faz loop em todos os itens e busca produtos
+            const searchPromises = allItems.map(item =>
+                productElasticSearch.getProducts(item.name, 1, 100, item.categoryName)
+            );
+
+            // Aguarda todas as buscas e concatena os resultados
+            const searchResults = await Promise.all(searchPromises);
+            Logger.debug('AiProcessor', 'process - Product search completed', { 
+                totalResults: searchResults.length,
+                resultsWithProducts: searchResults.filter(r => r.products?.length > 0).length
+            });
+
+            // Agrupa produtos por termo de busca original
+            const productsBySearchTerm = allItems.map((item, index) => ({
+                searchTerm: item.name,
+                categoryName: item.categoryName,
+                products: searchResults[index]?.products || [],
+                meta: searchResults[index]?.meta || { total: 0, page: 1, size: 100 }
+            }));
+
+            // Calcula estatísticas gerais
+            const totalProductsFound = searchResults.reduce((total, result) =>
+                total + (result.products?.length || 0), 0
+            );
+
+            const finalResult = {
+                ...finalSuggestion,
+                searchResults: {
+                    productsBySearchTerm,
+                    statistics: {
+                        totalSearches: allItems.length,
+                        totalProductsFound,
+                        searchTerms: allItems.map(item => item.name)
                     }
                 }
-            })
-        });
+            };
 
-        const data = await response.json() as AISuggestionResponse;
+            Logger.debug('AiProcessor', 'process - Processing completed successfully', { 
+                totalProductsFound,
+                totalSearches: allItems.length
+            });
 
-        const outputData: SuggestionResponse = JSON.parse(data.output[0].content[0].text) as SuggestionResponse;
+            return finalResult;
 
-        const finalSuggestion: SuggestionResponse = {
-            essential_products: outputData.essential_products,
-            common_products: outputData.common_products,
-            utensils: outputData.utensils
-        };
-
-        // Concatena todos os itens em um array único
-        const allItems = [
-            ...outputData.essential_products,
-            ...outputData.common_products,
-            ...outputData.utensils
-        ];
-
-        // Faz loop em todos os itens e busca produtos
-        const searchPromises = allItems.map(item =>
-            productElasticSearch.getProducts(item.name, 1, 100, item.categoryName)
-        );
-
-        // Aguarda todas as buscas e concatena os resultados
-        const searchResults = await Promise.all(searchPromises);
-
-        // Agrupa produtos por termo de busca original
-        const productsBySearchTerm = allItems.map((item, index) => ({
-            searchTerm: item.name,
-            categoryName: item.categoryName,
-            products: searchResults[index]?.products || [],
-            meta: searchResults[index]?.meta || { total: 0, page: 1, size: 100 }
-        }));
-
-        // Calcula estatísticas gerais
-        const totalProductsFound = searchResults.reduce((total, result) =>
-            total + (result.products?.length || 0), 0
-        );
-
-        return {
-            ...finalSuggestion,
-            searchResults: {
-                productsBySearchTerm,
-                statistics: {
-                    totalSearches: allItems.length,
-                    totalProductsFound,
-                    searchTerms: allItems.map(item => item.name)
-                }
-            }
-        };
+        } catch (error: any) {
+            Logger.error('AiProcessor', 'process - Error during AI processing', {
+                message: error.message,
+                stack: error.stack,
+                name: error.name,
+                task
+            });
+            throw error;
+        }
     }
 }
 
