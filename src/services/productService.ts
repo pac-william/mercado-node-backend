@@ -15,8 +15,8 @@ class ProductService {
         return new ProductPaginatedResponse(products, new Meta(page, size, count, Math.ceil(count / size), count));
     }
 
-    async getProductsElasticSearch(name: string, page: number, size: number) {
-        return await productElasticSearch.getProducts(name, page, size);
+    async getProductsElasticSearch(name: string, page: number, size: number, categoryName?: string) {
+        return await productElasticSearch.getProducts(name, page, size, categoryName ?? "");
     }
 
     async getProductById(id: string) {

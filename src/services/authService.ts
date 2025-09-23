@@ -1,8 +1,8 @@
-import { prisma } from "../utils/prisma";
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { AuthLoginDTO, AuthRegisterUserDTO, AuthLinkUserToMarketDTO, AuthCreateMarketDTO } from "../dtos/authDTO";
+import { AuthCreateMarketDTO, AuthLinkUserToMarketDTO, AuthLoginDTO, AuthRegisterUserDTO } from "../dtos/authDTO";
 import { Logger } from "../utils/logger";
+import { prisma } from "../utils/prisma";
 
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretjwtkey';
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'supersecretrefreshkey';
@@ -116,8 +116,7 @@ class AuthService {
         Logger.service('AuthService', 'login', 'Attempting to login', { email: authLoginDTO.email });
         
         const user = await prisma.user.findUnique({ 
-            where: { email: authLoginDTO.email },
-            include: { market: true }
+            where: { email: authLoginDTO.email }
         });
 
         if (!user) {
@@ -146,6 +145,14 @@ class AuthService {
             data: { refreshToken: refreshToken },
         });
 
+        // Buscar dados do mercado se o usuário tiver marketId
+        let market = null;
+        if (user.marketId) {
+            market = await prisma.market.findUnique({ 
+                where: { id: user.marketId }
+            });
+        }
+
         Logger.successOperation('AuthService', 'login', user.id);
         return { 
             accessToken, 
@@ -153,7 +160,7 @@ class AuthService {
             role: user.role, 
             id: user.id,
             marketId: user.marketId,
-            market: user.market
+            market: market
         };
     }
 
@@ -162,8 +169,7 @@ class AuthService {
         try {
             const decoded: any = jwt.verify(oldRefreshToken, JWT_REFRESH_SECRET);
             const user = await prisma.user.findUnique({ 
-                where: { id: decoded.id },
-                include: { market: true }
+                where: { id: decoded.id }
             });
 
             if (!user || user.refreshToken !== oldRefreshToken) {
@@ -187,13 +193,21 @@ class AuthService {
                 data: { refreshToken: newRefreshToken },
             });
 
+            // Buscar dados do mercado se o usuário tiver marketId
+            let market = null;
+            if (user.marketId) {
+                market = await prisma.market.findUnique({ 
+                    where: { id: user.marketId }
+                });
+            }
+
             Logger.successOperation('AuthService', 'refreshAccessToken', user.id);
             return { 
                 accessToken: newAccessToken, 
                 refreshToken: newRefreshToken,
                 role: user.role,
                 marketId: user.marketId,
-                market: user.market
+                market: market
             };
         } catch (error) {
             Logger.errorOperation('AuthService', 'refreshAccessToken', error, 'Invalid refresh token');
