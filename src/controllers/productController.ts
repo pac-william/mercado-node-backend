@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { ProductDTO, ProductUpdateDTO, toProductResponseDTO } from "../dtos/productDTO";
+import { categoriesService } from "../services/categoriesService";
 import { productService } from "../services/productService";
 import { Logger } from "../utils/logger";
 import { QueryBuilder } from "../utils/queryBuilder";
@@ -22,7 +23,13 @@ export class ProductController {
 
             let products;
             if (name && elasticSearchEnv) {
-                products = await productService.getProductsElasticSearch(name, page, size);
+                let categoryName = "";
+                if (categoryId) {
+                    const category = await categoriesService.getCategoryById(categoryId);
+                    categoryName = category?.name ?? "";
+                }
+
+                products = await productService.getProductsElasticSearch(name, page, size, categoryName);
             } else {
                 products = await productService.getProducts(page, size, marketId, name, minPrice, maxPrice, categoryId);
             }

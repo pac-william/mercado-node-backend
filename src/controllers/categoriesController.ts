@@ -1,16 +1,41 @@
 import { Request, Response } from "express";
-import { categoriesService } from "../services/categoriesService";
+import { CategoriesDTO, CategoriesUpdateDTO, toCategoryResponseDTO } from "../dtos/categoriesDTO";
 import { toProductResponseDTO } from "../dtos/productDTO";
+import { categoriesService } from "../services/categoriesService";
 import { Logger } from "../utils/logger";
 import { QueryBuilder } from "../utils/queryBuilder";
-import { CategoriesDTO, CategoriesUpdateDTO } from "../dtos/categoriesDTO";
 
 export class CategoriesController {
-    async get(_: Request, res: Response) {
+    async getCategories(req: Request, res: Response) {
+        Logger.controller('Categories', 'getCategories', 'query', req.query);
         try {
-            const categories = await categoriesService.get();
-            return res.status(200).json(categories);
+            const { page, size, name } = QueryBuilder.from(req.query)
+                .withNumber('page', 1)
+                .withNumber('size', 10)
+                .withString('name')
+                .build();
+
+            const categories = await categoriesService.getCategories(page, size, name);
+            Logger.successOperation('CategoriesController', 'getCategories');
+            return res.status(200).json({
+                categories: categories.categories.map(toCategoryResponseDTO),
+                meta: categories.meta,
+            });
         } catch (error) {
+            Logger.errorOperation('CategoriesController', 'getCategories', error);
+            return res.status(500).json({ message: "Erro interno do servidor" });
+        }
+    }
+
+    async getCategoryById(req: Request, res: Response) {
+        Logger.controller('Categories', 'getCategoryById', 'params', req.params);
+        try {
+            const { id } = req.params;
+            const category = await categoriesService.getCategoryById(id);
+            Logger.successOperation('CategoriesController', 'getCategoryById');
+            return res.status(200).json(toCategoryResponseDTO(category));
+        } catch (error) {
+            Logger.errorOperation('CategoriesController', 'getCategoryById', error);
             return res.status(500).json({ message: "Erro interno do servidor" });
         }
     }
@@ -45,10 +70,10 @@ export class CategoriesController {
     async createCategory(req: Request, res: Response) {
         Logger.controller('Categories', 'createCategory', 'body', req.body);
         try {
-            const data: CategoriesDTO = req.body;
+            const data = CategoriesDTO.parse(req.body);
             const category = await categoriesService.createCategory(data);
             Logger.successOperation('CategoriesController', 'createCategory');
-            return res.status(201).json(category);
+            return res.status(201).json(toCategoryResponseDTO(category));
         } catch (error) {
             Logger.errorOperation('CategoriesController', 'createCategory', error);
             if (error instanceof Error && error.message.includes("Unique constraint")) {
@@ -62,10 +87,10 @@ export class CategoriesController {
         Logger.controller('Categories', 'updateCategory', 'request received', { params: req.params, body: req.body });
         try {
             const { id } = req.params;
-            const data: CategoriesDTO = req.body;
+            const data = CategoriesDTO.parse(req.body);
             const category = await categoriesService.updateCategory(id, data);
             Logger.successOperation('CategoriesController', 'updateCategory');
-            return res.status(200).json(category);
+            return res.status(200).json(toCategoryResponseDTO(category));
         } catch (error) {
             Logger.errorOperation('CategoriesController', 'updateCategory', error);
             if (error instanceof Error && error.message === "Categoria não encontrada") {
@@ -82,10 +107,10 @@ export class CategoriesController {
         Logger.controller('Categories', 'updateCategoryPartial', 'request received', { params: req.params, body: req.body });
         try {
             const { id } = req.params;
-            const data: CategoriesUpdateDTO = req.body;
+            const data = CategoriesUpdateDTO.parse(req.body);
             const category = await categoriesService.updateCategoryPartial(id, data);
             Logger.successOperation('CategoriesController', 'updateCategoryPartial');
-            return res.status(200).json(category);
+            return res.status(200).json(toCategoryResponseDTO(category));
         } catch (error) {
             Logger.errorOperation('CategoriesController', 'updateCategoryPartial', error);
             if (error instanceof Error && error.message === "Categoria não encontrada") {
@@ -102,9 +127,9 @@ export class CategoriesController {
         Logger.controller('Categories', 'deleteCategory', 'params', req.params);
         try {
             const { id } = req.params;
-            await categoriesService.deleteCategory(id);
+            const category = await categoriesService.deleteCategory(id);
             Logger.successOperation('CategoriesController', 'deleteCategory');
-            return res.status(204).send();
+            return res.status(200).json(toCategoryResponseDTO(category));
         } catch (error) {
             Logger.errorOperation('CategoriesController', 'deleteCategory', error);
             if (error instanceof Error && error.message === "Categoria não encontrada") {
