@@ -40,13 +40,6 @@ export type OrderResponseDTO = {
     marketId: string;
     delivererId?: string | null;
     couponId?: string | null;
-    coupon?: {
-        id: string;
-        code: string;
-        name: string;
-        type: string;
-        value: number;
-    } | null;
     status: string;
     total: number;
     discount?: number | null;
@@ -54,34 +47,9 @@ export type OrderResponseDTO = {
     items: Array<{
         id: string;
         productId: string;
-        product: {
-            id: string;
-            name: string;
-            price: number;
-            unit: string;
-        };
         quantity: number;
         price: number;
     }>;
-    user?: {
-        id: string;
-        name: string;
-        email: string;
-    } | null;
-    market?: {
-        id: string;
-        name: string;
-        address: string;
-    } | null;
-    deliverer?: {
-        id: string;
-        name: string;
-        phone: string;
-        vehicle: {
-            type: string;
-            plate?: string | null;
-        };
-    } | null;
     createdAt?: Date;
     updatedAt?: Date;
 };
@@ -92,13 +60,6 @@ export const toOrderResponseDTO = (o: any): OrderResponseDTO => ({
     marketId: String(o.marketId),
     delivererId: o.delivererId ? String(o.delivererId) : null,
     couponId: o.couponId ? String(o.couponId) : null,
-    coupon: o.coupon ? {
-        id: String(o.coupon.id),
-        code: o.coupon.code,
-        name: o.coupon.name,
-        type: o.coupon.type,
-        value: o.coupon.value,
-    } : null,
     status: o.status,
     total: o.total,
     discount: o.discount,
@@ -106,34 +67,9 @@ export const toOrderResponseDTO = (o: any): OrderResponseDTO => ({
     items: o.items?.map((item: any) => ({
         id: String(item.id),
         productId: String(item.productId),
-        product: {
-            id: String(item.product.id),
-            name: item.product.name,
-            price: item.product.price,
-            unit: item.product.unit,
-        },
         quantity: item.quantity,
         price: item.price,
     })) || [],
-    user: o.user ? {
-        id: String(o.user.id),
-        name: o.user.name,
-        email: o.user.email,
-    } : null,
-    market: o.market ? {
-        id: String(o.market.id),
-        name: o.market.name,
-        address: o.market.address,
-    } : null,
-    deliverer: o.deliverer ? {
-        id: String(o.deliverer.id),
-        name: o.deliverer.name,
-        phone: o.deliverer.phone,
-        vehicle: {
-            type: o.deliverer.vehicle.type,
-            plate: o.deliverer.vehicle.plate ?? null,
-        },
-    } : null,
     createdAt: o.createdAt ? (o.createdAt instanceof Date ? o.createdAt : new Date(o.createdAt)) : undefined,
     updatedAt: o.updatedAt ? (o.updatedAt instanceof Date ? o.updatedAt : new Date(o.updatedAt)) : undefined,
 }); 

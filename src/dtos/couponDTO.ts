@@ -42,10 +42,6 @@ export type CouponResponseDTO = {
     validFrom: Date;
     validUntil?: Date | null;
     marketId?: string | null;
-    market?: {
-        id: string;
-        name: string;
-    } | null;
     createdAt: Date;
     updatedAt: Date;
 };
@@ -65,10 +61,6 @@ export const toCouponResponseDTO = (coupon: any): CouponResponseDTO => ({
     validFrom: coupon.validFrom,
     validUntil: coupon.validUntil,
     marketId: coupon.marketId,
-    market: coupon.market ? {
-        id: coupon.market.id,
-        name: coupon.market.name
-    } : null,
     createdAt: coupon.createdAt,
     updatedAt: coupon.updatedAt
 }); 
