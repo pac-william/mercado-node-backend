@@ -13,25 +13,41 @@ class ProductElasticSearch {
         bool: {
           must: [
             {
-              match: {
+              match_phrase: {
                 name: {
                   query: productName,
-                  fuzziness: "AUTO" // apenas para nome do produto
+                  slop: 2 // Permite pequena flexibilidade na ordem/frase
                 }
               }
             }
           ],
+          should: [
+            {
+              match: {
+                name: {
+                  query: productName,
+                  boost: 2.0 // Aumenta peso para correspondências próximas
+                }
+              }
+            },
+            {
+              term: {
+                "name.keyword": productName // Correspondência exata para o nome
+              }
+            }
+          ],
+          minimum_should_match: 1,
           filter: [
             {
               term: {
-                "categoryName.keyword": categoryName // filtro exato
+                "categoryName.keyword": categoryName // Filtro exato por categoria
               }
             }
           ]
         }
-      }
+      },
+      min_score: 0.5 // Limiar mínimo de relevância
     };
-
     // Chamada ao Elasticsearch
     const response = await fetch(`${process.env.ELASTICSEARCH_URL}/produtos/_search`, {
       method: "POST",
