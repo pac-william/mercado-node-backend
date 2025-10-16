@@ -140,3 +140,11 @@ enum CouponType {
   PERCENTAGE
   FIXED
 }
+
+model Suggestion {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  task        String
+  data        Json     // JSON com os dados da sugestão
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

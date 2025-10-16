@@ -1,0 +1,38 @@
+import { PrismaClient } from "@prisma/client";
+import { Logger } from "../utils/logger";
+
+const prisma = new PrismaClient();
+
+export class SuggestionRepository {
+    async create(task: string, data: any) {
+        Logger.debug('SuggestionRepository', 'create', { task, dataSize: JSON.stringify(data).length });
+        
+        const suggestion = await prisma.suggestion.create({
+            data: {
+                task,
+                data
+            }
+        });
+
+        Logger.successOperation('SuggestionRepository', 'create');
+        return suggestion;
+    }
+
+    async findById(id: string) {
+        Logger.debug('SuggestionRepository', 'findById', { id });
+        
+        const suggestion = await prisma.suggestion.findUnique({
+            where: { id }
+        });
+
+        if (!suggestion) {
+            Logger.warn('SuggestionRepository', 'findById - Suggestion not found', { id });
+            return null;
+        }
+
+        Logger.successOperation('SuggestionRepository', 'findById');
+        return suggestion;
+    }
+}
+
+export const suggestionRepository = new SuggestionRepository();
