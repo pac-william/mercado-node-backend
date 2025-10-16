@@ -174,12 +174,24 @@ export const suggestionPaths = {
 };
 
 export const suggestionSchemas = {
+    "SuggestionListItem": {
+        "type": "object",
+        "properties": {
+            "id": {
+                "type": "string",
+                "description": "ID da sugestão",
+                "example": "507f1f77bcf86cd799439011"
+            }
+        },
+        "required": ["id"],
+        "additionalProperties": false
+    },
     "SuggestionPaginatedResponse": {
         "type": "object",
         "properties": {
             "suggestions": {
                 "type": "array",
-                "items": { "$ref": "#/components/schemas/Suggestion" }
+                "items": { "$ref": "#/components/schemas/SuggestionListItem" }
             },
             "meta": {
                 "type": "object",

@@ -10,9 +10,15 @@ export class Suggestion {
     ) { }
 }
 
+export class SuggestionListItem {
+    constructor(
+        public id: string
+    ) { }
+}
+
 export class SuggestionPaginatedResponse {
     constructor(
-        public suggestions: Suggestion[],
+        public suggestions: SuggestionListItem[],
         public meta: Meta,
     ) { }
 }

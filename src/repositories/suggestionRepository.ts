@@ -40,7 +40,10 @@ export class SuggestionRepository {
         const suggestions = await prisma.suggestion.findMany({
             skip: (page - 1) * size,
             take: size,
-            orderBy: { createdAt: 'desc' }
+            orderBy: { createdAt: 'desc' },
+            select: {
+                id: true
+            }
         });
 
         Logger.successOperation('SuggestionRepository', 'findAll');
