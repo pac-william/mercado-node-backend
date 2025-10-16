@@ -1,5 +1,61 @@
 export const suggestionPaths = {
     "/api/v1/suggestions": {
+        "get": {
+            "tags": ["Suggestions"],
+            "summary": "Listar todas as sugestões",
+            "description": "Retorna uma lista paginada de todas as sugestões salvas no banco de dados.",
+            "security": [{ "BearerAuth": [] }],
+            "parameters": [
+                {
+                    "name": "page",
+                    "in": "query",
+                    "required": false,
+                    "description": "Número da página",
+                    "schema": {
+                        "type": "integer",
+                        "default": 1,
+                        "minimum": 1,
+                        "example": 1
+                    }
+                },
+                {
+                    "name": "size",
+                    "in": "query",
+                    "required": false,
+                    "description": "Quantidade de itens por página",
+                    "schema": {
+                        "type": "integer",
+                        "default": 10,
+                        "minimum": 1,
+                        "maximum": 100,
+                        "example": 10
+                    }
+                }
+            ],
+            "responses": {
+                "200": {
+                    "description": "Sugestões retornadas com sucesso",
+                    "content": {
+                        "application/json": {
+                            "schema": { "$ref": "#/components/schemas/SuggestionPaginatedResponse" }
+                        }
+                    }
+                },
+                "500": {
+                    "description": "Erro interno do servidor",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string", "example": "Erro interno do servidor" }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "post": {
             "tags": ["Suggestions"],
             "summary": "Criar sugestões de produtos",
@@ -118,6 +174,48 @@ export const suggestionPaths = {
 };
 
 export const suggestionSchemas = {
+    "SuggestionPaginatedResponse": {
+        "type": "object",
+        "properties": {
+            "suggestions": {
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/Suggestion" }
+            },
+            "meta": {
+                "type": "object",
+                "properties": {
+                    "page": {
+                        "type": "integer",
+                        "description": "Página atual",
+                        "example": 1
+                    },
+                    "size": {
+                        "type": "integer",
+                        "description": "Itens por página",
+                        "example": 10
+                    },
+                    "total": {
+                        "type": "integer",
+                        "description": "Total de itens",
+                        "example": 50
+                    },
+                    "totalPages": {
+                        "type": "integer",
+                        "description": "Total de páginas",
+                        "example": 5
+                    },
+                    "totalItems": {
+                        "type": "integer",
+                        "description": "Total de itens",
+                        "example": 50
+                    }
+                },
+                "required": ["page", "size", "total", "totalPages", "totalItems"]
+            }
+        },
+        "required": ["suggestions", "meta"],
+        "additionalProperties": false
+    },
     "SuggestionCreateResponse": {
         "type": "object",
         "properties": {

@@ -2,8 +2,55 @@ import { Request, Response } from "express";
 import aiProcessor from "../factory/aiProcessor";
 import { suggestionService } from "../services/suggestionService";
 import { Logger } from "../utils/logger";
+import { QueryBuilder } from "../utils/queryBuilder";
 
 export class SuggestionController {
+    async getSuggestions(req: Request, res: Response) {
+        Logger.controller('Suggestion', 'getSuggestions', 'req: Request, res: Response', { 
+            body: req.body, 
+            query: req.query,
+            params: req.params 
+        });
+        
+        try {
+            const { page, size } = QueryBuilder.from(req.query)
+                .withNumber('page', 1)
+                .withNumber('size', 10)
+                .build();
+
+            Logger.debug('SuggestionController', 'getSuggestions - Query parsed', { page, size });
+
+            const result = await suggestionService.getSuggestions(page, size);
+            
+            Logger.successOperation('SuggestionController', 'getSuggestions');
+            Logger.debug('SuggestionController', 'getSuggestions - Suggestions fetched', { 
+                totalSuggestions: result.meta.total,
+                currentPage: result.meta.page,
+                totalPages: result.meta.totalPages
+            });
+            
+            return res.status(200).json(result);
+        } catch (error: any) {
+            const errorDetails = {
+                message: error.message,
+                stack: error.stack,
+                name: error.name,
+                code: error.code,
+                status: error.status,
+                response: error.response?.data || error.response,
+                timestamp: new Date().toISOString()
+            };
+
+            Logger.errorOperation('SuggestionController', 'getSuggestions', error, 'fetch failed');
+            Logger.error('SuggestionController', 'getSuggestions - Detailed error info', errorDetails);
+            
+            return res.status(500).json({ 
+                message: `Erro interno do servidor: ${error.message}`,
+                error: process.env.NODE_ENV === 'development' ? errorDetails : undefined
+            });
+        }
+    }
+
     async createSuggestions(req: Request, res: Response) {
         Logger.controller('Suggestion', 'createSuggestions', 'req: Request, res: Response', { 
             body: req.body, 

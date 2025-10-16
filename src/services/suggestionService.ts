@@ -1,3 +1,5 @@
+import { Meta } from "../domain/metaDomain";
+import { SuggestionPaginatedResponse } from "../domain/suggestionDomain";
 import { suggestionRepository } from "../repositories/suggestionRepository";
 import { Logger } from "../utils/logger";
 
@@ -22,6 +24,16 @@ export class SuggestionService {
 
         Logger.successOperation('SuggestionService', 'getSuggestionById');
         return suggestion;
+    }
+
+    async getSuggestions(page: number, size: number) {
+        Logger.debug('SuggestionService', 'getSuggestions', { page, size });
+        
+        const count = await suggestionRepository.count();
+        const suggestions = await suggestionRepository.findAll(page, size);
+        
+        Logger.successOperation('SuggestionService', 'getSuggestions');
+        return new SuggestionPaginatedResponse(suggestions, new Meta(page, size, count, Math.ceil(count / size), count));
     }
 }
 
