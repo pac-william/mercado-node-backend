@@ -214,6 +214,150 @@ class AuthService {
             throw new Error('Refresh token inválido ou expirado');
         }
     }
+
+    async getUserProfile(userId: string) {
+        try {
+            const user = await prisma.user.findUnique({
+                where: { id: userId }
+            });
+
+            if (!user) {
+                throw new Error('Usuário não encontrado');
+            }
+
+            let market = null;
+            if (user.marketId) {
+                market = await prisma.market.findUnique({
+                    where: { id: user.marketId },
+                    select: {
+                        id: true,
+                        name: true,
+                        address: true,
+                        profilePicture: true
+                    }
+                });
+            }
+
+            return {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                marketId: user.marketId,
+                market: market,
+                createdAt: user.createdAt,
+                updatedAt: user.updatedAt
+            };
+        } catch (error) {
+            Logger.errorOperation('AuthService', 'getUserProfile', error);
+            throw error;
+        }
+    }
+
+    async updateUserProfile(userId: string, userData: any) {
+        try {
+            const existingUser = await prisma.user.findUnique({ where: { id: userId } });
+            if (!existingUser) {
+                throw new Error('Usuário não encontrado');
+            }
+
+            if (userData.email && userData.email !== existingUser.email) {
+                const emailInUse = await prisma.user.findUnique({ where: { email: userData.email } });
+                if (emailInUse) {
+                    throw new Error('Email já está em uso');
+                }
+            }
+
+            const updatedUser = await prisma.user.update({
+                where: { id: userId },
+                data: {
+                    name: userData.name,
+                    email: userData.email,
+                    ...(userData.password && { password: await bcrypt.hash(userData.password, 10) })
+                }
+            });
+
+            let market = null;
+            if (updatedUser.marketId) {
+                market = await prisma.market.findUnique({
+                    where: { id: updatedUser.marketId },
+                    select: {
+                        id: true,
+                        name: true,
+                        address: true,
+                        profilePicture: true
+                    }
+                });
+            }
+
+            return {
+                id: updatedUser.id,
+                name: updatedUser.name,
+                email: updatedUser.email,
+                role: updatedUser.role,
+                marketId: updatedUser.marketId,
+                market: market,
+                createdAt: updatedUser.createdAt,
+                updatedAt: updatedUser.updatedAt
+            };
+        } catch (error) {
+            Logger.errorOperation('AuthService', 'updateUserProfile', error);
+            throw error;
+        }
+    }
+
+    async updateUserProfilePartial(userId: string, userData: any) {
+        try {
+            const existingUser = await prisma.user.findUnique({ where: { id: userId } });
+            if (!existingUser) {
+                throw new Error('Usuário não encontrado');
+            }
+
+            if (userData.email && userData.email !== existingUser.email) {
+                const emailInUse = await prisma.user.findUnique({ where: { email: userData.email } });
+                if (emailInUse) {
+                    throw new Error('Email já está em uso');
+                }
+            }
+
+            const updateData: any = {};
+            if (userData.name) updateData.name = userData.name;
+            if (userData.email) updateData.email = userData.email;
+            if (userData.password) updateData.password = await bcrypt.hash(userData.password, 10);
+
+            const updatedUser = await prisma.user.update({
+                where: { id: userId },
+                data: updateData
+            });
+
+            let market = null;
+            if (updatedUser.marketId) {
+                market = await prisma.market.findUnique({
+                    where: { id: updatedUser.marketId },
+                    select: {
+                        id: true,
+                        name: true,
+                        address: true,
+                        profilePicture: true
+                    }
+                });
+            }
+
+            return {
+                id: updatedUser.id,
+                name: updatedUser.name,
+                email: updatedUser.email,
+                role: updatedUser.role,
+                marketId: updatedUser.marketId,
+                market: market,
+                createdAt: updatedUser.createdAt,
+                updatedAt: updatedUser.updatedAt
+            };
+        } catch (error) {
+            Logger.errorOperation('AuthService', 'updateUserProfilePartial', error);
+            throw error;
+        }
+    }
 }
 
 export const authService = new AuthService();

@@ -32,7 +32,7 @@ export class SuggestionService {
         const count = await suggestionRepository.count();
         const suggestionsData = await suggestionRepository.findAll(page, size);
         
-        const suggestions = suggestionsData.map(s => new SuggestionListItem(s.id));
+        const suggestions = suggestionsData.map((s: any) => new SuggestionListItem(s.id));
         
         Logger.successOperation('SuggestionService', 'getSuggestions');
         return new SuggestionPaginatedResponse(suggestions, new Meta(page, size, count, Math.ceil(count / size), count));
