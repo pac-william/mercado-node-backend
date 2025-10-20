@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { authService } from "../services/authService";
 import { AuthLoginDTO, AuthRegisterUserDTO, AuthLinkUserToMarketDTO, AuthCreateMarketDTO } from "../dtos/authDTO";
-import { toProfileResponseDTO } from "../dtos/userDTO";
+import { toProfileResponseDTO, ProfileUpdateDTO } from "../dtos/userDTO";
 import { Logger } from "../utils/logger";
 
 export class AuthController {
@@ -222,7 +222,8 @@ export class AuthController {
                 return res.status(401).json({ message: "Usuário não autenticado" });
             }
 
-            const user = await authService.updateUserProfile(userId, req.body);
+            const profileUpdateDTO = ProfileUpdateDTO.parse(req.body);
+            const user = await authService.updateUserProfile(userId, profileUpdateDTO);
             Logger.successOperation('AuthController', 'updateMe', userId);
             return res.status(200).json(toProfileResponseDTO(user));
         } catch (error) {
@@ -245,7 +246,8 @@ export class AuthController {
                 return res.status(401).json({ message: "Usuário não autenticado" });
             }
 
-            const user = await authService.updateUserProfilePartial(userId, req.body);
+            const profileUpdateDTO = ProfileUpdateDTO.parse(req.body);
+            const user = await authService.updateUserProfilePartial(userId, profileUpdateDTO);
             Logger.successOperation('AuthController', 'updateMePartial', userId);
             return res.status(200).json(toProfileResponseDTO(user));
         } catch (error) {

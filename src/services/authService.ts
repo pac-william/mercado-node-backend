@@ -242,6 +242,11 @@ class AuthService {
                 id: user.id,
                 name: user.name,
                 email: user.email,
+                phone: user.phone,
+                profilePicture: user.profilePicture,
+                birthDate: user.birthDate,
+                gender: user.gender,
+                address: user.address,
                 role: user.role,
                 marketId: user.marketId,
                 market: market,
@@ -273,6 +278,11 @@ class AuthService {
                 data: {
                     name: userData.name,
                     email: userData.email,
+                    phone: userData.phone,
+                    profilePicture: userData.profilePicture,
+                    birthDate: userData.birthDate ? new Date(userData.birthDate) : undefined,
+                    gender: userData.gender,
+                    address: userData.address,
                     ...(userData.password && { password: await bcrypt.hash(userData.password, 10) })
                 }
             });
@@ -294,6 +304,11 @@ class AuthService {
                 id: updatedUser.id,
                 name: updatedUser.name,
                 email: updatedUser.email,
+                phone: updatedUser.phone,
+                profilePicture: updatedUser.profilePicture,
+                birthDate: updatedUser.birthDate,
+                gender: updatedUser.gender,
+                address: updatedUser.address,
                 role: updatedUser.role,
                 marketId: updatedUser.marketId,
                 market: market,
@@ -323,6 +338,11 @@ class AuthService {
             const updateData: any = {};
             if (userData.name) updateData.name = userData.name;
             if (userData.email) updateData.email = userData.email;
+            if (userData.phone) updateData.phone = userData.phone;
+            if (userData.profilePicture) updateData.profilePicture = userData.profilePicture;
+            if (userData.birthDate) updateData.birthDate = new Date(userData.birthDate);
+            if (userData.gender) updateData.gender = userData.gender;
+            if (userData.address) updateData.address = userData.address;
             if (userData.password) updateData.password = await bcrypt.hash(userData.password, 10);
 
             const updatedUser = await prisma.user.update({
@@ -347,6 +367,11 @@ class AuthService {
                 id: updatedUser.id,
                 name: updatedUser.name,
                 email: updatedUser.email,
+                phone: updatedUser.phone,
+                profilePicture: updatedUser.profilePicture,
+                birthDate: updatedUser.birthDate,
+                gender: updatedUser.gender,
+                address: updatedUser.address,
                 role: updatedUser.role,
                 marketId: updatedUser.marketId,
                 market: market,
