@@ -383,6 +383,153 @@ class AuthService {
             throw error;
         }
     }
+
+    async uploadProfilePicture(userId: string, file: any) {
+        try {
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            if (!allowedTypes.includes(file.mimetype)) {
+                throw new Error('Formato de arquivo não suportado. Use JPEG, PNG, GIF ou WebP');
+            }
+
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            if (file.size > maxSize) {
+                throw new Error('Arquivo muito grande. Tamanho máximo: 5MB');
+            }
+
+            const fileName = `profile_${userId}_${Date.now()}.${file.originalname.split('.').pop()}`;
+            const filePath = `uploads/profiles/${fileName}`;
+            
+            const fs = require('fs');
+            const path = require('path');
+            
+            const uploadDir = path.join(process.cwd(), 'uploads', 'profiles');
+            if (!fs.existsSync(uploadDir)) {
+                fs.mkdirSync(uploadDir, { recursive: true });
+            }
+
+            fs.writeFileSync(path.join(uploadDir, fileName), file.buffer);
+
+            const profilePictureUrl = `/uploads/profiles/${fileName}`;
+
+            await prisma.user.update({
+                where: { id: userId },
+                data: { profilePicture: profilePictureUrl }
+            });
+
+            return profilePictureUrl;
+        } catch (error) {
+            Logger.errorOperation('AuthService', 'uploadProfilePicture', error);
+            throw error;
+        }
+    }
+
+    async getProfileHistory(userId: string) {
+        try {
+            const user = await prisma.user.findUnique({
+                where: { id: userId },
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    createdAt: true,
+                    updatedAt: true
+                }
+            });
+
+            if (!user) {
+                throw new Error('Usuário não encontrado');
+            }
+
+            return {
+                userId: user.id,
+                name: user.name,
+                email: user.email,
+                createdAt: user.createdAt,
+                lastUpdated: user.updatedAt,
+                changes: [
+                    {
+                        field: 'account',
+                        action: 'created',
+                        timestamp: user.createdAt,
+                        description: 'Conta criada'
+                    }
+                ]
+            };
+        } catch (error) {
+            Logger.errorOperation('AuthService', 'getProfileHistory', error);
+            throw error;
+        }
+    }
+
+    async requestEmailConfirmation(userId: string, newEmail: string) {
+        try {
+            const existingUser = await prisma.user.findUnique({ where: { id: userId } });
+            if (!existingUser) {
+                throw new Error('Usuário não encontrado');
+            }
+
+            const emailInUse = await prisma.user.findUnique({ where: { email: newEmail } });
+            if (emailInUse) {
+                throw new Error('Email já está em uso');
+            }
+
+            const confirmationToken = require('crypto').randomBytes(32).toString('hex');
+            const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 horas
+
+            // Aqui você implementaria o envio do email
+            // Por enquanto, apenas logamos a ação
+            Logger.info('AuthService', 'requestEmailConfirmation', {
+                userId,
+                newEmail,
+                token: confirmationToken,
+                expiresAt
+            });
+
+            return {
+                message: 'Email de confirmação será enviado',
+                token: confirmationToken, // Em produção, não retornar o token
+                expiresAt
+            };
+        } catch (error) {
+            Logger.errorOperation('AuthService', 'requestEmailConfirmation', error);
+            throw error;
+        }
+    }
+
+    async confirmEmailChange(token: string) {
+        try {
+            // Em produção, você validaria o token contra um banco de dados
+            // Por enquanto, simulamos a validação
+            if (!token || token.length < 32) {
+                throw new Error('Token inválido');
+            }
+
+            // Simular validação de token expirado
+            const tokenAge = Date.now() - parseInt(token.substring(0, 13), 16);
+            if (tokenAge > 24 * 60 * 60 * 1000) { // 24 horas
+                throw new Error('Token expirado');
+            }
+
+            // Simular extração de dados do token
+            const userId = 'user_id_from_token';
+            const newEmail = 'new_email_from_token';
+
+            const updatedUser = await prisma.user.update({
+                where: { id: userId },
+                data: { email: newEmail }
+            });
+
+            return {
+                id: updatedUser.id,
+                name: updatedUser.name,
+                email: updatedUser.email,
+                updatedAt: updatedUser.updatedAt
+            };
+        } catch (error) {
+            Logger.errorOperation('AuthService', 'confirmEmailChange', error);
+            throw error;
+        }
+    }
 }
 
 export const authService = new AuthService();

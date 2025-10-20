@@ -261,6 +261,113 @@ export class AuthController {
             return res.status(500).json({ message: "Erro interno do servidor" });
         }
     }
+
+    async uploadProfilePicture(req: Request, res: Response) {
+        Logger.controller('Auth', 'uploadProfilePicture', 'files', (req as any).files);
+        try {
+            const userId = (req as any).user?.id;
+            if (!userId) {
+                return res.status(401).json({ message: "Usuário não autenticado" });
+            }
+
+            const file = (req as any).file;
+            if (!file) {
+                return res.status(400).json({ message: "Arquivo de imagem é obrigatório" });
+            }
+
+            const profilePictureUrl = await authService.uploadProfilePicture(userId, file);
+            Logger.successOperation('AuthController', 'uploadProfilePicture', userId);
+            return res.status(200).json({ 
+                message: "Foto de perfil atualizada com sucesso",
+                profilePicture: profilePictureUrl 
+            });
+        } catch (error) {
+            Logger.errorOperation('AuthController', 'uploadProfilePicture', error);
+            if (error instanceof Error && error.message === "Usuário não encontrado") {
+                return res.status(404).json({ message: error.message });
+            }
+            if (error instanceof Error && error.message.includes("Formato de arquivo não suportado")) {
+                return res.status(400).json({ message: error.message });
+            }
+            return res.status(500).json({ message: "Erro interno do servidor" });
+        }
+    }
+
+    async getProfileHistory(req: Request, res: Response) {
+        Logger.controller('Auth', 'getProfileHistory', 'user', { userId: (req as any).user?.id });
+        try {
+            const userId = (req as any).user?.id;
+            if (!userId) {
+                return res.status(401).json({ message: "Usuário não autenticado" });
+            }
+
+            const history = await authService.getProfileHistory(userId);
+            Logger.successOperation('AuthController', 'getProfileHistory', userId);
+            return res.status(200).json(history);
+        } catch (error) {
+            Logger.errorOperation('AuthController', 'getProfileHistory', error);
+            if (error instanceof Error && error.message === "Usuário não encontrado") {
+                return res.status(404).json({ message: error.message });
+            }
+            return res.status(500).json({ message: "Erro interno do servidor" });
+        }
+    }
+
+    async requestEmailConfirmation(req: Request, res: Response) {
+        Logger.controller('Auth', 'requestEmailConfirmation', 'body', req.body);
+        try {
+            const userId = (req as any).user?.id;
+            if (!userId) {
+                return res.status(401).json({ message: "Usuário não autenticado" });
+            }
+
+            const { newEmail } = req.body;
+            if (!newEmail) {
+                return res.status(400).json({ message: "Novo email é obrigatório" });
+            }
+
+            await authService.requestEmailConfirmation(userId, newEmail);
+            Logger.successOperation('AuthController', 'requestEmailConfirmation', userId);
+            return res.status(200).json({ 
+                message: "Email de confirmação enviado para o novo endereço" 
+            });
+        } catch (error) {
+            Logger.errorOperation('AuthController', 'requestEmailConfirmation', error);
+            if (error instanceof Error && error.message === "Usuário não encontrado") {
+                return res.status(404).json({ message: error.message });
+            }
+            if (error instanceof Error && error.message === "Email já está em uso") {
+                return res.status(409).json({ message: error.message });
+            }
+            return res.status(500).json({ message: "Erro interno do servidor" });
+        }
+    }
+
+    async confirmEmailChange(req: Request, res: Response) {
+        Logger.controller('Auth', 'confirmEmailChange', 'body', req.body);
+        try {
+            const { token } = req.body;
+            if (!token) {
+                return res.status(400).json({ message: "Token de confirmação é obrigatório" });
+            }
+
+            const result = await authService.confirmEmailChange(token);
+            Logger.successOperation('AuthController', 'confirmEmailChange');
+            return res.status(200).json({ 
+                message: "Email alterado com sucesso",
+                user: result 
+            });
+        } catch (error) {
+            Logger.errorOperation('AuthController', 'confirmEmailChange', error);
+            if (error instanceof Error && error.message.includes("Token inválido")) {
+                return res.status(400).json({ message: error.message });
+            }
+            if (error instanceof Error && error.message.includes("Token expirado")) {
+                return res.status(400).json({ message: error.message });
+            }
+            return res.status(500).json({ message: "Erro interno do servidor" });
+        }
+    }
 }
 
 export const authController = new AuthController();

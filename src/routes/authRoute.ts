@@ -20,4 +20,10 @@ router.get('/me', authenticate, authController.getMe);
 router.put('/me', authenticate, authController.updateMe);
 router.patch('/me', authenticate, authController.updateMePartial);
 
+// Rotas de funcionalidades de perfil
+router.post('/me/upload-picture', authenticate, authController.uploadProfilePicture);
+router.get('/me/history', authenticate, authController.getProfileHistory);
+router.post('/me/request-email-confirmation', authenticate, authController.requestEmailConfirmation);
+router.post('/me/confirm-email-change', authController.confirmEmailChange);
+
 export default router;
