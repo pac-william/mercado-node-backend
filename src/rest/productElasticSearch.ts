@@ -6,48 +6,57 @@ class ProductElasticSearch {
     categoryName: string // categoria que vem do banco
   ) {
     // Monta a query do Elasticsearch
-    const esQuery = {
-      from: (page - 1) * size,
-      size: size,
-      query: {
-        bool: {
-          must: [
-            {
-              match_phrase: {
-                name: {
-                  query: productName,
-                  slop: 2 // Permite pequena flexibilidade na ordem/frase
+
+    let esQuery;
+
+    if (categoryName) {
+      esQuery = {
+        from: (page - 1) * size,
+        size: size,
+        query: {
+          bool: {
+            must: [
+              {
+                match: {
+                  name: {
+                    query: productName,
+                    fuzziness: "AUTO" // apenas para nome do produto
+                  }
                 }
               }
-            }
-          ],
-          should: [
-            {
-              match: {
-                name: {
-                  query: productName,
-                  boost: 2.0 // Aumenta peso para correspondências próximas
+            ],
+            filter: [
+              {
+                term: {
+                  "categoryName.keyword": categoryName // filtro exato
                 }
               }
-            },
-            {
-              term: {
-                "name.keyword": productName // Correspondência exata para o nome
-              }
-            }
-          ],
-          minimum_should_match: 1,
-          filter: [
-            {
-              term: {
-                "categoryName.keyword": categoryName // Filtro exato por categoria
-              }
-            }
-          ]
+            ]
+          }
         }
-      },
-      min_score: 0.5 // Limiar mínimo de relevância
-    };
+      };
+
+    } else {
+      esQuery = {
+        from: (page - 1) * size,
+        size: size,
+        query: {
+          bool: {
+            must: [
+              {
+                match: {
+                  name: {
+                    query: productName,
+                    fuzziness: "AUTO" // apenas para nome do produto
+                  }
+                }
+              }
+            ]
+          }
+        }
+      };
+    }
+
     // Chamada ao Elasticsearch
     const response = await fetch(`${process.env.ELASTICSEARCH_URL}/produtos/_search`, {
       method: "POST",

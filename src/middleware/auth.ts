@@ -84,3 +84,18 @@ export const requireMarketOwnership = (req: AuthenticatedRequest, res: Response,
 
     next();
 };
+
+export const requireSelfAccess = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    if (!req.user) {
+        Logger.warn('AuthMiddleware', 'requireSelfAccess', 'User not authenticated');
+        return res.status(401).json({ message: 'Usuário não autenticado' });
+    }
+
+    const requestedUserId = req.params.userId || req.params.id;
+    if (requestedUserId && req.user.id !== requestedUserId) {
+        Logger.warn('AuthMiddleware', 'requireSelfAccess', `User ${req.user.id} attempted to access another user's data (${requestedUserId})`);
+        return res.status(403).json({ message: 'Acesso negado: você só pode acessar seus próprios dados' });
+    }
+
+    next();
+};
