@@ -24,9 +24,9 @@ class AddressService {
         Logger.service('AddressService', 'getAddressesByUserId', 'userId', userId);
         
         const addresses = await addressRepository.getAddressesByUserId(userId, page, size);
-        const total = await addressRepository.getAddressCountByUserId(userId);
-        const favorites = addresses.filter(addr => addr.isFavorite).length;
-        const active = addresses.filter(addr => addr.isActive).length;
+            const total = await addressRepository.getAddressCountByUserId(userId);
+            const favorites = addresses.filter((addr: any) => addr.isFavorite).length;
+            const active = addresses.filter((addr: any) => addr.isActive).length;
         
         Logger.successOperation('AddressService', 'getAddressesByUserId', `${addresses.length} addresses found`);
         return { addresses, total, favorites, active };
@@ -341,7 +341,7 @@ class AddressService {
         try {
             const addresses = await addressRepository.getActiveAddressesByUserId('dummy');
             
-            const nearbyAddresses = addresses.filter(address => {
+            const nearbyAddresses = addresses.filter((address: any) => {
                 if (!address.geolocation) return false;
                 
                 const distance = this.calculateDistance(
