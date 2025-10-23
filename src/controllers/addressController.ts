@@ -189,6 +189,139 @@ export class AddressController {
             return res.status(500).json({ message: "Erro interno do servidor" });
         }
     }
+
+    async searchByZipCode(req: Request, res: Response) {
+        Logger.controller('Address', 'searchByZipCode', 'params', req.params);
+        try {
+            const { zipCode } = req.params;
+            const result = await addressService.searchByZipCode(zipCode);
+            Logger.successOperation('AddressController', 'searchByZipCode', zipCode);
+            return res.status(200).json(result);
+        } catch (error) {
+            Logger.errorOperation('AddressController', 'searchByZipCode', error);
+            if (error instanceof Error && error.message.includes("CEP não encontrado")) {
+                return res.status(404).json({ message: error.message });
+            }
+            return res.status(500).json({ message: "Erro interno do servidor" });
+        }
+    }
+
+    async validateAddress(req: Request, res: Response) {
+        Logger.controller('Address', 'validateAddress', 'body', req.body);
+        try {
+            const result = await addressService.validateAddress(req.body);
+            Logger.successOperation('AddressController', 'validateAddress', result.isValid ? 'valid' : 'invalid');
+            return res.status(200).json(result);
+        } catch (error) {
+            Logger.errorOperation('AddressController', 'validateAddress', error);
+            return res.status(500).json({ message: "Erro interno do servidor" });
+        }
+    }
+
+    async getAddressHistory(req: Request, res: Response) {
+        Logger.controller('Address', 'getAddressHistory', 'params', req.params);
+        try {
+            const userId = (req as any).user?.id;
+            if (!userId) {
+                return res.status(401).json({ message: "Usuário não autenticado" });
+            }
+
+            const { id } = req.params;
+            const result = await addressService.getAddressHistory(userId, id);
+            Logger.successOperation('AddressController', 'getAddressHistory', id);
+            return res.status(200).json(result);
+        } catch (error) {
+            Logger.errorOperation('AddressController', 'getAddressHistory', error);
+            if (error instanceof Error && error.message === "Endereço não encontrado") {
+                return res.status(404).json({ message: error.message });
+            }
+            return res.status(500).json({ message: "Erro interno do servidor" });
+        }
+    }
+
+    async softDeleteAddress(req: Request, res: Response) {
+        Logger.controller('Address', 'softDeleteAddress', 'params', req.params);
+        try {
+            const userId = (req as any).user?.id;
+            if (!userId) {
+                return res.status(401).json({ message: "Usuário não autenticado" });
+            }
+
+            const { id } = req.params;
+            const address = await addressService.softDeleteAddress(id, userId);
+            Logger.successOperation('AddressController', 'softDeleteAddress', address.id);
+            return res.status(200).json(toAddressResponseDTO(address));
+        } catch (error) {
+            Logger.errorOperation('AddressController', 'softDeleteAddress', error);
+            if (error instanceof Error && error.message === "Endereço não encontrado") {
+                return res.status(404).json({ message: error.message });
+            }
+            return res.status(500).json({ message: "Erro interno do servidor" });
+        }
+    }
+
+    async restoreAddress(req: Request, res: Response) {
+        Logger.controller('Address', 'restoreAddress', 'params', req.params);
+        try {
+            const userId = (req as any).user?.id;
+            if (!userId) {
+                return res.status(401).json({ message: "Usuário não autenticado" });
+            }
+
+            const { id } = req.params;
+            const address = await addressService.restoreAddress(id, userId);
+            Logger.successOperation('AddressController', 'restoreAddress', address.id);
+            return res.status(200).json(toAddressResponseDTO(address));
+        } catch (error) {
+            Logger.errorOperation('AddressController', 'restoreAddress', error);
+            if (error instanceof Error && error.message === "Endereço não encontrado") {
+                return res.status(404).json({ message: error.message });
+            }
+            return res.status(500).json({ message: "Erro interno do servidor" });
+        }
+    }
+
+    async getAddressWithGeolocation(req: Request, res: Response) {
+        Logger.controller('Address', 'getAddressWithGeolocation', 'params', req.params);
+        try {
+            const userId = (req as any).user?.id;
+            if (!userId) {
+                return res.status(401).json({ message: "Usuário não autenticado" });
+            }
+
+            const { id } = req.params;
+            const address = await addressService.getAddressWithGeolocation(id, userId);
+            Logger.successOperation('AddressController', 'getAddressWithGeolocation', address.id);
+            return res.status(200).json(toAddressResponseDTO(address));
+        } catch (error) {
+            Logger.errorOperation('AddressController', 'getAddressWithGeolocation', error);
+            if (error instanceof Error && error.message === "Endereço não encontrado") {
+                return res.status(404).json({ message: error.message });
+            }
+            return res.status(500).json({ message: "Erro interno do servidor" });
+        }
+    }
+
+    async getAddressesNearby(req: Request, res: Response) {
+        Logger.controller('Address', 'getAddressesNearby', 'query', req.query);
+        try {
+            const { latitude, longitude, radius } = req.query;
+            const lat = parseFloat(latitude as string);
+            const lng = parseFloat(longitude as string);
+            const rad = radius ? parseFloat(radius as string) : 5;
+
+            if (isNaN(lat) || isNaN(lng)) {
+                return res.status(400).json({ message: "Latitude e longitude são obrigatórios" });
+            }
+
+            const addresses = await addressService.getAddressesNearby(lat, lng, rad);
+            Logger.successOperation('AddressController', 'getAddressesNearby', `${addresses.length} addresses found`);
+            return res.status(200).json(addresses.map(toAddressResponseDTO));
+        } catch (error) {
+            Logger.errorOperation('AddressController', 'getAddressesNearby', error);
+            return res.status(500).json({ message: "Erro interno do servidor" });
+        }
+    }
 }
 
 export const addressController = new AddressController();
