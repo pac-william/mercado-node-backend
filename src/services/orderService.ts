@@ -8,10 +8,10 @@ import { prisma } from '../utils/prisma';
 import { couponService } from './couponService';
 
 class OrderService {
-    async createOrder(orderDTO: OrderDTO) {
-        Logger.info('OrderService', 'createOrder', `Creating order for user ${orderDTO.userId}`);
+    async createOrder(userId: string, orderDTO: OrderDTO) {
+        Logger.info('OrderService', 'createOrder', `Creating order for user ${userId}`);
 
-        const user = await prisma.user.findUnique({ where: { id: orderDTO.userId } });
+        const user = await prisma.user.findUnique({ where: { id: userId } });
         if (!user) {
             throw new Error('Usuário não encontrado');
         }
@@ -58,6 +58,7 @@ class OrderService {
 
         const orderData = {
             ...orderDTO,
+            userId,
             total,
             discount,
             couponId
@@ -65,7 +66,7 @@ class OrderService {
 
         const order = await orderRepository.createOrder(orderData);
         
-        const cart = await cartRepository.findByUserId(orderDTO.userId);
+        const cart = await cartRepository.findByUserId(userId);
         if (cart) {
             await cartRepository.clearCart(cart.id);
             Logger.info('OrderService', 'createOrder', 'Cart cleared after order creation');

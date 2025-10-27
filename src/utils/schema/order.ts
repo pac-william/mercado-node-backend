@@ -251,7 +251,6 @@ export const orderSchemas = {
     "OrderDTO": {
         "type": "object",
         "properties": {
-            "userId": { "type": "string", "example": "507f1f77bcf86cd799439012" },
             "marketId": { "type": "string", "example": "507f1f77bcf86cd799439013" },
             "addressId": { "type": "string", "example": "507f1f77bcf86cd799439016" },
             "paymentMethod": { 
@@ -273,7 +272,7 @@ export const orderSchemas = {
                 }
             }
         },
-        "required": ["userId", "marketId", "addressId", "paymentMethod", "items"]
+        "required": ["marketId", "addressId", "paymentMethod", "items"]
     },
     "OrderUpdateDTO": {
         "type": "object",

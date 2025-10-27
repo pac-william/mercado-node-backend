@@ -7,7 +7,6 @@ export const OrderItemDTO = z.object({
 });
 
 export const OrderDTO = z.object({
-    userId: z.string({ error: "ID do usuário é obrigatório" }),
     marketId: z.string({ error: "ID do mercado é obrigatório" }),
     addressId: z.string({ error: "ID do endereço é obrigatório" }),
     items: z.array(z.object({
