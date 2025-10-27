@@ -122,97 +122,6 @@ export const addressPaths = {
             }
         }
     },
-    "/api/v1/addresses/favorite": {
-        "get": {
-            "tags": ["Addresses"],
-            "summary": "Buscar endereço favorito",
-            "description": "Retorna o endereço favorito do usuário autenticado",
-            "security": [{ "bearerAuth": [] }],
-            "responses": {
-                "200": {
-                    "description": "Endereço favorito retornado com sucesso",
-                    "content": {
-                        "application/json": {
-                            "schema": { "$ref": "#/components/schemas/AddressResponse" }
-                        }
-                    }
-                },
-                "401": {
-                    "description": "Usuário não autenticado",
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "message": { "type": "string", "example": "Usuário não autenticado" }
-                                }
-                            }
-                        }
-                    }
-                },
-                "500": {
-                    "description": "Erro interno do servidor",
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "message": { "type": "string", "example": "Erro interno do servidor" }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    },
-    "/api/v1/addresses/active": {
-        "get": {
-            "tags": ["Addresses"],
-            "summary": "Buscar endereços ativos",
-            "description": "Retorna todos os endereços ativos do usuário autenticado",
-            "security": [{ "bearerAuth": [] }],
-            "responses": {
-                "200": {
-                    "description": "Endereços ativos retornados com sucesso",
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "array",
-                                "items": { "$ref": "#/components/schemas/AddressResponse" }
-                            }
-                        }
-                    }
-                },
-                "401": {
-                    "description": "Usuário não autenticado",
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "message": { "type": "string", "example": "Usuário não autenticado" }
-                                }
-                            }
-                        }
-                    }
-                },
-                "500": {
-                    "description": "Erro interno do servidor",
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "message": { "type": "string", "example": "Erro interno do servidor" }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    },
     "/api/v1/addresses/{id}": {
         "get": {
             "tags": ["Addresses"],
@@ -512,80 +421,6 @@ export const addressPaths = {
                 }
             }
         }
-    },
-    "/api/v1/addresses/{id}/favorite": {
-        "patch": {
-            "tags": ["Addresses"],
-            "summary": "Definir endereço favorito",
-            "description": "Define um endereço como favorito do usuário autenticado",
-            "security": [{ "bearerAuth": [] }],
-            "parameters": [
-                {
-                    "name": "id",
-                    "in": "path",
-                    "required": true,
-                    "schema": { "type": "string" },
-                    "description": "ID do endereço"
-                }
-            ],
-            "requestBody": {
-                "required": true,
-                "content": {
-                    "application/json": {
-                        "schema": { "$ref": "#/components/schemas/AddressFavoriteRequest" }
-                    }
-                }
-            },
-            "responses": {
-                "200": {
-                    "description": "Endereço favorito definido com sucesso",
-                    "content": {
-                        "application/json": {
-                            "schema": { "$ref": "#/components/schemas/AddressResponse" }
-                        }
-                    }
-                },
-                "401": {
-                    "description": "Usuário não autenticado",
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "message": { "type": "string", "example": "Usuário não autenticado" }
-                                }
-                            }
-                        }
-                    }
-                },
-                "404": {
-                    "description": "Endereço não encontrado",
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "message": { "type": "string", "example": "Endereço não encontrado" }
-                                }
-                            }
-                        }
-                    }
-                },
-                "500": {
-                    "description": "Erro interno do servidor",
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "message": { "type": "string", "example": "Erro interno do servidor" }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
     }
 };
 
@@ -789,17 +624,6 @@ export const addressSchemas = {
             }
         }
     },
-    "AddressFavoriteRequest": {
-        "type": "object",
-        "properties": {
-            "isFavorite": {
-                "type": "boolean",
-                "example": true,
-                "description": "Se é o endereço favorito"
-            }
-        },
-        "required": ["isFavorite"]
-    },
     "AddressListResponse": {
         "type": "object",
         "properties": {
@@ -808,20 +632,35 @@ export const addressSchemas = {
                 "items": { "$ref": "#/components/schemas/AddressResponse" },
                 "description": "Lista de endereços"
             },
-            "total": {
-                "type": "integer",
-                "example": 3,
-                "description": "Total de endereços"
-            },
-            "favorites": {
-                "type": "integer",
-                "example": 1,
-                "description": "Número de endereços favoritos"
-            },
-            "active": {
-                "type": "integer",
-                "example": 3,
-                "description": "Número de endereços ativos"
+            "meta": {
+                "type": "object",
+                "properties": {
+                    "total": {
+                        "type": "integer",
+                        "example": 3,
+                        "description": "Total de endereços"
+                    },
+                    "page": {
+                        "type": "integer",
+                        "example": 1,
+                        "description": "Número da página atual"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "example": 10,
+                        "description": "Tamanho da página"
+                    },
+                    "favorites": {
+                        "type": "integer",
+                        "example": 1,
+                        "description": "Número de endereços favoritos"
+                    },
+                    "active": {
+                        "type": "integer",
+                        "example": 3,
+                        "description": "Número de endereços ativos"
+                    }
+                }
             }
         }
     }

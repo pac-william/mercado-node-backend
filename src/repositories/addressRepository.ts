@@ -1,8 +1,10 @@
 import { AddressCreateDTO, AddressUpdateDTO } from "../dtos/addressDTO";
+import { Logger } from "../utils/logger";
 import { prisma } from "../utils/prisma";
 
 class AddressRepository {
     async createAddress(userId: string, addressDTO: AddressCreateDTO) {
+        Logger.repository('AddressRepository', 'createAddress', 'userId', userId);
         const address = await prisma.address.create({
             data: {
                 ...addressDTO,
