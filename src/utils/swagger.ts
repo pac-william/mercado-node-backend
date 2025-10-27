@@ -1,11 +1,16 @@
+import { addressPaths, addressSchemas, addressTags } from './schema/address';
+import { authPaths, authSchemas, authTags } from './schema/auth';
+import { cartPaths, cartSchemas, cartTags } from './schema/cart';
+import { cartItemPaths, cartItemSchemas, cartItemTags } from './schema/cartItem';
+import { categoriesPaths, categoriesSchemas, categoriesTags } from './schema/categories';
+import { couponPaths, couponSchemas, couponTags } from './schema/coupon';
+import { delivererPaths, delivererSchemas, delivererTags } from './schema/deliverer';
 import { marketPaths, marketSchemas, marketTags } from './schema/market';
 import { metaSchemas } from './schema/meta';
-import { productPaths, productSchemas, productTags } from './schema/product';
-import { userPaths, userSchemas, userTags } from './schema/user';
-import { categoriesPaths, categoriesSchemas, categoriesTags } from './schema/categories';
-import { delivererPaths, delivererSchemas, delivererTags } from './schema/deliverer';
 import { orderPaths, orderSchemas, orderTags } from './schema/order';
-import { authPaths, authSchemas, authTags } from './schema/auth';
+import { productPaths, productSchemas, productTags } from './schema/product';
+import { suggestionPaths, suggestionSchemas, suggestionTags } from './schema/suggestion';
+import { userPaths, userSchemas, userTags } from './schema/user';
 
 export const swaggerDocument = {
     openapi: '3.0.0',
@@ -34,9 +39,14 @@ export const swaggerDocument = {
             ...productSchemas,
             ...userSchemas,
             ...categoriesSchemas,
+            ...couponSchemas,
             ...delivererSchemas,
             ...orderSchemas,
-            ...authSchemas
+            ...authSchemas,
+            ...suggestionSchemas,
+            ...addressSchemas,
+            ...cartSchemas,
+            ...cartItemSchemas
         },
     },
     tags: [
@@ -44,17 +54,27 @@ export const swaggerDocument = {
         ...productTags,
         ...userTags,
         ...categoriesTags,
+        ...couponTags,
         ...delivererTags,
         ...orderTags,
-        ...authTags
+        ...authTags,
+        ...suggestionTags,
+        ...addressTags,
+        ...cartTags,
+        ...cartItemTags
     ],
     paths: {
         ...marketPaths,
         ...productPaths,
         ...userPaths,
         ...categoriesPaths,
+        ...couponPaths,
         ...delivererPaths,
         ...orderPaths,
-        ...authPaths
+        ...authPaths,
+        ...suggestionPaths,
+        ...addressPaths,
+        ...cartPaths,
+        ...cartItemPaths
     },
 };

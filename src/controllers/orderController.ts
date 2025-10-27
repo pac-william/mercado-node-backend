@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { OrderDTO, OrderUpdateDTO, AssignDelivererDTO, toOrderResponseDTO } from "../dtos/orderDTO";
+import { AssignDelivererDTO, OrderDTO, OrderUpdateDTO, toOrderResponseDTO } from "../dtos/orderDTO";
 import { orderService } from "../services/orderService";
 import { Logger } from "../utils/logger";
 import { QueryBuilder } from "../utils/queryBuilder";
@@ -32,12 +32,26 @@ export class OrderController {
     async createOrder(req: Request, res: Response) {
         Logger.controller('Order', 'createOrder', 'body', req.body);
         try {
+            if (!req.user) {
+                return res.status(401).json({ message: "Usuário não autenticado" });
+            }
+
+            const userId = req.user.id;
             const orderDTO = OrderDTO.parse(req.body);
-            const order = await orderService.createOrder(orderDTO);
+            const order = await orderService.createOrder(userId, orderDTO);
             Logger.successOperation('OrderController', 'createOrder');
             return res.status(201).json(toOrderResponseDTO(order));
         } catch (error) {
             Logger.errorOperation('OrderController', 'createOrder', error);
+            if (error instanceof Error) {
+                if (error.message.includes('não encontrado')) {
+                    return res.status(404).json({ message: error.message });
+                }
+                if (error.message.includes('cupom') || error.message.includes('Cupom')) {
+                    return res.status(400).json({ message: error.message });
+                }
+                return res.status(400).json({ message: error.message });
+            }
             return res.status(500).json({ message: "Erro interno do servidor" });
         }
     }

@@ -5,12 +5,12 @@ dotenv.config({
 
 import cors from 'cors';
 import express from 'express';
+import { readFileSync } from 'fs';
+import path from 'path';
 import swaggerUi from 'swagger-ui-express';
 import routes from './routes';
 import { Logger } from './utils/logger';
 import { swaggerDocument } from './utils/swagger';
-import { readFileSync } from 'fs';
-import path from 'path';
 
 const app = express();
 
@@ -31,6 +31,10 @@ app.use('/api/v1/categories', routes.categoriesRouter);
 app.use('/api/v1/deliverers', routes.delivererRoute);
 app.use('/api/v1/orders', routes.orderRoute);
 app.use('/api/v1/auth', routes.authRoute);
+app.use('/api/v1/suggestions', routes.suggestionRoute);
+app.use('/api/v1/addresses', routes.addressRoute);
+app.use('/api/v1/cart', routes.cartRoute);
+app.use('/api/v1/cart-items', routes.cartItemRoute);
 
 app.get('/health', (_req, res) => {
     let version = 'unknown';

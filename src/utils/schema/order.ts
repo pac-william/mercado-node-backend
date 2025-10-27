@@ -4,6 +4,7 @@ export const orderPaths = {
             "tags": ["Orders"],
             "summary": "Listar pedidos",
             "description": "Retorna uma lista paginada de pedidos com filtros opcionais.",
+            "security": [{ "bearerAuth": [] }],
             "parameters": [
                 {
                     "name": "page",
@@ -60,6 +61,19 @@ export const orderPaths = {
                         }
                     }
                 },
+                "401": {
+                    "description": "Usuário não autenticado",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string", "example": "Usuário não autenticado" }
+                                }
+                            }
+                        }
+                    }
+                },
                 "500": {
                     "description": "Erro interno do servidor"
                 }
@@ -69,6 +83,7 @@ export const orderPaths = {
             "tags": ["Orders"],
             "summary": "Criar pedido",
             "description": "Cria um novo pedido no sistema.",
+            "security": [{ "bearerAuth": [] }],
             "requestBody": {
                 "required": true,
                 "content": {
@@ -87,10 +102,43 @@ export const orderPaths = {
                     }
                 },
                 "400": {
-                    "description": "Erro de validação"
+                    "description": "Erro de validação",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string" }
+                                }
+                            }
+                        }
+                    }
+                },
+                "401": {
+                    "description": "Usuário não autenticado",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string", "example": "Usuário não autenticado" }
+                                }
+                            }
+                        }
+                    }
                 },
                 "500": {
-                    "description": "Erro interno do servidor"
+                    "description": "Erro interno do servidor",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string" }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -100,6 +148,7 @@ export const orderPaths = {
             "tags": ["Orders"],
             "summary": "Buscar pedido por ID",
             "description": "Retorna um pedido específico pelo ID.",
+            "security": [{ "bearerAuth": [] }],
             "parameters": [
                 {
                     "name": "id",
@@ -117,11 +166,44 @@ export const orderPaths = {
                         }
                     }
                 },
+                "401": {
+                    "description": "Usuário não autenticado",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string", "example": "Usuário não autenticado" }
+                                }
+                            }
+                        }
+                    }
+                },
                 "404": {
-                    "description": "Pedido não encontrado"
+                    "description": "Pedido não encontrado",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string" }
+                                }
+                            }
+                        }
+                    }
                 },
                 "500": {
-                    "description": "Erro interno do servidor"
+                    "description": "Erro interno do servidor",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string" }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         },
@@ -129,6 +211,7 @@ export const orderPaths = {
             "tags": ["Orders"],
             "summary": "Atualizar pedido",
             "description": "Atualiza um pedido existente.",
+            "security": [{ "bearerAuth": [] }],
             "parameters": [
                 {
                     "name": "id",
@@ -155,13 +238,56 @@ export const orderPaths = {
                     }
                 },
                 "400": {
-                    "description": "Erro de validação"
+                    "description": "Erro de validação",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string" }
+                                }
+                            }
+                        }
+                    }
+                },
+                "401": {
+                    "description": "Usuário não autenticado",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string", "example": "Usuário não autenticado" }
+                                }
+                            }
+                        }
+                    }
                 },
                 "404": {
-                    "description": "Pedido não encontrado"
+                    "description": "Pedido não encontrado",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string" }
+                                }
+                            }
+                        }
+                    }
                 },
                 "500": {
-                    "description": "Erro interno do servidor"
+                    "description": "Erro interno do servidor",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string" }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -171,6 +297,7 @@ export const orderPaths = {
             "tags": ["Orders"],
             "summary": "Atribuir entregador ao pedido",
             "description": "Atribui um entregador a um pedido específico.",
+            "security": [{ "bearerAuth": [] }],
             "parameters": [
                 {
                     "name": "id",
@@ -197,13 +324,56 @@ export const orderPaths = {
                     }
                 },
                 "400": {
-                    "description": "Erro de validação"
+                    "description": "Erro de validação",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string" }
+                                }
+                            }
+                        }
+                    }
+                },
+                "401": {
+                    "description": "Usuário não autenticado",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string", "example": "Usuário não autenticado" }
+                                }
+                            }
+                        }
+                    }
                 },
                 "404": {
-                    "description": "Pedido ou entregador não encontrado"
+                    "description": "Pedido ou entregador não encontrado",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string" }
+                                }
+                            }
+                        }
+                    }
                 },
                 "500": {
-                    "description": "Erro interno do servidor"
+                    "description": "Erro interno do servidor",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string" }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -218,13 +388,20 @@ export const orderSchemas = {
             "userId": { "type": "string", "example": "507f1f77bcf86cd799439012" },
             "marketId": { "type": "string", "example": "507f1f77bcf86cd799439013" },
             "delivererId": { "type": "string", "example": "507f1f77bcf86cd799439014" },
+            "couponId": { "type": "string", "example": "507f1f77bcf86cd799439015" },
+            "addressId": { "type": "string", "example": "507f1f77bcf86cd799439016" },
             "status": { 
                 "type": "string", 
                 "enum": ["PENDING", "CONFIRMED", "PREPARING", "READY_FOR_DELIVERY", "OUT_FOR_DELIVERY", "DELIVERED", "CANCELLED"],
                 "example": "PENDING" 
             },
             "total": { "type": "number", "format": "float", "example": 45.99 },
-            "deliveryAddress": { "type": "string", "example": "Rua das Flores, 123" },
+            "discount": { "type": "number", "format": "float", "example": 5.00 },
+            "paymentMethod": { 
+                "type": "string", 
+                "enum": ["CREDIT_CARD", "DEBIT_CARD", "PIX", "CASH"],
+                "example": "CREDIT_CARD" 
+            },
             "items": {
                 "type": "array",
                 "items": {
@@ -232,48 +409,8 @@ export const orderSchemas = {
                     "properties": {
                         "id": { "type": "string" },
                         "productId": { "type": "string" },
-                        "product": {
-                            "type": "object",
-                            "properties": {
-                                "id": { "type": "string" },
-                                "name": { "type": "string" },
-                                "price": { "type": "number" },
-                                "unit": { "type": "string" }
-                            }
-                        },
                         "quantity": { "type": "integer" },
                         "price": { "type": "number" }
-                    }
-                }
-            },
-            "user": {
-                "type": "object",
-                "properties": {
-                    "id": { "type": "string" },
-                    "name": { "type": "string" },
-                    "email": { "type": "string" }
-                }
-            },
-            "market": {
-                "type": "object",
-                "properties": {
-                    "id": { "type": "string" },
-                    "name": { "type": "string" },
-                    "address": { "type": "string" }
-                }
-            },
-            "deliverer": {
-                "type": "object",
-                "properties": {
-                    "id": { "type": "string" },
-                    "name": { "type": "string" },
-                    "phone": { "type": "string" },
-                    "vehicle": {
-                        "type": "object",
-                        "properties": {
-                            "type": { "type": "string" },
-                            "plate": { "type": "string" }
-                        }
                     }
                 }
             },
@@ -284,9 +421,14 @@ export const orderSchemas = {
     "OrderDTO": {
         "type": "object",
         "properties": {
-            "userId": { "type": "string", "example": "507f1f77bcf86cd799439012" },
             "marketId": { "type": "string", "example": "507f1f77bcf86cd799439013" },
-            "deliveryAddress": { "type": "string", "example": "Rua das Flores, 123" },
+            "addressId": { "type": "string", "example": "507f1f77bcf86cd799439016" },
+            "paymentMethod": { 
+                "type": "string", 
+                "enum": ["CREDIT_CARD", "DEBIT_CARD", "PIX", "CASH"],
+                "example": "CREDIT_CARD" 
+            },
+            "couponCode": { "type": "string", "example": "DESCONTO10" },
             "items": {
                 "type": "array",
                 "items": {
@@ -300,7 +442,7 @@ export const orderSchemas = {
                 }
             }
         },
-        "required": ["userId", "marketId", "deliveryAddress", "items"]
+        "required": ["marketId", "addressId", "paymentMethod", "items"]
     },
     "OrderUpdateDTO": {
         "type": "object",

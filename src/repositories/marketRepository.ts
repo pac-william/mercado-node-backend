@@ -17,16 +17,6 @@ class MarketRepository {
             where: {
                 name: name ? { contains: name, mode: 'insensitive' } : undefined,
                 address: address ? { contains: address, mode: 'insensitive' } : undefined,
-            },
-            include: {
-                users: {
-                    select: {
-                        id: true,
-                        name: true,
-                        email: true,
-                        role: true
-                    }
-                }
             }
         });
         return markets.map((market) => new Market(
@@ -39,18 +29,7 @@ class MarketRepository {
 
     async getMarketById(id: string) {
         const market = await prisma.market.findUnique({
-            where: { id },
-            include: {
-                products: true,
-                users: {
-                    select: {
-                        id: true,
-                        name: true,
-                        email: true,
-                        role: true
-                    }
-                }
-            },
+            where: { id }
         });
         return market;
     }
@@ -59,17 +38,6 @@ class MarketRepository {
         const market = await prisma.market.update({
             where: { id },
             data: marketDTO,
-            include: {
-                products: true,
-                users: {
-                    select: {
-                        id: true,
-                        name: true,
-                        email: true,
-                        role: true
-                    }
-                }
-            },
         });
         return market;
     }
@@ -78,17 +46,6 @@ class MarketRepository {
         const market = await prisma.market.update({
             where: { id },
             data: marketUpdateDTO,
-            include: {
-                products: true,
-                users: {
-                    select: {
-                        id: true,
-                        name: true,
-                        email: true,
-                        role: true
-                    }
-                }
-            },
         });
         return market;
     }
@@ -96,17 +53,6 @@ class MarketRepository {
     async deleteMarket(id: string) {
         const market = await prisma.market.delete({
             where: { id },
-            include: {
-                products: true,
-                users: {
-                    select: {
-                        id: true,
-                        name: true,
-                        email: true,
-                        role: true
-                    }
-                }
-            },
         });
         return market;
     }

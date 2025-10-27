@@ -1,3 +1,4 @@
+import { Category } from "./categoryDomain";
 import { Meta } from "./metaDomain";
 
 export class Product {
@@ -7,8 +8,9 @@ export class Product {
         public price: number,
         public unit: string,
         public marketId: string,
-        public image?: string,
+        public image?: string | null,
         public categoryId?: string,
+        public category?: Category | null,
     ) { }
 }
 

@@ -7,15 +7,15 @@ export const OrderItemDTO = z.object({
 });
 
 export const OrderDTO = z.object({
-    userId: z.string({ error: "ID do usuário é obrigatório" }),
     marketId: z.string({ error: "ID do mercado é obrigatório" }),
-    deliveryAddress: z.string({ error: "Endereço de entrega é obrigatório" }),
+    addressId: z.string({ error: "ID do endereço é obrigatório" }),
     items: z.array(z.object({
         productId: z.string({ error: "ID do produto é obrigatório" }),
         quantity: z.number().int().positive({ error: "Quantidade deve ser um número inteiro positivo" }),
         price: z.number().positive({ error: "Preço deve ser um número positivo" })
     }), { error: "Itens do pedido são obrigatórios" }),
-    couponCode: z.string().optional() 
+    paymentMethod: z.enum(["CREDIT_CARD", "DEBIT_CARD", "PIX", "CASH"], { error: "Método de pagamento inválido" }),
+    couponCode: z.string().optional()
 });
 
 export type OrderDTO = z.infer<typeof OrderDTO>;
@@ -40,48 +40,17 @@ export type OrderResponseDTO = {
     marketId: string;
     delivererId?: string | null;
     couponId?: string | null;
-    coupon?: {
-        id: string;
-        code: string;
-        name: string;
-        type: string;
-        value: number;
-    } | null;
+    addressId?: string;
     status: string;
     total: number;
     discount?: number | null;
-    deliveryAddress: string;
+    paymentMethod?: string;
     items: Array<{
         id: string;
         productId: string;
-        product: {
-            id: string;
-            name: string;
-            price: number;
-            unit: string;
-        };
         quantity: number;
         price: number;
     }>;
-    user?: {
-        id: string;
-        name: string;
-        email: string;
-    } | null;
-    market?: {
-        id: string;
-        name: string;
-        address: string;
-    } | null;
-    deliverer?: {
-        id: string;
-        name: string;
-        phone: string;
-        vehicle: {
-            type: string;
-            plate?: string | null;
-        };
-    } | null;
     createdAt?: Date;
     updatedAt?: Date;
 };
@@ -92,48 +61,17 @@ export const toOrderResponseDTO = (o: any): OrderResponseDTO => ({
     marketId: String(o.marketId),
     delivererId: o.delivererId ? String(o.delivererId) : null,
     couponId: o.couponId ? String(o.couponId) : null,
-    coupon: o.coupon ? {
-        id: String(o.coupon.id),
-        code: o.coupon.code,
-        name: o.coupon.name,
-        type: o.coupon.type,
-        value: o.coupon.value,
-    } : null,
+    addressId: o.addressId ? String(o.addressId) : undefined,
     status: o.status,
     total: o.total,
     discount: o.discount,
-    deliveryAddress: o.deliveryAddress,
+    paymentMethod: o.paymentMethod,
     items: o.items?.map((item: any) => ({
         id: String(item.id),
         productId: String(item.productId),
-        product: {
-            id: String(item.product.id),
-            name: item.product.name,
-            price: item.product.price,
-            unit: item.product.unit,
-        },
         quantity: item.quantity,
         price: item.price,
     })) || [],
-    user: o.user ? {
-        id: String(o.user.id),
-        name: o.user.name,
-        email: o.user.email,
-    } : null,
-    market: o.market ? {
-        id: String(o.market.id),
-        name: o.market.name,
-        address: o.market.address,
-    } : null,
-    deliverer: o.deliverer ? {
-        id: String(o.deliverer.id),
-        name: o.deliverer.name,
-        phone: o.deliverer.phone,
-        vehicle: {
-            type: o.deliverer.vehicle.type,
-            plate: o.deliverer.vehicle.plate ?? null,
-        },
-    } : null,
     createdAt: o.createdAt ? (o.createdAt instanceof Date ? o.createdAt : new Date(o.createdAt)) : undefined,
     updatedAt: o.updatedAt ? (o.updatedAt instanceof Date ? o.updatedAt : new Date(o.updatedAt)) : undefined,
 }); 

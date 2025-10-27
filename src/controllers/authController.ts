@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
+import { AuthCreateMarketDTO, AuthLinkUserToMarketDTO, AuthLoginDTO, AuthRegisterUserDTO } from "../dtos/authDTO";
+import { ProfileUpdateDTO, toProfileResponseDTO } from "../dtos/userDTO";
 import { authService } from "../services/authService";
-import { AuthLoginDTO, AuthRegisterUserDTO, AuthLinkUserToMarketDTO, AuthCreateMarketDTO } from "../dtos/authDTO";
 import { Logger } from "../utils/logger";
 
 export class AuthController {
@@ -188,6 +189,242 @@ export class AuthController {
             return res.status(200).json({ message: "Logout realizado com sucesso" });
         } catch (error) {
             Logger.errorOperation('AuthController', 'logout', error);
+            return res.status(500).json({ message: "Erro interno do servidor" });
+        }
+    }
+
+    async getMe(req: Request, res: Response) {
+        Logger.controller('Auth', 'getMe', 'user', { userId: (req as any).user?.id });
+        try {
+            const userId = (req as any).user?.id;
+            if (!userId) {
+                return res.status(401).json({ message: "Usuário não autenticado" });
+            }
+
+            const user = await authService.getUserProfile(userId);
+            Logger.successOperation('AuthController', 'getMe', userId);
+            return res.status(200).json(toProfileResponseDTO(user));
+        } catch (error) {
+            Logger.errorOperation('AuthController', 'getMe', error);
+            if (error instanceof Error && error.message === "Usuário não encontrado") {
+                return res.status(404).json({ message: error.message });
+            }
+            return res.status(500).json({ message: "Erro interno do servidor" });
+        }
+    }
+
+    async updateMe(req: Request, res: Response) {
+        Logger.controller('Auth', 'updateMe', 'body', req.body);
+        try {
+            const userId = (req as any).user?.id;
+            if (!userId) {
+                return res.status(401).json({ message: "Usuário não autenticado" });
+            }
+
+            const profileUpdateDTO = ProfileUpdateDTO.parse(req.body);
+            const user = await authService.updateUserProfile(userId, profileUpdateDTO);
+            Logger.successOperation('AuthController', 'updateMe', userId);
+            return res.status(200).json(toProfileResponseDTO(user));
+        } catch (error) {
+            Logger.errorOperation('AuthController', 'updateMe', error);
+            if (error instanceof Error && error.message === "Usuário não encontrado") {
+                return res.status(404).json({ message: error.message });
+            }
+            if (error instanceof Error && error.message === "Email já está em uso") {
+                return res.status(409).json({ message: error.message });
+            }
+            return res.status(500).json({ message: "Erro interno do servidor" });
+        }
+    }
+
+    async updateMePartial(req: Request, res: Response) {
+        Logger.controller('Auth', 'updateMePartial', 'body', req.body);
+        try {
+            const userId = (req as any).user?.id;
+            if (!userId) {
+                return res.status(401).json({ message: "Usuário não autenticado" });
+            }
+
+            const profileUpdateDTO = ProfileUpdateDTO.parse(req.body);
+            const user = await authService.updateUserProfilePartial(userId, profileUpdateDTO);
+            Logger.successOperation('AuthController', 'updateMePartial', userId);
+            return res.status(200).json(toProfileResponseDTO(user));
+        } catch (error) {
+            Logger.errorOperation('AuthController', 'updateMePartial', error);
+            if (error instanceof Error && error.message === "Usuário não encontrado") {
+                return res.status(404).json({ message: error.message });
+            }
+            if (error instanceof Error && error.message === "Email já está em uso") {
+                return res.status(409).json({ message: error.message });
+            }
+            return res.status(500).json({ message: "Erro interno do servidor" });
+        }
+    }
+
+    async uploadProfilePicture(req: Request, res: Response) {
+        Logger.controller('Auth', 'uploadProfilePicture', 'files', (req as any).files);
+        try {
+            const userId = (req as any).user?.id;
+            if (!userId) {
+                return res.status(401).json({ message: "Usuário não autenticado" });
+            }
+
+            const file = (req as any).file;
+            if (!file) {
+                return res.status(400).json({ message: "Arquivo de imagem é obrigatório" });
+            }
+
+            const profilePictureUrl = await authService.uploadProfilePicture(userId, file);
+            Logger.successOperation('AuthController', 'uploadProfilePicture', userId);
+            return res.status(200).json({ 
+                message: "Foto de perfil atualizada com sucesso",
+                profilePicture: profilePictureUrl 
+            });
+        } catch (error) {
+            Logger.errorOperation('AuthController', 'uploadProfilePicture', error);
+            if (error instanceof Error && error.message === "Usuário não encontrado") {
+                return res.status(404).json({ message: error.message });
+            }
+            if (error instanceof Error && error.message.includes("Formato de arquivo não suportado")) {
+                return res.status(400).json({ message: error.message });
+            }
+            return res.status(500).json({ message: "Erro interno do servidor" });
+        }
+    }
+
+    async getProfileHistory(req: Request, res: Response) {
+        Logger.controller('Auth', 'getProfileHistory', 'user', { userId: (req as any).user?.id });
+        try {
+            const userId = (req as any).user?.id;
+            if (!userId) {
+                return res.status(401).json({ message: "Usuário não autenticado" });
+            }
+
+            const history = await authService.getProfileHistory(userId);
+            Logger.successOperation('AuthController', 'getProfileHistory', userId);
+            return res.status(200).json(history);
+        } catch (error) {
+            Logger.errorOperation('AuthController', 'getProfileHistory', error);
+            if (error instanceof Error && error.message === "Usuário não encontrado") {
+                return res.status(404).json({ message: error.message });
+            }
+            return res.status(500).json({ message: "Erro interno do servidor" });
+        }
+    }
+
+    async requestEmailConfirmation(req: Request, res: Response) {
+        Logger.controller('Auth', 'requestEmailConfirmation', 'body', req.body);
+        try {
+            const userId = (req as any).user?.id;
+            if (!userId) {
+                return res.status(401).json({ message: "Usuário não autenticado" });
+            }
+
+            const { newEmail } = req.body;
+            if (!newEmail) {
+                return res.status(400).json({ message: "Novo email é obrigatório" });
+            }
+
+            await authService.requestEmailConfirmation(userId, newEmail);
+            Logger.successOperation('AuthController', 'requestEmailConfirmation', userId);
+            return res.status(200).json({ 
+                message: "Email de confirmação enviado para o novo endereço" 
+            });
+        } catch (error) {
+            Logger.errorOperation('AuthController', 'requestEmailConfirmation', error);
+            if (error instanceof Error && error.message === "Usuário não encontrado") {
+                return res.status(404).json({ message: error.message });
+            }
+            if (error instanceof Error && error.message === "Email já está em uso") {
+                return res.status(409).json({ message: error.message });
+            }
+            return res.status(500).json({ message: "Erro interno do servidor" });
+        }
+    }
+
+    async confirmEmailChange(req: Request, res: Response) {
+        Logger.controller('Auth', 'confirmEmailChange', 'body', req.body);
+        try {
+            const { token } = req.body;
+            if (!token) {
+                return res.status(400).json({ message: "Token de confirmação é obrigatório" });
+            }
+
+            const result = await authService.confirmEmailChange(token);
+            Logger.successOperation('AuthController', 'confirmEmailChange');
+            return res.status(200).json({ 
+                message: "Email alterado com sucesso",
+                user: result 
+            });
+        } catch (error) {
+            Logger.errorOperation('AuthController', 'confirmEmailChange', error);
+            if (error instanceof Error && error.message.includes("Token inválido")) {
+                return res.status(400).json({ message: error.message });
+            }
+            if (error instanceof Error && error.message.includes("Token expirado")) {
+                return res.status(400).json({ message: error.message });
+            }
+            return res.status(500).json({ message: "Erro interno do servidor" });
+        }
+    }
+
+    async getUserByAuth0Id(req: Request, res: Response) {
+        Logger.controller('Auth', 'getUserByAuth0Id', 'params', req.params);
+        try {
+            const { auth0Id } = req.params;
+            const user = await authService.getUserByAuth0Id(auth0Id);
+            Logger.successOperation('AuthController', 'getUserByAuth0Id', user.id);
+            return res.status(200).json(toProfileResponseDTO(user));
+        } catch (error) {
+            Logger.errorOperation('AuthController', 'getUserByAuth0Id', error);
+            if (error instanceof Error && error.message === "Usuário não encontrado") {
+                return res.status(404).json({ message: error.message });
+            }
+            return res.status(500).json({ message: "Erro interno do servidor" });
+        }
+    }
+
+    async linkAuth0IdToUser(req: Request, res: Response) {
+        Logger.controller('Auth', 'linkAuth0IdToUser', 'body', req.body);
+        try {
+            const { userId, auth0Id } = req.body;
+            
+            if (!userId || !auth0Id) {
+                return res.status(400).json({ message: "userId e auth0Id são obrigatórios" });
+            }
+
+            const user = await authService.linkAuth0IdToUser(userId, auth0Id);
+            Logger.successOperation('AuthController', 'linkAuth0IdToUser', user.id);
+            return res.status(200).json({ 
+                message: "Auth0 ID vinculado com sucesso",
+                user: toProfileResponseDTO(user)
+            });
+        } catch (error) {
+            Logger.errorOperation('AuthController', 'linkAuth0IdToUser', error);
+            if (error instanceof Error && error.message === "Usuário não encontrado") {
+                return res.status(404).json({ message: error.message });
+            }
+            if (error instanceof Error && error.message.includes("Auth0 ID já está vinculado")) {
+                return res.status(409).json({ message: error.message });
+            }
+            return res.status(500).json({ message: "Erro interno do servidor" });
+        }
+    }
+
+    async getOrCreateUserByAuth0Id(req: Request, res: Response) {
+        Logger.controller('Auth', 'getOrCreateUserByAuth0Id', 'body', req.body);
+        try {
+            const { auth0Id, email, name } = req.body;
+            
+            if (!auth0Id || !email || !name) {
+                return res.status(400).json({ message: "auth0Id, email e name são obrigatórios" });
+            }
+
+            const user = await authService.getOrCreateUserByAuth0Id(auth0Id, email, name);
+            Logger.successOperation('AuthController', 'getOrCreateUserByAuth0Id', user.id);
+            return res.status(200).json(toProfileResponseDTO(user));
+        } catch (error) {
+            Logger.errorOperation('AuthController', 'getOrCreateUserByAuth0Id', error);
             return res.status(500).json({ message: "Erro interno do servidor" });
         }
     }

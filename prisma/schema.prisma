@@ -8,30 +8,50 @@ datasource db {
 }
 
 model Market {
-  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
   name           String
   address        String
   profilePicture String?
-  products       Product[]
-  orders         Order[]
-  users          User[]    // Usuários vinculados ao mercado
-  coupons        Coupon[]  // Cupons vinculados ao mercado
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 model User {
-  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  name           String
+  email          String    @unique
+  password       String
+  auth0Id        String?   @unique
+  phone          String?
+  profilePicture String?
+  birthDate      DateTime?
+  gender         String?
+  address        String?
+  refreshToken   String?
+  role           UserRole  @default(CUSTOMER)
+  marketId       String?   @db.ObjectId // ID do mercado (sem relação)
+  addresses      Address[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  Cart           Cart[]
+}
+
+model Address {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String   @db.ObjectId
+  user         User     @relation(fields: [userId], references: [id])
   name         String
-  email        String     @unique
-  password     String
-  orders       Order[]
-  refreshToken String?
-  role         UserRole   @default(CUSTOMER)
-  marketId     String?    @db.ObjectId  // Vinculação com mercado
-  market       Market?    @relation(fields: [marketId], references: [id])
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  street       String
+  number       String
+  complement   String?
+  neighborhood String
+  city         String
+  state        String
+  zipCode      String
+  isFavorite   Boolean  @default(false)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model Categories {
@@ -40,63 +60,53 @@ model Categories {
   slug          String        @unique
   description   String?
   subCategories SubCategory[] // array de subcategorias embutidas
-  products      Product[]     // relação com produtos
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 }
 
 model Product {
-  id          String     @id @default(auto()) @map("_id") @db.ObjectId
-  name        String
-  price       Float
-  unit        String     @default("unidade")
-  marketId    String     @db.ObjectId
-  market      Market     @relation(fields: [marketId], references: [id])
-  categoryId  String?    @db.ObjectId
-  category    Categories? @relation(fields: [categoryId], references: [id])
-  image       String?
-  orderItems  OrderItem[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id         String     @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  price      Float
+  unit       String     @default("unidade")
+  marketId   String     @db.ObjectId // ID do mercado (sem relação)
+  categoryId String?    @db.ObjectId // ID da categoria (sem relação)
+  image      String?
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  cartItems  CartItem[]
 }
 
 model Deliverer {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  name        String
-  document    String   @unique
-  phone       String
-  status      DelivererStatus @default(ACTIVE)
-  vehicle     Vehicle
-  orders      Order[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String          @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  document  String          @unique
+  phone     String
+  status    DelivererStatus @default(ACTIVE)
+  vehicle   Vehicle
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
 }
 
 model Order {
-  id           String        @id @default(auto()) @map("_id") @db.ObjectId
-  userId       String        @db.ObjectId
-  user         User          @relation(fields: [userId], references: [id])
-  marketId     String        @db.ObjectId
-  market       Market        @relation(fields: [marketId], references: [id])
-  delivererId  String?       @db.ObjectId
-  deliverer    Deliverer?    @relation(fields: [delivererId], references: [id])
-  couponId     String?       @db.ObjectId
-  coupon       Coupon?       @relation(fields: [couponId], references: [id])
-  status       OrderStatus   @default(PENDING)
-  total        Float
-  discount     Float?        // Valor do desconto aplicado
-  items        OrderItem[]
-  deliveryAddress String
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  id              String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String        @db.ObjectId // ID do usuário (sem relação)
+  marketId        String        @db.ObjectId // ID do mercado (sem relação)
+  delivererId     String?       @db.ObjectId // ID do entregador (sem relação)
+  couponId        String?       @db.ObjectId // ID do cupom (sem relação)
+  addressId       String        @db.ObjectId // ID do endereço de entrega
+  status          OrderStatus   @default(PENDING)
+  total           Float
+  discount        Float? // Valor do desconto aplicado
+  paymentMethod   PaymentMethod @default(CREDIT_CARD)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 }
 
 model OrderItem {
-  id        String  @id @default(auto()) @map("_id") @db.ObjectId
-  orderId   String  @db.ObjectId
-  order     Order   @relation(fields: [orderId], references: [id])
-  productId String  @db.ObjectId
-  product   Product @relation(fields: [productId], references: [id])
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  orderId   String   @db.ObjectId // ID do pedido (sem relação)
+  productId String   @db.ObjectId // ID do produto (sem relação)
   quantity  Int
   price     Float
   createdAt DateTime @default(now())
@@ -109,19 +119,37 @@ model Coupon {
   name          String
   description   String?
   type          CouponType @default(PERCENTAGE)
-  value         Float      // Valor do desconto (percentual ou fixo)
-  minOrderValue Float?     // Valor mínimo do pedido para usar o cupom
-  maxDiscount   Float?     // Desconto máximo (para cupons percentuais)
-  usageLimit    Int?       // Limite de uso total
+  value         Float // Valor do desconto (percentual ou fixo)
+  minOrderValue Float? // Valor mínimo do pedido para usar o cupom
+  maxDiscount   Float? // Desconto máximo (para cupons percentuais)
+  usageLimit    Int? // Limite de uso total
   usedCount     Int        @default(0) // Quantas vezes foi usado
   isActive      Boolean    @default(true)
   validFrom     DateTime   @default(now())
   validUntil    DateTime?
-  marketId      String?    @db.ObjectId
-  market        Market?    @relation(fields: [marketId], references: [id])
-  orders        Order[]    // Pedidos que usaram este cupom
+  marketId      String?    @db.ObjectId // ID do mercado (sem relação)
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
+}
+
+model Cart {
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String     @db.ObjectId
+  user      User       @relation(fields: [userId], references: [id])
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  cartId    String   @db.ObjectId
+  cart      Cart     @relation(fields: [cartId], references: [id])
+  productId String   @db.ObjectId
+  product   Product  @relation(fields: [productId], references: [id])
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 type SubCategory {
@@ -159,4 +187,19 @@ enum UserRole {
 enum CouponType {
   PERCENTAGE
   FIXED
+}
+
+enum PaymentMethod {
+  CREDIT_CARD
+  DEBIT_CARD
+  PIX
+  CASH
+}
+
+model Suggestion {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  task      String
+  data      Json // JSON com os dados da sugestão
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

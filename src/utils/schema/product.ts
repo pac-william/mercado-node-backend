@@ -490,8 +490,6 @@ export const productSchemas = {
             "unit": { "type": "string", "example": "unidade" },
             "marketId": { "type": "string", "example": "507f1f77bcf86cd799439012" },
             "categoryId": { "type": "string", "example": "507f1f77bcf86cd799439013" },
-            "category": { "$ref": "#/components/schemas/Category" },
-            "market": { "$ref": "#/components/schemas/Market" },
             "image": { "type": "string", "description": "Imagem do produto em base64", "example": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQ..." },
             "createdAt": { "type": "string", "format": "date-time", "example": "2024-07-16T00:00:00Z" },
             "updatedAt": { "type": "string", "format": "date-time", "example": "2024-07-16T00:00:00Z" }
