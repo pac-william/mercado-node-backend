@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { authController } from '../controllers/authController';
+import { validateToken, requireMarketAdmin } from '../middleware/validateToken';
 
 const router = Router();
 
@@ -15,7 +16,7 @@ router.post('/auth0/user', authController.getOrCreateUserByAuth0Id);
 router.post('/link-auth0', authController.linkAuth0IdToUser);
 
 // Rotas protegidas
-/* router.post('/create-market', validateToken, authController.createMarket);
+router.post('/create-market', validateToken, authController.createMarket);
 router.post('/link-user-to-market', validateToken, requireMarketAdmin(['MARKET_ADMIN']), authController.linkUserToMarket);
 router.delete('/unlink-user-from-market/:userId', validateToken, requireMarketAdmin(['MARKET_ADMIN']), authController.unlinkUserFromMarket);
 
@@ -29,5 +30,5 @@ router.post('/me/upload-picture', validateToken, authController.uploadProfilePic
 router.get('/me/history', validateToken, authController.getProfileHistory);
 router.post('/me/request-email-confirmation', validateToken, authController.requestEmailConfirmation);
 router.post('/me/confirm-email-change', validateToken, authController.confirmEmailChange);
- */
+
 export default router;
