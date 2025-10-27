@@ -8,12 +8,12 @@ export class Order {
         public marketId: string,
         public status: string,
         public total: number,
-        public deliveryAddress: string,
         public items?: OrderItem[],
         public delivererId?: string,
         public couponId?: string,
         public discount?: number,
         public paymentMethod?: string,
+        public addressId?: string,
         public createdAt: Date = new Date(),
         public updatedAt: Date = new Date(),
     ) { }

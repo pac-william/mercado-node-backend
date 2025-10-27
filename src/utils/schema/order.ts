@@ -218,13 +218,20 @@ export const orderSchemas = {
             "userId": { "type": "string", "example": "507f1f77bcf86cd799439012" },
             "marketId": { "type": "string", "example": "507f1f77bcf86cd799439013" },
             "delivererId": { "type": "string", "example": "507f1f77bcf86cd799439014" },
+            "couponId": { "type": "string", "example": "507f1f77bcf86cd799439015" },
+            "addressId": { "type": "string", "example": "507f1f77bcf86cd799439016" },
             "status": { 
                 "type": "string", 
                 "enum": ["PENDING", "CONFIRMED", "PREPARING", "READY_FOR_DELIVERY", "OUT_FOR_DELIVERY", "DELIVERED", "CANCELLED"],
                 "example": "PENDING" 
             },
             "total": { "type": "number", "format": "float", "example": 45.99 },
-            "deliveryAddress": { "type": "string", "example": "Rua das Flores, 123" },
+            "discount": { "type": "number", "format": "float", "example": 5.00 },
+            "paymentMethod": { 
+                "type": "string", 
+                "enum": ["CREDIT_CARD", "DEBIT_CARD", "PIX", "CASH"],
+                "example": "CREDIT_CARD" 
+            },
             "items": {
                 "type": "array",
                 "items": {
@@ -246,7 +253,13 @@ export const orderSchemas = {
         "properties": {
             "userId": { "type": "string", "example": "507f1f77bcf86cd799439012" },
             "marketId": { "type": "string", "example": "507f1f77bcf86cd799439013" },
-            "deliveryAddress": { "type": "string", "example": "Rua das Flores, 123" },
+            "addressId": { "type": "string", "example": "507f1f77bcf86cd799439016" },
+            "paymentMethod": { 
+                "type": "string", 
+                "enum": ["CREDIT_CARD", "DEBIT_CARD", "PIX", "CASH"],
+                "example": "CREDIT_CARD" 
+            },
+            "couponCode": { "type": "string", "example": "DESCONTO10" },
             "items": {
                 "type": "array",
                 "items": {
@@ -260,7 +273,7 @@ export const orderSchemas = {
                 }
             }
         },
-        "required": ["userId", "marketId", "deliveryAddress", "items"]
+        "required": ["userId", "marketId", "addressId", "paymentMethod", "items"]
     },
     "OrderUpdateDTO": {
         "type": "object",

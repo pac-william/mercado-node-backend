@@ -9,7 +9,7 @@ export const OrderItemDTO = z.object({
 export const OrderDTO = z.object({
     userId: z.string({ error: "ID do usuário é obrigatório" }),
     marketId: z.string({ error: "ID do mercado é obrigatório" }),
-    deliveryAddress: z.string({ error: "Endereço de entrega é obrigatório" }),
+    addressId: z.string({ error: "ID do endereço é obrigatório" }),
     items: z.array(z.object({
         productId: z.string({ error: "ID do produto é obrigatório" }),
         quantity: z.number().int().positive({ error: "Quantidade deve ser um número inteiro positivo" }),
@@ -41,10 +41,10 @@ export type OrderResponseDTO = {
     marketId: string;
     delivererId?: string | null;
     couponId?: string | null;
+    addressId?: string;
     status: string;
     total: number;
     discount?: number | null;
-    deliveryAddress: string;
     paymentMethod?: string;
     items: Array<{
         id: string;
@@ -62,10 +62,10 @@ export const toOrderResponseDTO = (o: any): OrderResponseDTO => ({
     marketId: String(o.marketId),
     delivererId: o.delivererId ? String(o.delivererId) : null,
     couponId: o.couponId ? String(o.couponId) : null,
+    addressId: o.addressId ? String(o.addressId) : undefined,
     status: o.status,
     total: o.total,
     discount: o.discount,
-    deliveryAddress: o.deliveryAddress,
     paymentMethod: o.paymentMethod,
     items: o.items?.map((item: any) => ({
         id: String(item.id),

@@ -89,18 +89,18 @@ model Deliverer {
 }
 
 model Order {
-  id              String      @id @default(auto()) @map("_id") @db.ObjectId
-  userId          String      @db.ObjectId // ID do usuário (sem relação)
-  marketId        String      @db.ObjectId // ID do mercado (sem relação)
-  delivererId     String?     @db.ObjectId // ID do entregador (sem relação)
-  couponId        String?     @db.ObjectId // ID do cupom (sem relação)
-  status          OrderStatus @default(PENDING)
+  id              String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String        @db.ObjectId // ID do usuário (sem relação)
+  marketId        String        @db.ObjectId // ID do mercado (sem relação)
+  delivererId     String?       @db.ObjectId // ID do entregador (sem relação)
+  couponId        String?       @db.ObjectId // ID do cupom (sem relação)
+  addressId       String        @db.ObjectId // ID do endereço de entrega
+  status          OrderStatus   @default(PENDING)
   total           Float
   discount        Float? // Valor do desconto aplicado
-  deliveryAddress String
   paymentMethod   PaymentMethod @default(CREDIT_CARD)
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 }
 
 model OrderItem {

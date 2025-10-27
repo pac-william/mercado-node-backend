@@ -74,7 +74,6 @@ class OrderRepository {
                 order.marketId,
                 order.status,
                 order.total,
-                order.deliveryAddress,
                 orderItems.map(item => new OrderItem(
                     item.id,
                     item.orderId,
@@ -89,6 +88,7 @@ class OrderRepository {
                 order.couponId ?? undefined,
                 order.discount ?? undefined,
                 order.paymentMethod ?? undefined,
+                order.addressId ?? undefined,
                 order.createdAt,
                 order.updatedAt,
             );

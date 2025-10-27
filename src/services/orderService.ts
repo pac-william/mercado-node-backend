@@ -1,11 +1,11 @@
 import { Meta } from "../domain/metaDomain";
 import { OrderPaginatedResponse } from "../domain/orderDomain";
-import { OrderDTO, OrderUpdateDTO, AssignDelivererDTO } from "../dtos/orderDTO";
-import { orderRepository } from "../repositories/orderRepository";
-import { couponService } from './couponService';
+import { AssignDelivererDTO, OrderDTO, OrderUpdateDTO } from "../dtos/orderDTO";
 import { cartRepository } from '../repositories/cartRepository';
-import { prisma } from '../utils/prisma';
+import { orderRepository } from "../repositories/orderRepository";
 import { Logger } from '../utils/logger';
+import { prisma } from '../utils/prisma';
+import { couponService } from './couponService';
 
 class OrderService {
     async createOrder(orderDTO: OrderDTO) {
@@ -19,6 +19,11 @@ class OrderService {
         const market = await prisma.market.findUnique({ where: { id: orderDTO.marketId } });
         if (!market) {
             throw new Error('Mercado não encontrado');
+        }
+
+        const address = await prisma.address.findUnique({ where: { id: orderDTO.addressId } });
+        if (!address) {
+            throw new Error('Endereço não encontrado');
         }
 
         for (const item of orderDTO.items) {
