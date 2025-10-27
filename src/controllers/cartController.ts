@@ -1,24 +1,24 @@
 import { Request, Response } from "express";
 import { addMultipleItemsSchema, createCartItemSchema } from "../dtos/cartDTO";
-import { CartService } from "../services/cartService";
+import { cartService } from "../services/cartService";
 import { Logger } from "../utils/logger";
 
 export class CartController {
-    private cartService: CartService;
 
-    constructor() {
-        this.cartService = new CartService();
-    }
+
 
     async getUserCart(req: Request, res: Response) {
         Logger.controller('Cart', 'getUserCart', 'query', req.query);
         try {
             if (!req.user) {
+                Logger.warn('CartController', 'getUserCart', 'Usuário não autenticado');
                 return res.status(401).json({ message: "Usuário não autenticado" });
             }
-            const userId = req.user.id;
 
-            const cart = await this.cartService.getUserCart(userId);
+            const userId = req.user.id;
+            Logger.info('CartController', 'getUserCart', `userId: ${userId}`);
+            
+            const cart = await cartService.getUserCart(userId);
             Logger.successOperation('CartController', 'getUserCart');
             return res.status(200).json(cart);
         } catch (error) {
@@ -27,23 +27,66 @@ export class CartController {
         }
     }
 
-    async addItem(req: Request, res: Response) {
-        Logger.controller('Cart', 'addItem', 'req: Request, res: Response', { body: req.body });
+    async createCart(req: Request, res: Response) {
+        Logger.controller('Cart', 'createCart', 'body', req.body);
         try {
-            const userId = req.user?.id;
-            if (!userId) {
+            if (!req.user) {
                 return res.status(401).json({ message: "Usuário não autenticado" });
             }
 
+            const userId = req.user.id;
+            const cart = await cartService.createCart(userId);
+            Logger.successOperation('CartController', 'createCart');
+            return res.status(201).json(cart);
+        } catch (error) {
+            Logger.errorOperation('CartController', 'createCart', error);
+            return res.status(500).json({ message: "Erro interno do servidor" });
+        }
+    }
+
+    async addItem(req: Request, res: Response) {
+        Logger.controller('Cart', 'addItem', 'body', req.body);
+        try {
+            const userId = req.user?.id;
+            Logger.info('CartController', 'addItem', `userId: ${userId}`);
+
+            if (!userId) {
+                Logger.warn('CartController', 'addItem', 'Usuário não autenticado');
+                return res.status(401).json({ message: "Usuário não autenticado" });
+            }
+
+            Logger.info('CartController', 'addItem', 'Validando dados do item...');
             const itemData = createCartItemSchema.parse(req.body);
-            const cartItem = await this.cartService.addItem(userId, itemData);
+            Logger.info('CartController', 'addItem', `Dados validados: ${JSON.stringify(itemData)}`);
+            
+            Logger.info('CartController', 'addItem', 'Chamando cartService.addItem...');
+            const cartItem = await cartService.addItem(userId, itemData);
+            
             Logger.successOperation('CartController', 'addItem');
             return res.status(201).json(cartItem);
         } catch (error) {
             Logger.errorOperation('CartController', 'addItem', error);
-            if (error instanceof Error && error.message === "Produto não encontrado") {
-                return res.status(404).json({ message: error.message });
+            Logger.error('CartController', 'addItem', `Error type: ${error?.constructor?.name}`);
+            
+            // Erros do Zod
+            if (error && typeof error === 'object' && 'issues' in error) {
+                const zodError = error as any;
+                Logger.error('CartController', 'addItem', `Zod validation errors: ${JSON.stringify(zodError.issues)}`);
+                return res.status(400).json({ 
+                    message: "Dados inválidos", 
+                    errors: zodError.issues 
+                });
             }
+            
+            if (error instanceof Error) {
+                if (error.message === "Produto não encontrado") {
+                    return res.status(404).json({ message: error.message });
+                }
+                if (error.message.includes('validation') || error.message.includes('invalid_type')) {
+                    return res.status(400).json({ message: "Dados inválidos", error: error.message });
+                }
+            }
+            
             return res.status(500).json({ message: "Erro interno do servidor" });
         }
     }
@@ -57,7 +100,7 @@ export class CartController {
             }
 
             const itemsData = addMultipleItemsSchema.parse(req.body);
-            const cart = await this.cartService.addMultipleItems(userId, itemsData);
+            const cart = await cartService.addMultipleItems(userId, itemsData);
             Logger.successOperation('CartController', 'addMultipleItems');
             return res.status(201).json(cart);
         } catch (error) {
@@ -84,7 +127,7 @@ export class CartController {
                 return res.status(400).json({ message: "Quantidade deve ser pelo menos 1" });
             }
 
-            const cartItem = await this.cartService.updateItemQuantity(userId, cartItemId, quantity);
+            const cartItem = await cartService.updateItemQuantity(userId, cartItemId, quantity);
             Logger.successOperation('CartController', 'updateItemQuantity');
             return res.status(200).json(cartItem);
         } catch (error) {
@@ -105,7 +148,7 @@ export class CartController {
             }
 
             const { cartItemId } = req.params;
-            await this.cartService.removeItem(userId, cartItemId);
+            await cartService.removeItem(userId, cartItemId);
             Logger.successOperation('CartController', 'removeItem');
             return res.status(204).send();
         } catch (error) {
@@ -125,7 +168,7 @@ export class CartController {
                 return res.status(401).json({ message: "Usuário não autenticado" });
             }
 
-            await this.cartService.clearCart(userId);
+            await cartService.clearCart(userId);
             Logger.successOperation('CartController', 'clearCart');
             return res.status(204).send();
         } catch (error) {
@@ -145,7 +188,7 @@ export class CartController {
                 return res.status(401).json({ message: "Usuário não autenticado" });
             }
 
-            await this.cartService.deleteCart(userId);
+            await cartService.deleteCart(userId);
             Logger.successOperation('CartController', 'deleteCart');
             return res.status(204).send();
         } catch (error) {

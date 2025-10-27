@@ -1,7 +1,7 @@
 import { CreateCartItemDTO } from '../dtos/cartDTO';
 import { prisma } from '../utils/prisma';
 
-export class CartRepository {
+class CartRepository {
   async findByUserId(userId: string) {
     return await prisma.cart.findFirst({
       where: { userId },
@@ -127,3 +127,5 @@ export class CartRepository {
     });
   }
 }
+
+export const cartRepository = new CartRepository();

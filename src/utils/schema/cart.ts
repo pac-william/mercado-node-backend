@@ -521,36 +521,9 @@ export const cartSchemas = {
             "updatedAt": { "type": "string", "format": "date-time", "example": "2024-07-16T00:00:00Z" }
         }
     },
-    "CartItemResponse": {
-        "type": "object",
-        "properties": {
-            "id": { "type": "string", "example": "507f1f77bcf86cd799439011" },
-            "productId": { "type": "string", "example": "507f1f77bcf86cd799439012" },
-            "quantity": { "type": "integer", "example": 2 },
-            "product": { "$ref": "#/components/schemas/CartProduct" },
-            "createdAt": { "type": "string", "format": "date-time", "example": "2024-07-16T00:00:00Z" },
-            "updatedAt": { "type": "string", "format": "date-time", "example": "2024-07-16T00:00:00Z" }
-        }
-    },
-    "CartProduct": {
-        "type": "object",
-        "properties": {
-            "id": { "type": "string", "example": "507f1f77bcf86cd799439012" },
-            "name": { "type": "string", "example": "Produto Exemplo" },
-            "price": { "type": "number", "format": "float", "example": 29.99 },
-            "unit": { "type": "string", "example": "unidade" },
-            "image": { "type": "string", "description": "Imagem do produto em base64", "example": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQ..." },
-            "marketId": { "type": "string", "example": "507f1f77bcf86cd799439013" }
-        }
-    },
-    "CreateCartItemDTO": {
-        "type": "object",
-        "properties": {
-            "productId": { "type": "string", "example": "507f1f77bcf86cd799439012" },
-            "quantity": { "type": "integer", "example": 1 }
-        },
-        "required": ["productId", "quantity"]
-    },
+    "CartItemResponse": { "$ref": "#/components/schemas/CartItemResponse" },
+    "CartProduct": { "$ref": "#/components/schemas/CartProduct" },
+    "CreateCartItemDTO": { "$ref": "#/components/schemas/CreateCartItemDTO" },
     "AddMultipleItemsDTO": {
         "type": "object",
         "properties": {
