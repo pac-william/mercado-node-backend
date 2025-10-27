@@ -333,6 +333,204 @@ export const authPaths = {
             }
         }
     },
+    "/api/v1/auth/auth0/{auth0Id}": {
+        "get": {
+            "tags": ["Auth"],
+            "summary": "Buscar usuário por Auth0 ID",
+            "description": "Retorna um usuário específico pelo Auth0 ID (ID do Auth0)",
+            "parameters": [
+                {
+                    "name": "auth0Id",
+                    "in": "path",
+                    "required": true,
+                    "schema": { "type": "string", "example": "auth0|123456789" },
+                    "description": "ID do Auth0 do usuário"
+                }
+            ],
+            "responses": {
+                "200": {
+                    "description": "Usuário retornado com sucesso",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ProfileResponse"
+                            }
+                        }
+                    }
+                },
+                "404": {
+                    "description": "Usuário não encontrado",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string", "example": "Usuário não encontrado" }
+                                }
+                            }
+                        }
+                    }
+                },
+                "500": {
+                    "description": "Erro interno do servidor"
+                }
+            }
+        }
+    },
+    "/api/v1/auth/auth0/user": {
+        "post": {
+            "tags": ["Auth"],
+            "summary": "Criar ou obter usuário por Auth0 ID",
+            "description": "Busca um usuário pelo Auth0 ID ou cria um novo se não existir. Se o email já existir, vincula o auth0Id ao usuário existente.",
+            "requestBody": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "auth0Id": {
+                                    "type": "string",
+                                    "example": "auth0|123456789",
+                                    "description": "ID do Auth0"
+                                },
+                                "email": {
+                                    "type": "string",
+                                    "format": "email",
+                                    "example": "usuario@email.com",
+                                    "description": "Email do usuário"
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "example": "João Silva",
+                                    "description": "Nome do usuário"
+                                }
+                            },
+                            "required": ["auth0Id", "email", "name"]
+                        }
+                    }
+                }
+            },
+            "responses": {
+                "200": {
+                    "description": "Usuário retornado ou criado com sucesso",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ProfileResponse"
+                            }
+                        }
+                    }
+                },
+                "400": {
+                    "description": "Dados inválidos",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string", "example": "auth0Id, email e name são obrigatórios" }
+                                }
+                            }
+                        }
+                    }
+                },
+                "500": {
+                    "description": "Erro interno do servidor"
+                }
+            }
+        }
+    },
+    "/api/v1/auth/link-auth0": {
+        "post": {
+            "tags": ["Auth"],
+            "summary": "Vincular Auth0 ID a usuário existente",
+            "description": "Vincula um Auth0 ID a um usuário existente no sistema",
+            "requestBody": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "userId": {
+                                    "type": "string",
+                                    "example": "68cb02e988b3580479e5aac1",
+                                    "description": "ID do usuário no sistema"
+                                },
+                                "auth0Id": {
+                                    "type": "string",
+                                    "example": "auth0|123456789",
+                                    "description": "ID do Auth0"
+                                }
+                            },
+                            "required": ["userId", "auth0Id"]
+                        }
+                    }
+                }
+            },
+            "responses": {
+                "200": {
+                    "description": "Auth0 ID vinculado com sucesso",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string", "example": "Auth0 ID vinculado com sucesso" },
+                                    "user": {
+                                        "$ref": "#/components/schemas/ProfileResponse"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "400": {
+                    "description": "Dados inválidos",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string", "example": "userId e auth0Id são obrigatórios" }
+                                }
+                            }
+                        }
+                    }
+                },
+                "404": {
+                    "description": "Usuário não encontrado",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string", "example": "Usuário não encontrado" }
+                                }
+                            }
+                        }
+                    }
+                },
+                "409": {
+                    "description": "Auth0 ID já vinculado",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string", "example": "Auth0 ID já está vinculado a outro usuário" }
+                                }
+                            }
+                        }
+                    }
+                },
+                "500": {
+                    "description": "Erro interno do servidor"
+                }
+            }
+        }
+    },
     "/api/v1/auth/me": {
         "get": {
             "tags": ["Auth"],
@@ -848,7 +1046,7 @@ export const authSchemas = {
                 "type": "string",
                 "minLength": 6,
                 "example": "senha123",
-                "description": "Senha do usuário (mínimo 6 caracteres)"
+                "description": "Senha do usuário (mínimo 6 caracteres). Obrigatória quando não há auth0Id"
             },
             "phone": {
                 "type": "string",
@@ -881,9 +1079,14 @@ export const authSchemas = {
                 "type": "string",
                 "example": "68cb02fa88b3580479e5aac2",
                 "description": "ID do mercado para vincular o usuário (opcional)"
+            },
+            "auth0Id": {
+                "type": "string",
+                "example": "auth0|123456789",
+                "description": "ID do Auth0 para integração (opcional)"
             }
         },
-        "required": ["name", "email", "password"]
+        "required": ["name", "email"]
     },
     "AuthCreateMarketRequest": {
         "type": "object",

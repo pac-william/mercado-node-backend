@@ -1,6 +1,7 @@
 import { addressPaths, addressSchemas, addressTags } from './schema/address';
 import { authPaths, authSchemas, authTags } from './schema/auth';
 import { cartPaths, cartSchemas, cartTags } from './schema/cart';
+import { cartItemPaths, cartItemSchemas, cartItemTags } from './schema/cartItem';
 import { categoriesPaths, categoriesSchemas, categoriesTags } from './schema/categories';
 import { couponPaths, couponSchemas, couponTags } from './schema/coupon';
 import { delivererPaths, delivererSchemas, delivererTags } from './schema/deliverer';
@@ -44,7 +45,8 @@ export const swaggerDocument = {
             ...authSchemas,
             ...suggestionSchemas,
             ...addressSchemas,
-            ...cartSchemas
+            ...cartSchemas,
+            ...cartItemSchemas
         },
     },
     tags: [
@@ -58,7 +60,8 @@ export const swaggerDocument = {
         ...authTags,
         ...suggestionTags,
         ...addressTags,
-        ...cartTags
+        ...cartTags,
+        ...cartItemTags
     ],
     paths: {
         ...marketPaths,
@@ -71,6 +74,7 @@ export const swaggerDocument = {
         ...authPaths,
         ...suggestionPaths,
         ...addressPaths,
-        ...cartPaths
+        ...cartPaths,
+        ...cartItemPaths
     },
 };
