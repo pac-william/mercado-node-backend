@@ -4,7 +4,7 @@ import { OrderDTO, OrderUpdateDTO } from "../dtos/orderDTO";
 import { prisma } from "../utils/prisma";
 
 class OrderRepository {
-    async createOrder(orderDTO: OrderDTO) {
+    async createOrder(orderDTO: OrderDTO & { userId: string; discount?: number; couponId?: string | null }) {
         const { items, ...orderData } = orderDTO;
 
         // Usar transação para garantir que order e items sejam criados juntos
