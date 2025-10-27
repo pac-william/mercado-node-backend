@@ -3,19 +3,39 @@ import { OrderPaginatedResponse } from "../domain/orderDomain";
 import { OrderDTO, OrderUpdateDTO, AssignDelivererDTO } from "../dtos/orderDTO";
 import { orderRepository } from "../repositories/orderRepository";
 import { couponService } from './couponService';
+import { cartRepository } from '../repositories/cartRepository';
+import { prisma } from '../utils/prisma';
+import { Logger } from '../utils/logger';
 
 class OrderService {
     async createOrder(orderDTO: OrderDTO) {
+        Logger.info('OrderService', 'createOrder', `Creating order for user ${orderDTO.userId}`);
+
+        const user = await prisma.user.findUnique({ where: { id: orderDTO.userId } });
+        if (!user) {
+            throw new Error('Usuário não encontrado');
+        }
+
+        const market = await prisma.market.findUnique({ where: { id: orderDTO.marketId } });
+        if (!market) {
+            throw new Error('Mercado não encontrado');
+        }
+
+        for (const item of orderDTO.items) {
+            const product = await prisma.product.findUnique({ where: { id: item.productId } });
+            if (!product) {
+                throw new Error(`Produto com ID ${item.productId} não encontrado`);
+            }
+        }
+
         let total = 0;
         let discount = 0;
         let couponId = null;
 
-        // Calcular total dos itens
         for (const item of orderDTO.items) {
             total += item.price * item.quantity;
         }
 
-        // Aplicar cupom se fornecido
         if (orderDTO.couponCode) {
             try {
                 const couponResult = await couponService.applyCouponToOrder(
@@ -38,7 +58,15 @@ class OrderService {
             couponId
         };
 
-        return await orderRepository.createOrder(orderData);
+        const order = await orderRepository.createOrder(orderData);
+        
+        const cart = await cartRepository.findByUserId(orderDTO.userId);
+        if (cart) {
+            await cartRepository.clearCart(cart.id);
+            Logger.info('OrderService', 'createOrder', 'Cart cleared after order creation');
+        }
+
+        return order;
     }
 
     async getOrders(page: number, size: number, status?: string, userId?: string, marketId?: string, delivererId?: string) {

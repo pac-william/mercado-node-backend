@@ -38,6 +38,15 @@ export class OrderController {
             return res.status(201).json(toOrderResponseDTO(order));
         } catch (error) {
             Logger.errorOperation('OrderController', 'createOrder', error);
+            if (error instanceof Error) {
+                if (error.message.includes('não encontrado')) {
+                    return res.status(404).json({ message: error.message });
+                }
+                if (error.message.includes('cupom') || error.message.includes('Cupom')) {
+                    return res.status(400).json({ message: error.message });
+                }
+                return res.status(400).json({ message: error.message });
+            }
             return res.status(500).json({ message: "Erro interno do servidor" });
         }
     }
