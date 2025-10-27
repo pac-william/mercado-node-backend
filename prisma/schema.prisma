@@ -21,6 +21,7 @@ model User {
   name           String
   email          String    @unique
   password       String
+  auth0Id        String?   @unique
   phone          String?
   profilePicture String?
   birthDate      DateTime?
@@ -64,15 +65,15 @@ model Categories {
 }
 
 model Product {
-  id         String      @id @default(auto()) @map("_id") @db.ObjectId
+  id         String     @id @default(auto()) @map("_id") @db.ObjectId
   name       String
   price      Float
-  unit       String      @default("unidade")
-  marketId   String      @db.ObjectId // ID do mercado (sem relação)
-  categoryId String?     @db.ObjectId // ID da categoria (sem relação)
+  unit       String     @default("unidade")
+  marketId   String     @db.ObjectId // ID do mercado (sem relação)
+  categoryId String?    @db.ObjectId // ID da categoria (sem relação)
   image      String?
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
   cartItems  CartItem[]
 }
 

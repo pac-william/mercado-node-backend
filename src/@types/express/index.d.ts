@@ -10,6 +10,7 @@ export interface UserToken {
   id: string;
   role: 'CUSTOMER' | 'MARKET_ADMIN';
   marketId?: string;
+  auth0Id?: string;
 }
 
 // Interface para requisições autenticadas (user é obrigatório)

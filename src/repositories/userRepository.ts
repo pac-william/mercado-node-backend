@@ -45,6 +45,13 @@ class UserRepository {
         return user;
     }
 
+    async getUserByAuth0Id(auth0Id: string) {
+        const user = await prisma.user.findUnique({
+            where: { auth0Id },
+        });
+        return user;
+    }
+
     async updateUser(id: string, userDTO: UserDTO) {
         const user = await prisma.user.update({
             where: { id },
