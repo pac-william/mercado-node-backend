@@ -9,6 +9,11 @@ router.post('/login', authController.login);
 router.post('/refresh-token', authController.refreshToken);
 router.post('/logout', authController.logout);
 
+// Rotas para Auth0
+router.get('/auth0/:auth0Id', authController.getUserByAuth0Id);
+router.post('/auth0/user', authController.getOrCreateUserByAuth0Id);
+router.post('/link-auth0', authController.linkAuth0IdToUser);
+
 // Rotas protegidas
 /* router.post('/create-market', validateToken, authController.createMarket);
 router.post('/link-user-to-market', validateToken, requireMarketAdmin(['MARKET_ADMIN']), authController.linkUserToMarket);

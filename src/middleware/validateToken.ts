@@ -26,8 +26,6 @@ export function validateToken(req: Request, res: Response, next: NextFunction) {
 
   const authHeader = req.headers.authorization;
 
-  console.log('authHeader', req.headers);
-
   if (!authHeader?.startsWith("Bearer ")) {
     Logger.errorOperation('ValidateToken', 'validateToken', 'Token ausente ou inválido');
     return res.status(401).json({ error: "Token ausente ou inválido" });
@@ -53,12 +51,14 @@ export function validateToken(req: Request, res: Response, next: NextFunction) {
 }
 
 export function getTokenInfo(decoded: any): UserToken {
-
-  console.log(decoded);
-
   return {
-    id: decoded.sub || decoded.id,
+    id: decoded.id,
     role: decoded['https://yourdomain.com/roles']?.[0] || decoded.role || 'CUSTOMER',
     marketId: decoded['https://yourdomain.com/marketId'] || decoded.marketId,
+    auth0Id: decoded.sub || undefined,
   };
+}
+
+export function getAuth0Id(decoded: any): string | null {
+  return decoded.sub || null;
 }

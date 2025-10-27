@@ -19,6 +19,14 @@ class AuthService {
             throw new Error('Email já está em uso');
         }
 
+        // Verificar se auth0Id já existe (se fornecido)
+        if (authRegisterUserDTO.auth0Id) {
+            const existingAuth0User = await prisma.user.findUnique({ where: { auth0Id: authRegisterUserDTO.auth0Id } });
+            if (existingAuth0User) {
+                throw new Error('Auth0 ID já está em uso');
+            }
+        }
+
         // Verificar se o mercado existe (se fornecido)
         if (authRegisterUserDTO.marketId) {
             const market = await prisma.market.findUnique({ where: { id: authRegisterUserDTO.marketId } });
@@ -27,7 +35,11 @@ class AuthService {
             }
         }
 
-        const hashedPassword = await bcrypt.hash(authRegisterUserDTO.password, 10);
+        // Se tem senha, hash ela. Se não tem, senha vazia (usuário Auth0)
+        const hashedPassword = authRegisterUserDTO.password 
+            ? await bcrypt.hash(authRegisterUserDTO.password, 10) 
+            : '';
+        
         const user = await prisma.user.create({
             data: {
                 name: authRegisterUserDTO.name,
@@ -35,6 +47,7 @@ class AuthService {
                 password: hashedPassword,
                 role: authRegisterUserDTO.marketId ? "MARKET_ADMIN" : "CUSTOMER",
                 marketId: authRegisterUserDTO.marketId,
+                auth0Id: authRegisterUserDTO.auth0Id,
             },
         });
         Logger.successOperation('AuthService', 'registerUser', user.id);
@@ -527,6 +540,99 @@ class AuthService {
             };
         } catch (error) {
             Logger.errorOperation('AuthService', 'confirmEmailChange', error);
+            throw error;
+        }
+    }
+
+    async getUserByAuth0Id(auth0Id: string) {
+        try {
+            const user = await prisma.user.findUnique({
+                where: { auth0Id }
+            });
+
+            if (!user) {
+                throw new Error('Usuário não encontrado');
+            }
+
+            return user;
+        } catch (error) {
+            Logger.errorOperation('AuthService', 'getUserByAuth0Id', error);
+            throw error;
+        }
+    }
+
+    async linkAuth0IdToUser(userId: string, auth0Id: string) {
+        try {
+            Logger.service('AuthService', 'linkAuth0IdToUser', 'Attempting to link auth0Id to user', { userId, auth0Id });
+
+            const existingUserWithAuth0Id = await prisma.user.findUnique({ 
+                where: { auth0Id } 
+            });
+
+            if (existingUserWithAuth0Id && existingUserWithAuth0Id.id !== userId) {
+                throw new Error('Auth0 ID já está vinculado a outro usuário');
+            }
+
+            const updatedUser = await prisma.user.update({
+                where: { id: userId },
+                data: { auth0Id }
+            });
+
+            Logger.successOperation('AuthService', 'linkAuth0IdToUser', updatedUser.id);
+            return updatedUser;
+        } catch (error) {
+            Logger.errorOperation('AuthService', 'linkAuth0IdToUser', error);
+            throw error;
+        }
+    }
+
+    async getOrCreateUserByAuth0Id(auth0Id: string, email: string, name: string) {
+        try {
+            Logger.service('AuthService', 'getOrCreateUserByAuth0Id', 'Attempting to get or create user by auth0Id', { auth0Id, email });
+
+            // Primeiro, tenta buscar por auth0Id
+            let user = await prisma.user.findUnique({ 
+                where: { auth0Id }
+            });
+
+            if (user) {
+                Logger.successOperation('AuthService', 'getOrCreateUserByAuth0Id', user.id);
+                return user;
+            }
+
+            // Se não encontrou por auth0Id, busca por email
+            user = await prisma.user.findUnique({ 
+                where: { email }
+            });
+
+            if (user) {
+                // Se encontrou por email, vincula o auth0Id
+                Logger.info('AuthService', 'getOrCreateUserByAuth0Id', `Linking auth0Id to existing user by email: ${user.id}`);
+                const updatedUser = await prisma.user.update({
+                    where: { id: user.id },
+                    data: { auth0Id }
+                });
+                
+                Logger.successOperation('AuthService', 'getOrCreateUserByAuth0Id - linked', updatedUser.id);
+                return updatedUser;
+            }
+
+            // Se não encontrou nem por auth0Id nem por email, cria novo usuário
+            Logger.info('AuthService', 'getOrCreateUserByAuth0Id', 'Creating new user with auth0Id');
+            const newUser = await prisma.user.create({
+                data: {
+                    name,
+                    email,
+                    auth0Id,
+                    password: '', // Senha vazia pois o usuário autentica via Auth0
+                    role: 'CUSTOMER'
+                }
+            });
+
+            Logger.successOperation('AuthService', 'getOrCreateUserByAuth0Id - created', newUser.id);
+            return newUser;
+        } catch (error) {
+            Logger.errorOperation('AuthService', 'getOrCreateUserByAuth0Id', error);
             throw error;
         }
     }
