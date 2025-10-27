@@ -33,24 +33,26 @@ class OrderService {
             }
         }
 
-        let total = 0;
         let discount = 0;
         let couponId = null;
 
+        // Calcular o total inicial dos itens
+        let initialTotal = 0;
         for (const item of orderDTO.items) {
-            total += item.price * item.quantity;
+            initialTotal += item.price * item.quantity;
         }
 
+        // Aplicar cupom se fornecido
         if (orderDTO.couponCode) {
             try {
                 const couponResult = await couponService.applyCouponToOrder(
                     orderDTO.couponCode,
-                    total,
+                    initialTotal,
                     orderDTO.marketId
                 );
                 discount = couponResult.discount;
                 couponId = couponResult.coupon.id;
-                total = couponResult.finalValue;
+                initialTotal = couponResult.finalValue;
             } catch (error) {
                 throw new Error(`Erro ao aplicar cupom: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
             }
@@ -59,7 +61,7 @@ class OrderService {
         const orderData = {
             ...orderDTO,
             userId,
-            total,
+            total: initialTotal,
             discount,
             couponId
         };

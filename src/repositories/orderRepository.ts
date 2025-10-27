@@ -4,15 +4,21 @@ import { OrderDTO, OrderUpdateDTO } from "../dtos/orderDTO";
 import { prisma } from "../utils/prisma";
 
 class OrderRepository {
-    async createOrder(orderDTO: OrderDTO & { userId: string; discount?: number; couponId?: string | null }) {
+    async createOrder(orderDTO: OrderDTO & { userId: string; total: number; discount?: number; couponId?: string | null }) {
         const { items, ...orderData } = orderDTO;
 
         // Usar transação para garantir que order e items sejam criados juntos
         const order = await prisma.$transaction(async (tx) => {
             const order = await tx.order.create({
                 data: {
-                    ...orderData,
-                    total: items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+                    userId: orderDTO.userId,
+                    marketId: orderDTO.marketId,
+                    addressId: orderDTO.addressId,
+                    paymentMethod: orderDTO.paymentMethod,
+                    status: 'PENDING',
+                    total: orderDTO.total,
+                    discount: orderDTO.discount || null,
+                    couponId: orderDTO.couponId || null,
                 }
             });
 
@@ -31,7 +37,24 @@ class OrderRepository {
             return order;
         });
 
-        return order;
+        // Buscar os items criados para retornar o order completo
+        const orderItems = await prisma.orderItem.findMany({
+            where: { orderId: order.id }
+        });
+
+        return {
+            ...order,
+            items: orderItems.map(item => new OrderItem(
+                item.id,
+                item.orderId,
+                item.productId,
+                item.quantity,
+                item.price,
+                undefined,
+                item.createdAt,
+                item.updatedAt,
+            ))
+        };
     }
 
     async getOrders(page: number, size: number, status?: string, userId?: string, marketId?: string, delivererId?: string) {

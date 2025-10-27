@@ -4,6 +4,7 @@ export const orderPaths = {
             "tags": ["Orders"],
             "summary": "Listar pedidos",
             "description": "Retorna uma lista paginada de pedidos com filtros opcionais.",
+            "security": [{ "bearerAuth": [] }],
             "parameters": [
                 {
                     "name": "page",
@@ -60,6 +61,19 @@ export const orderPaths = {
                         }
                     }
                 },
+                "401": {
+                    "description": "Usuário não autenticado",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string", "example": "Usuário não autenticado" }
+                                }
+                            }
+                        }
+                    }
+                },
                 "500": {
                     "description": "Erro interno do servidor"
                 }
@@ -69,6 +83,7 @@ export const orderPaths = {
             "tags": ["Orders"],
             "summary": "Criar pedido",
             "description": "Cria um novo pedido no sistema.",
+            "security": [{ "bearerAuth": [] }],
             "requestBody": {
                 "required": true,
                 "content": {
@@ -87,10 +102,43 @@ export const orderPaths = {
                     }
                 },
                 "400": {
-                    "description": "Erro de validação"
+                    "description": "Erro de validação",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string" }
+                                }
+                            }
+                        }
+                    }
+                },
+                "401": {
+                    "description": "Usuário não autenticado",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string", "example": "Usuário não autenticado" }
+                                }
+                            }
+                        }
+                    }
                 },
                 "500": {
-                    "description": "Erro interno do servidor"
+                    "description": "Erro interno do servidor",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string" }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -100,6 +148,7 @@ export const orderPaths = {
             "tags": ["Orders"],
             "summary": "Buscar pedido por ID",
             "description": "Retorna um pedido específico pelo ID.",
+            "security": [{ "bearerAuth": [] }],
             "parameters": [
                 {
                     "name": "id",
@@ -117,11 +166,44 @@ export const orderPaths = {
                         }
                     }
                 },
+                "401": {
+                    "description": "Usuário não autenticado",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string", "example": "Usuário não autenticado" }
+                                }
+                            }
+                        }
+                    }
+                },
                 "404": {
-                    "description": "Pedido não encontrado"
+                    "description": "Pedido não encontrado",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string" }
+                                }
+                            }
+                        }
+                    }
                 },
                 "500": {
-                    "description": "Erro interno do servidor"
+                    "description": "Erro interno do servidor",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string" }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         },
@@ -129,6 +211,7 @@ export const orderPaths = {
             "tags": ["Orders"],
             "summary": "Atualizar pedido",
             "description": "Atualiza um pedido existente.",
+            "security": [{ "bearerAuth": [] }],
             "parameters": [
                 {
                     "name": "id",
@@ -155,13 +238,56 @@ export const orderPaths = {
                     }
                 },
                 "400": {
-                    "description": "Erro de validação"
+                    "description": "Erro de validação",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string" }
+                                }
+                            }
+                        }
+                    }
+                },
+                "401": {
+                    "description": "Usuário não autenticado",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string", "example": "Usuário não autenticado" }
+                                }
+                            }
+                        }
+                    }
                 },
                 "404": {
-                    "description": "Pedido não encontrado"
+                    "description": "Pedido não encontrado",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string" }
+                                }
+                            }
+                        }
+                    }
                 },
                 "500": {
-                    "description": "Erro interno do servidor"
+                    "description": "Erro interno do servidor",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string" }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -171,6 +297,7 @@ export const orderPaths = {
             "tags": ["Orders"],
             "summary": "Atribuir entregador ao pedido",
             "description": "Atribui um entregador a um pedido específico.",
+            "security": [{ "bearerAuth": [] }],
             "parameters": [
                 {
                     "name": "id",
@@ -197,13 +324,56 @@ export const orderPaths = {
                     }
                 },
                 "400": {
-                    "description": "Erro de validação"
+                    "description": "Erro de validação",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string" }
+                                }
+                            }
+                        }
+                    }
+                },
+                "401": {
+                    "description": "Usuário não autenticado",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string", "example": "Usuário não autenticado" }
+                                }
+                            }
+                        }
+                    }
                 },
                 "404": {
-                    "description": "Pedido ou entregador não encontrado"
+                    "description": "Pedido ou entregador não encontrado",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string" }
+                                }
+                            }
+                        }
+                    }
                 },
                 "500": {
-                    "description": "Erro interno do servidor"
+                    "description": "Erro interno do servidor",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string" }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
