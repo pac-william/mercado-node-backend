@@ -88,6 +88,7 @@ class OrderRepository {
                 order.delivererId ?? undefined,
                 order.couponId ?? undefined,
                 order.discount ?? undefined,
+                order.paymentMethod ?? undefined,
                 order.createdAt,
                 order.updatedAt,
             );

@@ -15,7 +15,8 @@ export const OrderDTO = z.object({
         quantity: z.number().int().positive({ error: "Quantidade deve ser um número inteiro positivo" }),
         price: z.number().positive({ error: "Preço deve ser um número positivo" })
     }), { error: "Itens do pedido são obrigatórios" }),
-    couponCode: z.string().optional() // Adicionar código do cupom
+    paymentMethod: z.enum(["CREDIT_CARD", "DEBIT_CARD", "PIX", "CASH"], { error: "Método de pagamento inválido" }),
+    couponCode: z.string().optional()
 });
 
 export type OrderDTO = z.infer<typeof OrderDTO>;
@@ -44,6 +45,7 @@ export type OrderResponseDTO = {
     total: number;
     discount?: number | null;
     deliveryAddress: string;
+    paymentMethod?: string;
     items: Array<{
         id: string;
         productId: string;
@@ -64,6 +66,7 @@ export const toOrderResponseDTO = (o: any): OrderResponseDTO => ({
     total: o.total,
     discount: o.discount,
     deliveryAddress: o.deliveryAddress,
+    paymentMethod: o.paymentMethod,
     items: o.items?.map((item: any) => ({
         id: String(item.id),
         productId: String(item.productId),

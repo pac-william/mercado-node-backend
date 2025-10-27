@@ -98,6 +98,7 @@ model Order {
   total           Float
   discount        Float? // Valor do desconto aplicado
   deliveryAddress String
+  paymentMethod   PaymentMethod @default(CREDIT_CARD)
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 }
@@ -186,6 +187,13 @@ enum UserRole {
 enum CouponType {
   PERCENTAGE
   FIXED
+}
+
+enum PaymentMethod {
+  CREDIT_CARD
+  DEBIT_CARD
+  PIX
+  CASH
 }
 
 model Suggestion {

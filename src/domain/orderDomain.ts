@@ -13,6 +13,7 @@ export class Order {
         public delivererId?: string,
         public couponId?: string,
         public discount?: number,
+        public paymentMethod?: string,
         public createdAt: Date = new Date(),
         public updatedAt: Date = new Date(),
     ) { }
