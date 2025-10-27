@@ -10,7 +10,7 @@ router.get('/markets/:marketId', productController.getProductsByMarket);
 router.get('/:id', productController.getProductById);
 
 // Rotas protegidas
-router.post('/', validateToken, productController.createProduct);
+router.post('/', productController.createProduct);
 router.put('/:id', validateToken, productController.updateProduct);
 router.patch('/:id', validateToken, productController.updateProductPartial);
 router.delete('/:id', validateToken, productController.deleteProduct);
