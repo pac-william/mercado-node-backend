@@ -1,5 +1,6 @@
 import addressRoute from './addressRoute';
 import authRoute from './authRoute';
+import cartRoute from './cartRoute';
 import categoriesRouter from './categories.router';
 import couponRoute from './couponRoute';
 import delivererRoute from './delivererRoute';
@@ -19,5 +20,6 @@ export default {
     authRoute,
     couponRoute,
     suggestionRoute,
-    addressRoute
+    addressRoute,
+    cartRoute
 };

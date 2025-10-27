@@ -1,17 +1,17 @@
 import { Router } from 'express';
 import { OrderController } from '../controllers/orderController';
-import { authenticate, requireMarketAdmin, optionalAuth } from '../middleware/auth';
+import { validateToken } from '../middleware/validateToken';
 
 const router = Router();
 const orderController = new OrderController();
 
 // Rotas públicas 
-router.get('/', optionalAuth, orderController.getOrders);
-router.get('/:id', optionalAuth, orderController.getOrderById);
+router.get('/', validateToken, orderController.getOrders);
+router.get('/:id', validateToken, orderController.getOrderById);
 
 // Rotas protegidas
-router.post('/', authenticate, requireMarketAdmin, orderController.createOrder);
-router.put('/:id', authenticate, requireMarketAdmin, orderController.updateOrder);
-router.post('/:id/assign-deliverer', authenticate, requireMarketAdmin, orderController.assignDeliverer);
+router.post('/', validateToken, orderController.createOrder);
+router.put('/:id', validateToken, orderController.updateOrder);
+router.post('/:id/assign-deliverer', validateToken, orderController.assignDeliverer);
 
 export default router;

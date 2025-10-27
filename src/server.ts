@@ -33,6 +33,7 @@ app.use('/api/v1/orders', routes.orderRoute);
 app.use('/api/v1/auth', routes.authRoute);
 app.use('/api/v1/suggestions', routes.suggestionRoute);
 app.use('/api/v1/addresses', routes.addressRoute);
+app.use('/api/v1/cart', routes.cartRoute);
 
 // Health check route
 app.get('/health', (_req, res) => {

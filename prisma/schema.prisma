@@ -8,18 +8,18 @@ datasource db {
 }
 
 model Market {
-  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
   name           String
   address        String
   profilePicture String?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 model User {
-  id             String     @id @default(auto()) @map("_id") @db.ObjectId
+  id             String    @id @default(auto()) @map("_id") @db.ObjectId
   name           String
-  email          String     @unique
+  email          String    @unique
   password       String
   phone          String?
   profilePicture String?
@@ -27,11 +27,12 @@ model User {
   gender         String?
   address        String?
   refreshToken   String?
-  role           UserRole   @default(CUSTOMER)
-  marketId       String?    @db.ObjectId  // ID do mercado (sem relação)
+  role           UserRole  @default(CUSTOMER)
+  marketId       String?   @db.ObjectId // ID do mercado (sem relação)
   addresses      Address[]
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  Cart           Cart[]
 }
 
 model Address {
@@ -63,46 +64,47 @@ model Categories {
 }
 
 model Product {
-  id          String     @id @default(auto()) @map("_id") @db.ObjectId
-  name        String
-  price       Float
-  unit        String     @default("unidade")
-  marketId    String     @db.ObjectId  // ID do mercado (sem relação)
-  categoryId  String?    @db.ObjectId  // ID da categoria (sem relação)
-  image       String?
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id         String      @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  price      Float
+  unit       String      @default("unidade")
+  marketId   String      @db.ObjectId // ID do mercado (sem relação)
+  categoryId String?     @db.ObjectId // ID da categoria (sem relação)
+  image      String?
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  cartItems  CartItem[]
 }
 
 model Deliverer {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  name        String
-  document    String   @unique
-  phone       String
-  status      DelivererStatus @default(ACTIVE)
-  vehicle     Vehicle
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String          @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  document  String          @unique
+  phone     String
+  status    DelivererStatus @default(ACTIVE)
+  vehicle   Vehicle
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
 }
 
 model Order {
-  id           String        @id @default(auto()) @map("_id") @db.ObjectId
-  userId       String        @db.ObjectId  // ID do usuário (sem relação)
-  marketId     String        @db.ObjectId  // ID do mercado (sem relação)
-  delivererId  String?       @db.ObjectId  // ID do entregador (sem relação)
-  couponId     String?       @db.ObjectId  // ID do cupom (sem relação)
-  status       OrderStatus   @default(PENDING)
-  total        Float
-  discount     Float?        // Valor do desconto aplicado
+  id              String      @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String      @db.ObjectId // ID do usuário (sem relação)
+  marketId        String      @db.ObjectId // ID do mercado (sem relação)
+  delivererId     String?     @db.ObjectId // ID do entregador (sem relação)
+  couponId        String?     @db.ObjectId // ID do cupom (sem relação)
+  status          OrderStatus @default(PENDING)
+  total           Float
+  discount        Float? // Valor do desconto aplicado
   deliveryAddress String
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 }
 
 model OrderItem {
-  id        String  @id @default(auto()) @map("_id") @db.ObjectId
-  orderId   String  @db.ObjectId  // ID do pedido (sem relação)
-  productId String  @db.ObjectId  // ID do produto (sem relação)
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  orderId   String   @db.ObjectId // ID do pedido (sem relação)
+  productId String   @db.ObjectId // ID do produto (sem relação)
   quantity  Int
   price     Float
   createdAt DateTime @default(now())
@@ -115,17 +117,37 @@ model Coupon {
   name          String
   description   String?
   type          CouponType @default(PERCENTAGE)
-  value         Float      // Valor do desconto (percentual ou fixo)
-  minOrderValue Float?     // Valor mínimo do pedido para usar o cupom
-  maxDiscount   Float?     // Desconto máximo (para cupons percentuais)
-  usageLimit    Int?       // Limite de uso total
+  value         Float // Valor do desconto (percentual ou fixo)
+  minOrderValue Float? // Valor mínimo do pedido para usar o cupom
+  maxDiscount   Float? // Desconto máximo (para cupons percentuais)
+  usageLimit    Int? // Limite de uso total
   usedCount     Int        @default(0) // Quantas vezes foi usado
   isActive      Boolean    @default(true)
   validFrom     DateTime   @default(now())
   validUntil    DateTime?
-  marketId      String?    @db.ObjectId  // ID do mercado (sem relação)
+  marketId      String?    @db.ObjectId // ID do mercado (sem relação)
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
+}
+
+model Cart {
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String     @db.ObjectId
+  user      User       @relation(fields: [userId], references: [id])
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  cartId    String   @db.ObjectId
+  cart      Cart     @relation(fields: [cartId], references: [id])
+  productId String   @db.ObjectId
+  product   Product  @relation(fields: [productId], references: [id])
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 type SubCategory {
@@ -166,9 +188,9 @@ enum CouponType {
 }
 
 model Suggestion {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  task        String
-  data        Json     // JSON com os dados da sugestão
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  task      String
+  data      Json // JSON com os dados da sugestão
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

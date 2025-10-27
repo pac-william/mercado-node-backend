@@ -1,12 +1,12 @@
 import { Router } from 'express';
 import { suggestionController } from '../controllers/suggestionController';
-import { optionalAuth } from '../middleware/auth';
+import { validateToken } from '../middleware/validateToken';
 
 const router = Router();
 
-// Rotas públicas
-router.get('/', optionalAuth, suggestionController.getSuggestions);
-router.post('/', optionalAuth, suggestionController.createSuggestions);
-router.get('/:id', optionalAuth, suggestionController.getSuggestionById);
+
+router.get('/', validateToken, suggestionController.getSuggestions);
+router.post('/', validateToken, suggestionController.createSuggestions);
+router.get('/:id', validateToken, suggestionController.getSuggestionById);
 
 export default router;

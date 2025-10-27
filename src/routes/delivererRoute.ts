@@ -1,19 +1,19 @@
 import { Router } from 'express';
 import { DelivererController } from '../controllers/delivererController';
-import { authenticate, requireMarketAdmin, optionalAuth } from '../middleware/auth';
+import { validateToken } from '../middleware/validateToken';
 
 const router = Router();
 const delivererController = new DelivererController();
 
 // Rotas públicas
-router.get('/', optionalAuth, delivererController.getDeliverers);
-router.get('/active', optionalAuth, delivererController.getActiveDeliverers);
-router.get('/:id', optionalAuth, delivererController.getDelivererById);
+router.get('/', validateToken, delivererController.getDeliverers);
+router.get('/active', validateToken, delivererController.getActiveDeliverers);
+router.get('/:id', validateToken, delivererController.getDelivererById);
 
 // Rotas protegidas
-router.post('/', authenticate, requireMarketAdmin, delivererController.createDeliverer);
-router.put('/:id', authenticate, requireMarketAdmin, delivererController.updateDeliverer);
-router.patch('/:id', authenticate, requireMarketAdmin, delivererController.updateDelivererPartial);
-router.delete('/:id', authenticate, requireMarketAdmin, delivererController.deleteDeliverer);
+router.post('/', validateToken, delivererController.createDeliverer);
+router.put('/:id', validateToken, delivererController.updateDeliverer);
+router.patch('/:id', validateToken, delivererController.updateDelivererPartial);
+router.delete('/:id', validateToken, delivererController.deleteDeliverer);
 
 export default router;

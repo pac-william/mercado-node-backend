@@ -1,5 +1,6 @@
 import { addressPaths, addressSchemas, addressTags } from './schema/address';
 import { authPaths, authSchemas, authTags } from './schema/auth';
+import { cartPaths, cartSchemas, cartTags } from './schema/cart';
 import { categoriesPaths, categoriesSchemas, categoriesTags } from './schema/categories';
 import { couponPaths, couponSchemas, couponTags } from './schema/coupon';
 import { delivererPaths, delivererSchemas, delivererTags } from './schema/deliverer';
@@ -42,7 +43,8 @@ export const swaggerDocument = {
             ...orderSchemas,
             ...authSchemas,
             ...suggestionSchemas,
-            ...addressSchemas
+            ...addressSchemas,
+            ...cartSchemas
         },
     },
     tags: [
@@ -55,7 +57,8 @@ export const swaggerDocument = {
         ...orderTags,
         ...authTags,
         ...suggestionTags,
-        ...addressTags
+        ...addressTags,
+        ...cartTags
     ],
     paths: {
         ...marketPaths,
@@ -67,6 +70,7 @@ export const swaggerDocument = {
         ...orderPaths,
         ...authPaths,
         ...suggestionPaths,
-        ...addressPaths
+        ...addressPaths,
+        ...cartPaths
     },
 };

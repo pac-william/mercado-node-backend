@@ -1,25 +1,25 @@
 import { Router } from 'express';
 import { addressController } from '../controllers/addressController';
-import { authenticate } from '../middleware/auth';
+import { validateToken } from '../middleware/validateToken';
 
 const router = Router();
 
 // Todas as rotas de endereço requerem autenticação
-router.get('/', authenticate, addressController.getAddresses);
-router.post('/', authenticate, addressController.createAddress);
-router.get('/favorite', authenticate, addressController.getFavoriteAddress);
-router.get('/active', authenticate, addressController.getActiveAddresses);
-router.get('/nearby', authenticate, addressController.getAddressesNearby);
+router.get('/', validateToken, addressController.getAddresses);
+router.post('/', validateToken, addressController.createAddress);
+router.get('/favorite', validateToken, addressController.getFavoriteAddress);
+router.get('/active', validateToken, addressController.getActiveAddresses);
+router.get('/nearby', validateToken, addressController.getAddressesNearby);
 router.get('/search/:zipCode', addressController.searchByZipCode);
 router.post('/validate', addressController.validateAddress);
-router.get('/:id', authenticate, addressController.getAddressById);
-router.get('/:id/history', authenticate, addressController.getAddressHistory);
-router.get('/:id/geolocation', authenticate, addressController.getAddressWithGeolocation);
-router.put('/:id', authenticate, addressController.updateAddress);
-router.patch('/:id', authenticate, addressController.updateAddressPartial);
-router.patch('/:id/soft-delete', authenticate, addressController.softDeleteAddress);
-router.patch('/:id/restore', authenticate, addressController.restoreAddress);
-router.delete('/:id', authenticate, addressController.deleteAddress);
-router.patch('/:id/favorite', authenticate, addressController.setFavoriteAddress);
+router.get('/:id', validateToken, addressController.getAddressById);
+router.get('/:id/history', validateToken, addressController.getAddressHistory);
+router.get('/:id/geolocation', validateToken, addressController.getAddressWithGeolocation);
+router.put('/:id', validateToken, addressController.updateAddress);
+router.patch('/:id', validateToken, addressController.updateAddressPartial);
+router.patch('/:id/soft-delete', validateToken, addressController.softDeleteAddress);
+router.patch('/:id/restore', validateToken, addressController.restoreAddress);
+router.delete('/:id', validateToken, addressController.deleteAddress);
+router.patch('/:id/favorite', validateToken, addressController.setFavoriteAddress);
 
 export default router;
