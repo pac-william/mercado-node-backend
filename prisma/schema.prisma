@@ -109,17 +109,17 @@ model Coupon {
   name          String
   description   String?
   type          CouponType @default(PERCENTAGE)
-  value         Float      // Valor do desconto (percentual ou fixo)
-  minOrderValue Float?     // Valor mínimo do pedido para usar o cupom
-  maxDiscount   Float?     // Desconto máximo (para cupons percentuais)
-  usageLimit    Int?       // Limite de uso total
-  usedCount     Int        @default(0) // Quantas vezes foi usado
+  value         Float      
+  minOrderValue Float?     
+  maxDiscount   Float?     
+  usageLimit    Int?       
+  usedCount     Int        @default(0) 
   isActive      Boolean    @default(true)
   validFrom     DateTime   @default(now())
   validUntil    DateTime?
   marketId      String?    @db.ObjectId
   market        Market?    @relation(fields: [marketId], references: [id])
-  orders        Order[]    // Pedidos que usaram este cupom
+  orders        Order[]    
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
 }
