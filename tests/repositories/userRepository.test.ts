@@ -2,7 +2,6 @@ import { userRepository } from '../../src/repositories/userRepository';
 import { prisma } from '../../src/utils/prisma';
 import { UserDTO, UserUpdateDTO } from '../../src/dtos/userDTO';
 
-// Mock Prisma client - use jest.mocked for proper typing
 const mockedPrisma = jest.mocked(prisma, { shallow: false });
 
 describe('UserRepository', () => {
@@ -12,7 +11,6 @@ describe('UserRepository', () => {
 
   describe('createUser', () => {
     it('should create a user successfully', async () => {
-      // Arrange: Setup test data and mocks
       const userData: UserDTO = {
         name: 'John Doe',
         email: 'john@example.com',
@@ -33,10 +31,8 @@ describe('UserRepository', () => {
 
       mockedPrisma.user.create.mockResolvedValue(mockUser);
 
-      // Act: Call the repository method
       const result = await userRepository.createUser(userData);
 
-      // Assert: Verify the result and calls
       expect(mockedPrisma.user.create).toHaveBeenCalledWith({
         data: userData
       });
@@ -44,7 +40,6 @@ describe('UserRepository', () => {
     });
 
     it('should handle Prisma errors during user creation', async () => {
-      // Arrange: Setup test data and mock Prisma to throw error
       const userData: UserDTO = {
         name: 'John Doe',
         email: 'john@example.com',
@@ -54,14 +49,12 @@ describe('UserRepository', () => {
       const prismaError = new Error('Database connection failed');
       mockedPrisma.user.create.mockRejectedValue(prismaError);
 
-      // Act & Assert: Verify that error is propagated
       await expect(userRepository.createUser(userData)).rejects.toThrow('Database connection failed');
     });
   });
 
   describe('getUsers', () => {
     it('should get users with pagination', async () => {
-      // Arrange: Setup test data and mocks
       const page = 1;
       const size = 10;
 
@@ -92,10 +85,8 @@ describe('UserRepository', () => {
 
       mockedPrisma.user.findMany.mockResolvedValue(mockUsers);
 
-      // Act: Call the repository method
       const result = await userRepository.getUsers(page, size);
 
-      // Assert: Verify the result and calls
       expect(mockedPrisma.user.findMany).toHaveBeenCalledWith({
         skip: (page - 1) * size,
         take: size,
@@ -111,7 +102,6 @@ describe('UserRepository', () => {
     });
 
     it('should handle different page and size values', async () => {
-      // Arrange: Setup test data and mocks
       const page = 3;
       const size = 5;
 
@@ -131,10 +121,8 @@ describe('UserRepository', () => {
 
       mockedPrisma.user.findMany.mockResolvedValue(mockUsers);
 
-      // Act: Call the repository method
       const result = await userRepository.getUsers(page, size);
 
-      // Assert: Verify the result and calls
       expect(mockedPrisma.user.findMany).toHaveBeenCalledWith({
         skip: (page - 1) * size, // (3 - 1) * 5 = 10
         take: size,
@@ -150,23 +138,19 @@ describe('UserRepository', () => {
     });
 
     it('should return empty array when no users found', async () => {
-      // Arrange: Setup test data and mocks
       const page = 1;
       const size = 10;
 
       mockedPrisma.user.findMany.mockResolvedValue([]);
 
-      // Act: Call the repository method
       const result = await userRepository.getUsers(page, size);
 
-      // Assert: Verify the result and calls
       expect(result).toEqual([]);
     });
   });
 
   describe('getUserById', () => {
     it('should get user by id successfully', async () => {
-      // Arrange: Setup test data and mocks
       const userId = 'user-123';
 
       const mockUser = {
@@ -183,10 +167,8 @@ describe('UserRepository', () => {
 
       mockedPrisma.user.findUnique.mockResolvedValue(mockUser);
 
-      // Act: Call the repository method
       const result = await userRepository.getUserById(userId);
 
-      // Assert: Verify the result and calls
       expect(mockedPrisma.user.findUnique).toHaveBeenCalledWith({
         where: { id: userId },
         select: {
@@ -201,22 +183,18 @@ describe('UserRepository', () => {
     });
 
     it('should return null when user not found', async () => {
-      // Arrange: Setup test data and mocks
       const userId = 'non-existent-user';
 
       mockedPrisma.user.findUnique.mockResolvedValue(null);
 
-      // Act: Call the repository method
       const result = await userRepository.getUserById(userId);
 
-      // Assert: Verify the result and calls
       expect(result).toBeNull();
     });
   });
 
   describe('getUserByEmail', () => {
     it('should get user by email successfully', async () => {
-      // Arrange: Setup test data and mocks
       const email = 'john@example.com';
 
       const mockUser = {
@@ -233,10 +211,8 @@ describe('UserRepository', () => {
 
       mockedPrisma.user.findUnique.mockResolvedValue(mockUser);
 
-      // Act: Call the repository method
       const result = await userRepository.getUserByEmail(email);
 
-      // Assert: Verify the result and calls
       expect(mockedPrisma.user.findUnique).toHaveBeenCalledWith({
         where: { email }
       });
@@ -244,22 +220,18 @@ describe('UserRepository', () => {
     });
 
     it('should return null when user not found by email', async () => {
-      // Arrange: Setup test data and mocks
       const email = 'nonexistent@example.com';
 
       mockedPrisma.user.findUnique.mockResolvedValue(null);
 
-      // Act: Call the repository method
       const result = await userRepository.getUserByEmail(email);
 
-      // Assert: Verify the result and calls
       expect(result).toBeNull();
     });
   });
 
   describe('updateUser', () => {
     it('should update user successfully', async () => {
-      // Arrange: Setup test data and mocks
       const userId = 'user-123';
       const userData: UserDTO = {
         name: 'John Updated',
@@ -281,10 +253,8 @@ describe('UserRepository', () => {
 
       mockedPrisma.user.update.mockResolvedValue(mockUpdatedUser);
 
-      // Act: Call the repository method
       const result = await userRepository.updateUser(userId, userData);
 
-      // Assert: Verify the result and calls
       expect(mockedPrisma.user.update).toHaveBeenCalledWith({
         where: { id: userId },
         data: userData,
@@ -300,7 +270,6 @@ describe('UserRepository', () => {
     });
 
     it('should handle Prisma errors during user update', async () => {
-      // Arrange: Setup test data and mock Prisma to throw error
       const userId = 'user-123';
       const userData: UserDTO = {
         name: 'John Updated',
@@ -311,14 +280,12 @@ describe('UserRepository', () => {
       const prismaError = new Error('User not found');
       mockedPrisma.user.update.mockRejectedValue(prismaError);
 
-      // Act & Assert: Verify that error is propagated
       await expect(userRepository.updateUser(userId, userData)).rejects.toThrow('User not found');
     });
   });
 
   describe('updateUserPartial', () => {
     it('should update user partially successfully', async () => {
-      // Arrange: Setup test data and mocks
       const userId = 'user-123';
       const userUpdateData: UserUpdateDTO = {
         name: 'John Partially Updated',
@@ -339,10 +306,8 @@ describe('UserRepository', () => {
 
       mockedPrisma.user.update.mockResolvedValue(mockUpdatedUser);
 
-      // Act: Call the repository method
       const result = await userRepository.updateUserPartial(userId, userUpdateData);
 
-      // Assert: Verify the result and calls
       expect(mockedPrisma.user.update).toHaveBeenCalledWith({
         where: { id: userId },
         data: userUpdateData,
@@ -358,7 +323,6 @@ describe('UserRepository', () => {
     });
 
     it('should handle partial update with only name', async () => {
-      // Arrange: Setup test data and mocks
       const userId = 'user-123';
       const userUpdateData: UserUpdateDTO = {
         name: 'John Name Only Updated'
@@ -378,10 +342,8 @@ describe('UserRepository', () => {
 
       mockedPrisma.user.update.mockResolvedValue(mockUpdatedUser);
 
-      // Act: Call the repository method
       const result = await userRepository.updateUserPartial(userId, userUpdateData);
 
-      // Assert: Verify the result and calls
       expect(mockedPrisma.user.update).toHaveBeenCalledWith({
         where: { id: userId },
         data: userUpdateData,
@@ -399,7 +361,6 @@ describe('UserRepository', () => {
 
   describe('deleteUser', () => {
     it('should delete user successfully', async () => {
-      // Arrange: Setup test data and mocks
       const userId = 'user-123';
 
       const mockDeletedUser = {
@@ -416,10 +377,8 @@ describe('UserRepository', () => {
 
       mockedPrisma.user.delete.mockResolvedValue(mockDeletedUser);
 
-      // Act: Call the repository method
       const result = await userRepository.deleteUser(userId);
 
-      // Assert: Verify the result and calls
       expect(mockedPrisma.user.delete).toHaveBeenCalledWith({
         where: { id: userId },
         select: {
@@ -434,13 +393,11 @@ describe('UserRepository', () => {
     });
 
     it('should handle Prisma errors during user deletion', async () => {
-      // Arrange: Setup test data and mock Prisma to throw error
       const userId = 'non-existent-user';
 
       const prismaError = new Error('User not found');
       mockedPrisma.user.delete.mockRejectedValue(prismaError);
 
-      // Act & Assert: Verify that error is propagated
       await expect(userRepository.deleteUser(userId)).rejects.toThrow('User not found');
     });
   });
