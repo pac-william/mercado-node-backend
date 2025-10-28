@@ -1,28 +1,16 @@
 import { z } from 'zod';
 
-export const AuthRegisterUserDTO = z.object({
-    name: z.string().min(1, 'Nome é obrigatório'),
+export const Auth0CreateUserDTO = z.object({
+    connection: z.string().default('Username-Password-Authentication'),
     email: z.string().email('Email inválido'),
-    password: z.string().optional(), // Senha opcional
-    marketId: z.string().optional(), // Opcional para vinculação com mercado
-    auth0Id: z.string().optional(), // ID do Auth0 para integração
-}).refine(
-    (data) => {
-        // Se não tem auth0Id, senha é obrigatória
-        if (!data.auth0Id && !data.password) {
-            return false;
-        }
-        // Se tem senha, deve ter no mínimo 6 caracteres
-        if (data.password && data.password.length < 6) {
-            return false;
-        }
-        return true;
-    },
-    {
-        message: 'Senha é obrigatória (mínimo 6 caracteres) quando não há auth0Id, ou deve ter no mínimo 6 caracteres quando fornecida',
-        path: ['password'],
-    }
-);
+    password: z.string().min(6, 'Senha deve ter no mínimo 6 caracteres'),
+    name: z.string().min(1, 'Nome é obrigatório'),
+});
+
+export const Auth0LoginDTO = z.object({
+    username: z.string().email('Email inválido'),
+    password: z.string().min(1, 'Senha é obrigatória'),
+});
 
 export const AuthLoginDTO = z.object({
     email: z.string().email('Email inválido'),
@@ -40,7 +28,8 @@ export const AuthCreateMarketDTO = z.object({
     profilePicture: z.string().url('URL inválida').optional(),
 });
 
-export type AuthRegisterUserDTO = z.infer<typeof AuthRegisterUserDTO>;
-export type AuthLoginDTO = z.infer<typeof AuthLoginDTO>;
-export type AuthLinkUserToMarketDTO = z.infer<typeof AuthLinkUserToMarketDTO>;
-export type AuthCreateMarketDTO = z.infer<typeof AuthCreateMarketDTO>;
+export type Auth0CreateUserDTOType = z.infer<typeof Auth0CreateUserDTO>;
+export type Auth0LoginDTOType = z.infer<typeof Auth0LoginDTO>;
+export type AuthLoginDTOType = z.infer<typeof AuthLoginDTO>;
+export type AuthLinkUserToMarketDTOType = z.infer<typeof AuthLinkUserToMarketDTO>;
+export type AuthCreateMarketDTOType = z.infer<typeof AuthCreateMarketDTO>;
