@@ -3,7 +3,6 @@ import { userRepository } from "../repositories/userRepository";
 
 class UserService {
     async createUser(userDTO: UserDTO) {
-        // Verificar se o email já existe
         const existingUser = await userRepository.getUserByEmail(userDTO.email);
         if (existingUser) {
             throw new Error("Email já está em uso");
@@ -25,13 +24,11 @@ class UserService {
     }
 
     async updateUser(id: string, userDTO: UserDTO) {
-        // Verificar se o usuário existe
         const existingUser = await userRepository.getUserById(id);
         if (!existingUser) {
             throw new Error("Usuário não encontrado");
         }
 
-        // Verificar se o email já está em uso por outro usuário
         if (userDTO.email !== existingUser.email) {
             const emailInUse = await userRepository.getUserByEmail(userDTO.email);
             if (emailInUse) {
@@ -43,13 +40,11 @@ class UserService {
     }
 
     async updateUserPartial(id: string, userUpdateDTO: UserUpdateDTO) {
-        // Verificar se o usuário existe
         const existingUser = await userRepository.getUserById(id);
         if (!existingUser) {
             throw new Error("Usuário não encontrado");
         }
 
-        // Verificar se o email já está em uso por outro usuário (se estiver sendo atualizado)
         if (userUpdateDTO.email && userUpdateDTO.email !== existingUser.email) {
             const emailInUse = await userRepository.getUserByEmail(userUpdateDTO.email);
             if (emailInUse) {
@@ -61,7 +56,6 @@ class UserService {
     }
 
     async deleteUser(id: string) {
-        // Verificar se o usuário existe
         const existingUser = await userRepository.getUserById(id);
         if (!existingUser) {
             throw new Error("Usuário não encontrado");

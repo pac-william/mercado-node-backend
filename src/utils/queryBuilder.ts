@@ -1,4 +1,4 @@
-// Classe para construção e validação de parâmetros de consulta
+
 export class QueryBuilder<TQuery extends Record<string, any> = {}> {
     private query: Record<string, any>;
 

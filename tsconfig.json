@@ -5,7 +5,9 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "strict": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "types": ["jest", "node"]
   },
-  "exclude": ["prisma/**/*", "node_modules/**/*"]
+  "exclude": ["prisma/**/*", "node_modules/**/*"],
+  "include": ["src/**/*", "tests/**/*"]
 }

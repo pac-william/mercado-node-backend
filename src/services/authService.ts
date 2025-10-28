@@ -13,7 +13,6 @@ class AuthService {
     async registerUser(authRegisterUserDTO: AuthRegisterUserDTO) {
         Logger.service('AuthService', 'registerUser', 'Attempting to register user', { email: authRegisterUserDTO.email });
         
-        // Verificar se o email já existe
         const existingUser = await prisma.user.findUnique({ where: { email: authRegisterUserDTO.email } });
         if (existingUser) {
             throw new Error('Email já está em uso');
@@ -64,7 +63,6 @@ class AuthService {
             },
         });
 
-        // Vincular o usuário que criou o mercado como administrador
         await prisma.user.update({
             where: { id: userId },
             data: {

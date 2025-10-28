@@ -42,7 +42,6 @@ class OrderService {
             initialTotal += item.price * item.quantity;
         }
 
-        // Aplicar cupom se fornecido
         if (orderDTO.couponCode) {
             try {
                 const couponResult = await couponService.applyCouponToOrder(

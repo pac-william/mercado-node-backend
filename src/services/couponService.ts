@@ -3,7 +3,6 @@ import { CouponDTO, CouponUpdateDTO, CouponValidationDTO } from "../dtos/couponD
 
 class CouponService {
     async createCoupon(data: CouponDTO) {
-        // Verificar se já existe um cupom com o mesmo código
         const existingCoupon = await couponRepository.getByCode(data.code);
         if (existingCoupon) {
             throw new Error("Já existe um cupom com este código");

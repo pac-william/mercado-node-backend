@@ -36,7 +36,6 @@ app.use('/api/v1/addresses', routes.addressRoute);
 app.use('/api/v1/cart', routes.cartRoute);
 app.use('/api/v1/cart-items', routes.cartItemRoute);
 
-// Health check route
 app.get('/health', (_req, res) => {
     let version = 'unknown';
     try {
@@ -44,7 +43,7 @@ app.get('/health', (_req, res) => {
         const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8')) as { version?: string };
         version = pkg.version ?? version;
     } catch (err) {
-        // keep version as 'unknown' if reading fails
+        //
     }
 
     res.status(200).json({

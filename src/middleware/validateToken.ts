@@ -62,3 +62,19 @@ export function getTokenInfo(decoded: any): UserToken {
 export function getAuth0Id(decoded: any): string | null {
   return decoded.sub || null;
 }
+
+export function requireMarketAdmin(allowedRoles: string[]) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    if (!req.user) {
+      Logger.errorOperation('RequireMarketAdmin', 'requireMarketAdmin', 'Usuário não autenticado');
+      return res.status(401).json({ error: "Usuário não autenticado" });
+    }
+
+    if (!allowedRoles.includes(req.user.role)) {
+      Logger.errorOperation('RequireMarketAdmin', 'requireMarketAdmin', `Acesso negado. Role necessária: ${allowedRoles.join(', ')}. Role atual: ${req.user.role}`);
+      return res.status(403).json({ error: "Acesso negado. Permissões insuficientes" });
+    }
+
+    next();
+  };
+}
