@@ -52,6 +52,18 @@ class UserRepository {
         return user;
     }
 
+    async createUserWithAuth0Id(data: { name: string; email: string; auth0Id: string }) {
+        const user = await prisma.user.create({
+            data: {
+                name: data.name,
+                email: data.email,
+                password: '', // Senha vazia pois autenticação é feita via Auth0
+                auth0Id: data.auth0Id,
+            }
+        });
+        return user;
+    }
+
     async updateUser(id: string, userDTO: UserDTO) {
         const user = await prisma.user.update({
             where: { id },
