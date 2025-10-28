@@ -4,19 +4,26 @@ import { prisma } from "../utils/prisma";
 class UserRepository {
     async createUser(userDTO: UserDTO) {
         const user = await prisma.user.create({
-            data: userDTO,
+            data: {
+                ...userDTO,
+                password: userDTO.password || '',
+            },
         });
         return user;
     }
 
-    async getUsers(page: number, size: number) {
+    async getUsers(page: number, size: number, auth0Id?: string) {
         const users = await prisma.user.findMany({
+            where: {
+                auth0Id: auth0Id ?? undefined,
+            },
             skip: (page - 1) * size,
             take: size,
             select: {
                 id: true,
                 name: true,
                 email: true,
+                auth0Id: true,
                 createdAt: true,
                 updatedAt: true,
             },
@@ -31,6 +38,7 @@ class UserRepository {
                 id: true,
                 name: true,
                 email: true,
+                auth0Id: true,
                 createdAt: true,
                 updatedAt: true,
             },
@@ -67,7 +75,10 @@ class UserRepository {
     async updateUser(id: string, userDTO: UserDTO) {
         const user = await prisma.user.update({
             where: { id },
-            data: userDTO,
+            data: {
+                ...userDTO,
+                password: userDTO.password || '',
+            },
             select: {
                 id: true,
                 name: true,

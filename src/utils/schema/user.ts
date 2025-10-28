@@ -26,7 +26,10 @@ export const userPaths = {
                     "description": "Lista de usuários retornada com sucesso",
                     "content": {
                         "application/json": {
-                            "schema": { "$ref": "#/components/schemas/UserPaginatedResponse" }
+                            "schema": {
+                                "type": "array",
+                                "items": { "$ref": "#/components/schemas/UserResponseDTO" }
+                            }
                         }
                     }
                 },
@@ -63,7 +66,7 @@ export const userPaths = {
                     "description": "Usuário criado com sucesso",
                     "content": {
                         "application/json": {
-                            "schema": { "$ref": "#/components/schemas/User" }
+                            "schema": { "$ref": "#/components/schemas/UserResponseDTO" }
                         }
                     }
                 },
@@ -138,7 +141,7 @@ export const userPaths = {
                     "description": "Usuário retornado com sucesso",
                     "content": {
                         "application/json": {
-                            "schema": { "$ref": "#/components/schemas/User" }
+                            "schema": { "$ref": "#/components/schemas/UserResponseDTO" }
                         }
                     }
                 },
@@ -196,7 +199,7 @@ export const userPaths = {
                     "description": "Usuário atualizado com sucesso",
                     "content": {
                         "application/json": {
-                            "schema": { "$ref": "#/components/schemas/User" }
+                            "schema": { "$ref": "#/components/schemas/UserResponseDTO" }
                         }
                     }
                 },
@@ -290,7 +293,7 @@ export const userPaths = {
                     "description": "Usuário atualizado com sucesso",
                     "content": {
                         "application/json": {
-                            "schema": { "$ref": "#/components/schemas/User" }
+                            "schema": { "$ref": "#/components/schemas/UserResponseDTO" }
                         }
                     }
                 },
@@ -376,7 +379,7 @@ export const userPaths = {
                     "description": "Usuário deletado com sucesso",
                     "content": {
                         "application/json": {
-                            "schema": { "$ref": "#/components/schemas/User" }
+                            "schema": { "$ref": "#/components/schemas/UserResponseDTO" }
                         }
                     }
                 },
@@ -418,6 +421,12 @@ export const userSchemas = {
             "id": { "type": "string", "example": "507f1f77bcf86cd799439011" },
             "name": { "type": "string", "example": "João Silva" },
             "email": { "type": "string", "example": "joao@email.com" },
+            "phone": { "type": "string", "nullable": true, "example": "11999999999" },
+            "profilePicture": { "type": "string", "nullable": true, "example": "https://example.com/photo.jpg" },
+            "birthDate": { "type": "string", "format": "date", "nullable": true, "example": "1990-01-01" },
+            "gender": { "type": "string", "nullable": true, "enum": ["masculino", "feminino", "outro"], "example": "masculino" },
+            "address": { "type": "string", "nullable": true, "example": "Rua das Flores, 123" },
+            "auth0Id": { "type": "string", "nullable": true, "example": "auth0|123456789" },
             "createdAt": { "type": "string", "format": "date-time", "example": "2024-07-16T00:00:00Z" },
             "updatedAt": { "type": "string", "format": "date-time", "example": "2024-07-16T00:00:00Z" }
         }
@@ -426,8 +435,14 @@ export const userSchemas = {
         "type": "object",
         "properties": {
             "name": { "type": "string", "example": "João Silva" },
-            "email": { "type": "string", "example": "joao@email.com" },
-            "password": { "type": "string", "example": "senha123" }
+            "email": { "type": "string", "format": "email", "example": "joao@email.com" },
+            "password": { "type": "string", "minLength": 6, "example": "senha123" },
+            "phone": { "type": "string", "example": "11999999999" },
+            "profilePicture": { "type": "string", "format": "uri", "example": "https://example.com/photo.jpg" },
+            "birthDate": { "type": "string", "format": "date", "pattern": "^\\d{4}-\\d{2}-\\d{2}$", "example": "1990-01-01" },
+            "gender": { "type": "string", "enum": ["masculino", "feminino", "outro"], "example": "masculino" },
+            "address": { "type": "string", "example": "Rua das Flores, 123" },
+            "auth0Id": { "type": "string", "example": "auth0|123456789" }
         },
         "required": ["name", "email", "password"]
     },
@@ -435,8 +450,64 @@ export const userSchemas = {
         "type": "object",
         "properties": {
             "name": { "type": "string", "example": "João Silva Atualizado" },
-            "email": { "type": "string", "example": "joao.novo@email.com" },
-            "password": { "type": "string", "example": "novaSenha123" }
+            "email": { "type": "string", "format": "email", "example": "joao.novo@email.com" },
+            "password": { "type": "string", "minLength": 6, "example": "novaSenha123" },
+            "phone": { "type": "string", "example": "11999999999" },
+            "profilePicture": { "type": "string", "format": "uri", "example": "https://example.com/photo.jpg" },
+            "birthDate": { "type": "string", "format": "date", "pattern": "^\\d{4}-\\d{2}-\\d{2}$", "example": "1990-01-01" },
+            "gender": { "type": "string", "enum": ["masculino", "feminino", "outro"], "example": "masculino" },
+            "address": { "type": "string", "example": "Rua das Flores, 123" },
+            "auth0Id": { "type": "string", "example": "auth0|123456789" }
+        }
+    },
+    "UserResponseDTO": {
+        "type": "object",
+        "properties": {
+            "id": { "type": "string", "example": "507f1f77bcf86cd799439011" },
+            "name": { "type": "string", "example": "João Silva" },
+            "email": { "type": "string", "example": "joao@email.com" },
+            "createdAt": { "type": "string", "format": "date-time", "example": "2024-07-16T00:00:00Z" },
+            "updatedAt": { "type": "string", "format": "date-time", "example": "2024-07-16T00:00:00Z" }
+        }
+    },
+    "ProfileResponseDTO": {
+        "type": "object",
+        "properties": {
+            "id": { "type": "string", "example": "507f1f77bcf86cd799439011" },
+            "name": { "type": "string", "example": "João Silva" },
+            "email": { "type": "string", "example": "joao@email.com" },
+            "phone": { "type": "string", "nullable": true, "example": "11999999999" },
+            "profilePicture": { "type": "string", "nullable": true, "example": "https://example.com/photo.jpg" },
+            "birthDate": { "type": "string", "format": "date-time", "nullable": true, "example": "1990-01-01T00:00:00Z" },
+            "gender": { "type": "string", "nullable": true, "example": "masculino" },
+            "address": { "type": "string", "nullable": true, "example": "Rua das Flores, 123" },
+            "role": { "type": "string", "example": "customer" },
+            "marketId": { "type": "string", "nullable": true, "example": "507f1f77bcf86cd799439012" },
+            "market": {
+                "type": "object",
+                "nullable": true,
+                "properties": {
+                    "id": { "type": "string", "example": "507f1f77bcf86cd799439012" },
+                    "name": { "type": "string", "example": "Supermercado ABC" },
+                    "address": { "type": "string", "example": "Rua do Comércio, 456" },
+                    "profilePicture": { "type": "string", "nullable": true, "example": "https://example.com/market.jpg" }
+                }
+            },
+            "createdAt": { "type": "string", "format": "date-time", "example": "2024-07-16T00:00:00Z" },
+            "updatedAt": { "type": "string", "format": "date-time", "example": "2024-07-16T00:00:00Z" }
+        }
+    },
+    "ProfileUpdateDTO": {
+        "type": "object",
+        "properties": {
+            "name": { "type": "string", "minLength": 1, "example": "João Silva Atualizado" },
+            "email": { "type": "string", "format": "email", "example": "joao.novo@email.com" },
+            "phone": { "type": "string", "minLength": 10, "example": "11999999999" },
+            "profilePicture": { "type": "string", "format": "uri", "example": "https://example.com/photo.jpg" },
+            "birthDate": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$", "example": "1990-01-01" },
+            "gender": { "type": "string", "enum": ["masculino", "feminino", "outro"], "example": "masculino" },
+            "address": { "type": "string", "minLength": 5, "example": "Rua das Flores, 123" },
+            "password": { "type": "string", "minLength": 6, "example": "novaSenha123" }
         }
     },
     "UserPaginatedResponse": {
@@ -444,7 +515,7 @@ export const userSchemas = {
         "properties": {
             "users": {
                 "type": "array",
-                "items": { "$ref": "#/components/schemas/User" }
+                "items": { "$ref": "#/components/schemas/UserResponseDTO" }
             },
             "meta": { "$ref": "#/components/schemas/Meta" }
         }

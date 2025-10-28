@@ -11,8 +11,8 @@ class UserService {
         return await userRepository.createUser(userDTO);
     }
 
-    async getUsers(page: number, size: number) {
-        return await userRepository.getUsers(page, size);
+    async getUsers(page: number, size: number, auth0Id?: string) {
+        return await userRepository.getUsers(page, size, auth0Id);
     }
 
     async getUserById(id: string) {
