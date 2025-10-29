@@ -8,6 +8,6 @@
     "esModuleInterop": true,
     "types": ["jest", "node"]
   },
-  "exclude": ["prisma/**/*", "node_modules/**/*"],
-  "include": ["src/**/*", "tests/**/*"]
+  "exclude": ["prisma/**/*", "node_modules/**/*", "tests/**/*"],
+  "include": ["src/**/*"]
 }

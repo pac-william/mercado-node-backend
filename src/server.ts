@@ -19,7 +19,21 @@ app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 
 app.use(cors());
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+// Desabilitar cache para o Swagger
+app.use('/api-docs', (req, res, next) => {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+    next();
+});
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, {
+    swaggerOptions: {
+        cache: false,
+        persistAuthorization: false
+    },
+    customCss: '.swagger-ui .topbar { display: none }'
+}));
 
 app.use('/api/v1/products', routes.productRoute);
 app.use('/api/v1/markets', routes.marketRoute);
