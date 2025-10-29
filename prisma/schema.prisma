@@ -20,7 +20,7 @@ model User {
   id             String    @id @default(auto()) @map("_id") @db.ObjectId
   name           String
   email          String    @unique
-  password       String
+  password       String?
   auth0Id        String?   @unique
   phone          String?
   profilePicture String?
@@ -89,18 +89,18 @@ model Deliverer {
 }
 
 model Order {
-  id              String        @id @default(auto()) @map("_id") @db.ObjectId
-  userId          String        @db.ObjectId // ID do usuário (sem relação)
-  marketId        String        @db.ObjectId // ID do mercado (sem relação)
-  delivererId     String?       @db.ObjectId // ID do entregador (sem relação)
-  couponId        String?       @db.ObjectId // ID do cupom (sem relação)
-  addressId       String        @db.ObjectId // ID do endereço de entrega
-  status          OrderStatus   @default(PENDING)
-  total           Float
-  discount        Float? // Valor do desconto aplicado
-  paymentMethod   PaymentMethod @default(CREDIT_CARD)
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String        @db.ObjectId // ID do usuário (sem relação)
+  marketId      String        @db.ObjectId // ID do mercado (sem relação)
+  delivererId   String?       @db.ObjectId // ID do entregador (sem relação)
+  couponId      String?       @db.ObjectId // ID do cupom (sem relação)
+  addressId     String        @db.ObjectId // ID do endereço de entrega
+  status        OrderStatus   @default(PENDING)
+  total         Float
+  discount      Float? // Valor do desconto aplicado
+  paymentMethod PaymentMethod @default(CREDIT_CARD)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 }
 
 model OrderItem {
@@ -119,11 +119,11 @@ model Coupon {
   name          String
   description   String?
   type          CouponType @default(PERCENTAGE)
-  value         Float      
-  minOrderValue Float?     
-  maxDiscount   Float?     
-  usageLimit    Int?       
-  usedCount     Int        @default(0) 
+  value         Float
+  minOrderValue Float?
+  maxDiscount   Float?
+  usageLimit    Int?
+  usedCount     Int        @default(0)
   isActive      Boolean    @default(true)
   validFrom     DateTime   @default(now())
   validUntil    DateTime?
