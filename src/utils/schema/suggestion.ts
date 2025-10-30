@@ -2,7 +2,7 @@ export const suggestionPaths = {
     "/api/v1/suggestions": {
         "get": {
             "tags": ["Suggestions"],
-            "summary": "Listar todas as sugestões",
+            "summary": "Listar todas as sugestões (Admin)",
             "description": "Retorna uma lista paginada de todas as sugestões salvas no banco de dados.",
             "security": [{ "BearerAuth": [] }],
             "parameters": [
@@ -93,6 +93,85 @@ export const suggestionPaths = {
                     "content": {
                         "application/json": {
                             "schema": { "type": "object", "properties": { "message": { "type": "string", "example": "Tarefa não informada" } } }
+                        }
+                    }
+                },
+                "401": {
+                    "description": "Usuário não autenticado",
+                    "content": {
+                        "application/json": {
+                            "schema": { "type": "object", "properties": { "message": { "type": "string", "example": "Usuário não autenticado" } } }
+                        }
+                    }
+                },
+                "500": {
+                    "description": "Erro interno do servidor",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string", "example": "Erro interno do servidor" }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "/api/v1/suggestions/user/me": {
+        "get": {
+            "tags": ["Suggestions"],
+            "summary": "Listar sugestões do usuário logado",
+            "description": "Retorna uma lista paginada de todas as sugestões do usuário autenticado.",
+            "security": [{ "BearerAuth": [] }],
+            "parameters": [
+                {
+                    "name": "page",
+                    "in": "query",
+                    "required": false,
+                    "description": "Número da página",
+                    "schema": {
+                        "type": "integer",
+                        "default": 1,
+                        "minimum": 1,
+                        "example": 1
+                    }
+                },
+                {
+                    "name": "size",
+                    "in": "query",
+                    "required": false,
+                    "description": "Quantidade de itens por página",
+                    "schema": {
+                        "type": "integer",
+                        "default": 10,
+                        "minimum": 1,
+                        "maximum": 100,
+                        "example": 10
+                    }
+                }
+            ],
+            "responses": {
+                "200": {
+                    "description": "Sugestões retornadas com sucesso",
+                    "content": {
+                        "application/json": {
+                            "schema": { "$ref": "#/components/schemas/SuggestionPaginatedResponse" }
+                        }
+                    }
+                },
+                "401": {
+                    "description": "Usuário não autenticado",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string", "example": "Usuário não autenticado" }
+                                }
+                            }
                         }
                     }
                 },
@@ -248,6 +327,11 @@ export const suggestionSchemas = {
                 "description": "ID da sugestão",
                 "example": "507f1f77bcf86cd799439011"
             },
+            "userId": {
+                "type": "string",
+                "description": "ID do usuário que criou a sugestão",
+                "example": "507f1f77bcf86cd799439012"
+            },
             "task": {
                 "type": "string",
                 "description": "Tarefa solicitada",
@@ -338,7 +422,7 @@ export const suggestionSchemas = {
                 "description": "Data da última atualização"
             }
         },
-        "required": ["id", "task", "data", "createdAt", "updatedAt"],
+        "required": ["id", "userId", "task", "data", "createdAt", "updatedAt"],
         "additionalProperties": false
     },
     "SuggestionResponse": {

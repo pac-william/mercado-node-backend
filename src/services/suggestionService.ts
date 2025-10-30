@@ -4,11 +4,11 @@ import { suggestionRepository } from "../repositories/suggestionRepository";
 import { Logger } from "../utils/logger";
 
 export class SuggestionService {
-    async createSuggestion(task: string, data: any) {
-        Logger.debug('SuggestionService', 'createSuggestion', { task });
-        
-        const suggestion = await suggestionRepository.create(task, data);
-        
+    async createSuggestion(userId: string, task: string, data: any) {
+        Logger.debug('SuggestionService', 'createSuggestion', { userId, task });
+
+        const suggestion = await suggestionRepository.create(userId, task, data);
+
         Logger.successOperation('SuggestionService', 'createSuggestion');
         return suggestion;
     }
@@ -28,13 +28,25 @@ export class SuggestionService {
 
     async getSuggestions(page: number, size: number) {
         Logger.debug('SuggestionService', 'getSuggestions', { page, size });
-        
+
         const count = await suggestionRepository.count();
         const suggestionsData = await suggestionRepository.findAll(page, size);
-        
+
         const suggestions = suggestionsData.map((s: any) => new SuggestionListItem(s.id));
-        
+
         Logger.successOperation('SuggestionService', 'getSuggestions');
+        return new SuggestionPaginatedResponse(suggestions, new Meta(page, size, count, Math.ceil(count / size), count));
+    }
+
+    async getSuggestionsByUserId(userId: string, page: number, size: number) {
+        Logger.debug('SuggestionService', 'getSuggestionsByUserId', { userId, page, size });
+
+        const count = await suggestionRepository.countByUserId(userId);
+        const suggestionsData = await suggestionRepository.findAllByUserId(userId, page, size);
+
+        const suggestions = suggestionsData.map((s: any) => new SuggestionListItem(s.id));
+
+        Logger.successOperation('SuggestionService', 'getSuggestionsByUserId');
         return new SuggestionPaginatedResponse(suggestions, new Meta(page, size, count, Math.ceil(count / size), count));
     }
 }

@@ -198,6 +198,7 @@ enum PaymentMethod {
 
 model Suggestion {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId // ID do usuário (sem relação)
   task      String
   data      Json // JSON com os dados da sugestão
   createdAt DateTime @default(now())

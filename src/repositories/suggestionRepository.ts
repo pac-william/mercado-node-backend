@@ -4,11 +4,12 @@ import { Logger } from "../utils/logger";
 const prisma = new PrismaClient();
 
 export class SuggestionRepository {
-    async create(task: string, data: any) {
-        Logger.debug('SuggestionRepository', 'create', { task, dataSize: JSON.stringify(data).length });
-        
+    async create(userId: string, task: string, data: any) {
+        Logger.debug('SuggestionRepository', 'create', { userId, task, dataSize: JSON.stringify(data).length });
+
         const suggestion = await prisma.suggestion.create({
             data: {
+                userId,
                 task,
                 data
             }
@@ -52,10 +53,38 @@ export class SuggestionRepository {
 
     async count() {
         Logger.debug('SuggestionRepository', 'count');
-        
+
         const count = await prisma.suggestion.count();
-        
+
         Logger.successOperation('SuggestionRepository', 'count');
+        return count;
+    }
+
+    async findAllByUserId(userId: string, page: number, size: number) {
+        Logger.debug('SuggestionRepository', 'findAllByUserId', { userId, page, size });
+
+        const suggestions = await prisma.suggestion.findMany({
+            where: { userId },
+            skip: (page - 1) * size,
+            take: size,
+            orderBy: { createdAt: 'desc' },
+            select: {
+                id: true
+            }
+        });
+
+        Logger.successOperation('SuggestionRepository', 'findAllByUserId');
+        return suggestions;
+    }
+
+    async countByUserId(userId: string) {
+        Logger.debug('SuggestionRepository', 'countByUserId', { userId });
+
+        const count = await prisma.suggestion.count({
+            where: { userId }
+        });
+
+        Logger.successOperation('SuggestionRepository', 'countByUserId');
         return count;
     }
 }

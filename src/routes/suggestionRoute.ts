@@ -7,6 +7,7 @@ const router = Router();
 
 router.get('/', validateToken, suggestionController.getSuggestions);
 router.post('/', validateToken, suggestionController.createSuggestions);
+router.get('/user/me', validateToken, suggestionController.getUserSuggestions);
 router.get('/:id', validateToken, suggestionController.getSuggestionById);
 
 export default router;
