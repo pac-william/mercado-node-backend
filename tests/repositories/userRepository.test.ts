@@ -1,6 +1,7 @@
 import { userRepository } from '../../src/repositories/userRepository';
 import { prisma } from '../../src/utils/prisma';
 import { UserDTO, UserUpdateDTO } from '../../src/dtos/userDTO';
+import { createMockUser } from '../helpers/userMock';
 
 const mockedPrisma = jest.mocked(prisma, { shallow: false });
 
@@ -17,24 +18,17 @@ describe('UserRepository', () => {
         password: 'hashedPassword'
       };
 
-      const mockUser = {
-        id: 'user-123',
-        name: 'John Doe',
-        email: 'john@example.com',
-        password: 'hashedPassword',
-        role: 'CUSTOMER' as const,
-        marketId: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        refreshToken: null
-      };
+      const mockUser = createMockUser();
 
       mockedPrisma.user.create.mockResolvedValue(mockUser);
 
       const result = await userRepository.createUser(userData);
 
       expect(mockedPrisma.user.create).toHaveBeenCalledWith({
-        data: userData
+        data: {
+          ...userData,
+          password: userData.password || '',
+        }
       });
       expect(result).toEqual(mockUser);
     });
@@ -59,28 +53,8 @@ describe('UserRepository', () => {
       const size = 10;
 
       const mockUsers = [
-        {
-          id: 'user-1',
-          name: 'John Doe',
-          email: 'john@example.com',
-          password: 'hashedPassword',
-          role: 'CUSTOMER' as const,
-          marketId: null,
-          refreshToken: null,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        },
-        {
-          id: 'user-2',
-          name: 'Jane Doe',
-          email: 'jane@example.com',
-          password: 'hashedPassword',
-          role: 'CUSTOMER' as const,
-          marketId: null,
-          refreshToken: null,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        }
+        createMockUser({ id: 'user-1', email: 'john@example.com' }),
+        createMockUser({ id: 'user-2', name: 'Jane Doe', email: 'jane@example.com' })
       ];
 
       mockedPrisma.user.findMany.mockResolvedValue(mockUsers);
@@ -88,12 +62,16 @@ describe('UserRepository', () => {
       const result = await userRepository.getUsers(page, size);
 
       expect(mockedPrisma.user.findMany).toHaveBeenCalledWith({
+        where: {
+          auth0Id: undefined,
+        },
         skip: (page - 1) * size,
         take: size,
         select: {
           id: true,
           name: true,
           email: true,
+          auth0Id: true,
           createdAt: true,
           updatedAt: true,
         }
@@ -106,17 +84,7 @@ describe('UserRepository', () => {
       const size = 5;
 
       const mockUsers = [
-        {
-          id: 'user-1',
-          name: 'John Doe',
-          email: 'john@example.com',
-          password: 'hashedPassword',
-          role: 'CUSTOMER' as const,
-          marketId: null,
-          refreshToken: null,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        }
+        createMockUser({ id: 'user-1' })
       ];
 
       mockedPrisma.user.findMany.mockResolvedValue(mockUsers);
@@ -124,12 +92,16 @@ describe('UserRepository', () => {
       const result = await userRepository.getUsers(page, size);
 
       expect(mockedPrisma.user.findMany).toHaveBeenCalledWith({
+        where: {
+          auth0Id: undefined,
+        },
         skip: (page - 1) * size, // (3 - 1) * 5 = 10
         take: size,
         select: {
           id: true,
           name: true,
           email: true,
+          auth0Id: true,
           createdAt: true,
           updatedAt: true,
         }
@@ -153,17 +125,7 @@ describe('UserRepository', () => {
     it('should get user by id successfully', async () => {
       const userId = 'user-123';
 
-      const mockUser = {
-        id: 'user-123',
-        name: 'John Doe',
-        email: 'john@example.com',
-        password: 'hashedPassword',
-        role: 'CUSTOMER' as const,
-        marketId: null,
-        refreshToken: null,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
+      const mockUser = createMockUser();
 
       mockedPrisma.user.findUnique.mockResolvedValue(mockUser);
 
@@ -175,6 +137,7 @@ describe('UserRepository', () => {
           id: true,
           name: true,
           email: true,
+          auth0Id: true,
           createdAt: true,
           updatedAt: true,
         }
@@ -197,17 +160,7 @@ describe('UserRepository', () => {
     it('should get user by email successfully', async () => {
       const email = 'john@example.com';
 
-      const mockUser = {
-        id: 'user-123',
-        name: 'John Doe',
-        email: 'john@example.com',
-        password: 'hashedPassword',
-        role: 'CUSTOMER' as const,
-        marketId: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        refreshToken: null
-      };
+      const mockUser = createMockUser();
 
       mockedPrisma.user.findUnique.mockResolvedValue(mockUser);
 
@@ -239,17 +192,11 @@ describe('UserRepository', () => {
         password: 'newHashedPassword'
       };
 
-      const mockUpdatedUser = {
-        id: 'user-123',
+      const mockUpdatedUser = createMockUser({
         name: 'John Updated',
         email: 'john.updated@example.com',
-        password: 'newHashedPassword',
-        role: 'CUSTOMER' as const,
-        marketId: null,
-        refreshToken: null,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
+        password: 'newHashedPassword'
+      });
 
       mockedPrisma.user.update.mockResolvedValue(mockUpdatedUser);
 
@@ -257,7 +204,10 @@ describe('UserRepository', () => {
 
       expect(mockedPrisma.user.update).toHaveBeenCalledWith({
         where: { id: userId },
-        data: userData,
+        data: {
+          ...userData,
+          password: userData.password || '',
+        },
         select: {
           id: true,
           name: true,
@@ -292,17 +242,10 @@ describe('UserRepository', () => {
         email: 'john.partial@example.com'
       };
 
-      const mockUpdatedUser = {
-        id: 'user-123',
+      const mockUpdatedUser = createMockUser({
         name: 'John Partially Updated',
-        email: 'john.partial@example.com',
-        password: 'hashedPassword',
-        role: 'CUSTOMER' as const,
-        marketId: null,
-        refreshToken: null,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
+        email: 'john.partial@example.com'
+      });
 
       mockedPrisma.user.update.mockResolvedValue(mockUpdatedUser);
 
@@ -328,17 +271,9 @@ describe('UserRepository', () => {
         name: 'John Name Only Updated'
       };
 
-      const mockUpdatedUser = {
-        id: 'user-123',
-        name: 'John Name Only Updated',
-        email: 'john@example.com',
-        password: 'hashedPassword',
-        role: 'CUSTOMER' as const,
-        marketId: null,
-        refreshToken: null,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
+      const mockUpdatedUser = createMockUser({
+        name: 'John Name Only Updated'
+      });
 
       mockedPrisma.user.update.mockResolvedValue(mockUpdatedUser);
 
@@ -363,17 +298,7 @@ describe('UserRepository', () => {
     it('should delete user successfully', async () => {
       const userId = 'user-123';
 
-      const mockDeletedUser = {
-        id: 'user-123',
-        name: 'John Doe',
-        email: 'john@example.com',
-        password: 'hashedPassword',
-        role: 'CUSTOMER' as const,
-        marketId: null,
-        refreshToken: null,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
+      const mockDeletedUser = createMockUser();
 
       mockedPrisma.user.delete.mockResolvedValue(mockDeletedUser);
 

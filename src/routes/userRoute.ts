@@ -6,9 +6,10 @@ const router = Router();
 
 // Rotas públicas
 router.post('/', userController.createUser);
-router.get('/', userController.getUsers);
+router.get('/auth0/:auth0Id', userController.getUserByAuth0Id);
 
 // Privadas
+router.get('/', validateToken, userController.getUsers);
 router.get('/:id', validateToken, userController.getUserById);
 router.put('/:id', validateToken, userController.updateUser);
 router.patch('/:id', validateToken, userController.updateUserPartial);

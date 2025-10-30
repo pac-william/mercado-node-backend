@@ -21,8 +21,22 @@ export class AuthController {
                 })
             });
 
+            if (!auth0Token.ok) {
+                const errorData = await auth0Token.json();
+                Logger.errorOperation('AuthController', 'createUser', `Failed to get Auth0 token: ${JSON.stringify(errorData)}`);
+                return res.status(auth0Token.status).json({ 
+                    message: "Erro ao obter token de autenticação",
+                    error: errorData 
+                });
+            }
+
             const auth0TokenData = await auth0Token.json();
             const managementToken = auth0TokenData.access_token;
+
+            if (!managementToken) {
+                Logger.errorOperation('AuthController', 'createUser', 'No access token received from Auth0');
+                return res.status(500).json({ message: "Erro ao obter token de autenticação" });
+            }
 
             // Criar usuário no Auth0
             const data = await fetch('https://dev-gk5bz75smosenq24.us.auth0.com/api/v2/users', {
@@ -39,6 +53,24 @@ export class AuthController {
                 })
             });
 
+            if (!data.ok) {
+                const errorData = await data.json();
+                Logger.errorOperation('AuthController', 'createUser', `Auth0 user creation failed: ${JSON.stringify(errorData)}`);
+                
+                // Verificar se é erro de email duplicado
+                if (errorData.code === 'user_exists' || errorData.message?.toLowerCase().includes('user already exists')) {
+                    return res.status(409).json({ 
+                        message: "Email já está em uso",
+                        error: errorData 
+                    });
+                }
+                
+                return res.status(data.status).json({ 
+                    message: "Erro ao criar usuário no Auth0",
+                    error: errorData 
+                });
+            }
+
             const createUserResponse = await data.json() as CreateUserResponse;
 
             // Criar usuário no banco local usando o service
@@ -52,15 +84,34 @@ export class AuthController {
             Logger.successOperation('AuthController', 'createUser', 'User created in Auth0 and database');
             return res.status(201).json(createUserResponse);
 
-        } catch (error) {
+        } catch (error: any) {
             Logger.errorOperation('AuthController', 'createUser', error);
+            
+            // Tratar erro de constraint única do Prisma
+            if (error?.code === 'P2002') {
+                const field = error?.meta?.target?.[0] || 'campo';
+                if (field === 'email' || field === 'auth0Id') {
+                    return res.status(409).json({ 
+                        message: "Email já está em uso" 
+                    });
+                }
+                return res.status(409).json({ 
+                    message: `Já existe um registro com este ${field}` 
+                });
+            }
+            
             if (error instanceof Error && error.message.includes('Email já está em uso')) {
                 return res.status(409).json({ message: error.message });
             }
+            
             if (error instanceof Error && error.message.includes('Mercado não encontrado')) {
                 return res.status(404).json({ message: error.message });
             }
-            return res.status(500).json({ message: "Erro interno do servidor" });
+            
+            return res.status(500).json({ 
+                message: "Erro interno do servidor",
+                error: error?.message || "Erro desconhecido"
+            });
         }
     }
 
