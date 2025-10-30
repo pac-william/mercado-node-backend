@@ -28,8 +28,17 @@ export const AuthCreateMarketDTO = z.object({
     profilePicture: z.string().url('URL inválida').optional(),
 });
 
+export const AuthRegisterUserDTO = z.object({
+    name: z.string().min(1, 'Nome é obrigatório'),
+    email: z.string().email('Email inválido'),
+    password: z.string().min(6, 'Senha deve ter no mínimo 6 caracteres'),
+    marketId: z.string().optional(),
+    auth0Id: z.string().optional(),
+});
+
 export type Auth0CreateUserDTOType = z.infer<typeof Auth0CreateUserDTO>;
 export type Auth0LoginDTOType = z.infer<typeof Auth0LoginDTO>;
 export type AuthLoginDTOType = z.infer<typeof AuthLoginDTO>;
 export type AuthLinkUserToMarketDTOType = z.infer<typeof AuthLinkUserToMarketDTO>;
 export type AuthCreateMarketDTOType = z.infer<typeof AuthCreateMarketDTO>;
+export type AuthRegisterUserDTOType = z.infer<typeof AuthRegisterUserDTO>;
