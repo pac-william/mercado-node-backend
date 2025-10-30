@@ -3,7 +3,7 @@ export const suggestionPaths = {
         "get": {
             "tags": ["Suggestions"],
             "summary": "Listar todas as sugestões",
-            "description": "Retorna uma lista paginada de todas as sugestões salvas no banco de dados.",
+            "description": "Retorna uma lista paginada de todas as sugestões do usuário autenticado salvas no banco de dados.",
             "security": [{ "BearerAuth": [] }],
             "parameters": [
                 {
@@ -116,7 +116,7 @@ export const suggestionPaths = {
         "get": {
             "tags": ["Suggestions"],
             "summary": "Obter sugestão por ID",
-            "description": "Retorna uma sugestão completa salva no banco de dados pelo ID.",
+            "description": "Retorna uma sugestão completa do usuário autenticado salva no banco de dados pelo ID.",
             "security": [{ "BearerAuth": [] }],
             "parameters": [
                 {

@@ -13,14 +13,20 @@ export class SuggestionController {
         });
         
         try {
+            if (!req.user) {
+                Logger.warn('SuggestionController', 'getSuggestions - Usuário não autenticado');
+                return res.status(401).json({ message: "Usuário não autenticado" });
+            }
+
+            const userId = req.user.id;
             const { page, size } = QueryBuilder.from(req.query)
                 .withNumber('page', 1)
                 .withNumber('size', 10)
                 .build();
 
-            Logger.debug('SuggestionController', 'getSuggestions - Query parsed', { page, size });
+            Logger.debug('SuggestionController', 'getSuggestions - Query parsed', { userId, page, size });
 
-            const result = await suggestionService.getSuggestions(page, size);
+            const result = await suggestionService.getSuggestions(userId, page, size);
             
             Logger.successOperation('SuggestionController', 'getSuggestions');
             Logger.debug('SuggestionController', 'getSuggestions - Suggestions fetched', { 
@@ -59,9 +65,15 @@ export class SuggestionController {
         });
         
         try {
+            if (!req.user) {
+                Logger.warn('SuggestionController', 'createSuggestions - Usuário não autenticado');
+                return res.status(401).json({ message: "Usuário não autenticado" });
+            }
+
+            const userId = req.user.id;
             const { task } = req.body;
 
-            Logger.debug('SuggestionController', 'createSuggestions - Body parsed', { task });
+            Logger.debug('SuggestionController', 'createSuggestions - Body parsed', { userId, task });
 
             if (!task) {
                 Logger.warn('SuggestionController', 'createSuggestions - Task parameter missing', { body: req.body });
@@ -72,7 +84,7 @@ export class SuggestionController {
             const suggestionData = await aiProcessor.process(task);
             
             Logger.debug('SuggestionController', 'createSuggestions - Saving suggestion to database', { task });
-            const savedSuggestion = await suggestionService.createSuggestion(task, suggestionData);
+            const savedSuggestion = await suggestionService.createSuggestion(userId, task, suggestionData);
             
             Logger.successOperation('SuggestionController', 'createSuggestions');
             Logger.debug('SuggestionController', 'createSuggestions - Suggestion saved', { 
@@ -115,17 +127,23 @@ export class SuggestionController {
         });
         
         try {
+            if (!req.user) {
+                Logger.warn('SuggestionController', 'getSuggestionById - Usuário não autenticado');
+                return res.status(401).json({ message: "Usuário não autenticado" });
+            }
+
+            const userId = req.user.id;
             const { id } = req.params;
 
-            Logger.debug('SuggestionController', 'getSuggestionById - Params parsed', { id });
+            Logger.debug('SuggestionController', 'getSuggestionById - Params parsed', { id, userId });
 
             if (!id) {
                 Logger.warn('SuggestionController', 'getSuggestionById - ID parameter missing', { params: req.params });
                 return res.status(400).json({ message: "ID não informado" });
             }
 
-            Logger.debug('SuggestionController', 'getSuggestionById - Fetching suggestion from database', { id });
-            const suggestion = await suggestionService.getSuggestionById(id);
+            Logger.debug('SuggestionController', 'getSuggestionById - Fetching suggestion from database', { id, userId });
+            const suggestion = await suggestionService.getSuggestionById(id, userId);
             
             Logger.successOperation('SuggestionController', 'getSuggestionById');
             Logger.debug('SuggestionController', 'getSuggestionById - Suggestion fetched', { 
