@@ -88,6 +88,44 @@ export const authPaths = {
                 }
             }
         }
+    },
+    "/api/v1/auth/signout": {
+        "post": {
+            "tags": ["Auth"],
+            "summary": "Fazer logout e invalidar o token atual",
+            "description": "Revoga o token de acesso atual no backend, impedindo seu uso futuro.",
+            "security": [
+                { "bearerAuth": [] }
+            ],
+            "responses": {
+                "200": {
+                    "description": "Logout realizado com sucesso",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string", "example": "Logout realizado com sucesso" }
+                                }
+                            }
+                        }
+                    }
+                },
+                "401": {
+                    "description": "Token ausente, inválido ou revogado",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string", "example": "Token ausente ou inválido" }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 };
 

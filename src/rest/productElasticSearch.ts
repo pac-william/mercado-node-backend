@@ -57,10 +57,20 @@ class ProductElasticSearch {
       };
     }
 
+    const AUTH_HEADER = process.env.ELASTIC_CLOUD_API_KEY
+      ? `ApiKey ${process.env.ELASTIC_CLOUD_API_KEY}`
+      : (process.env.ELASTIC_USERNAME && process.env.ELASTIC_PASSWORD
+        ? `Basic ${Buffer.from(`${process.env.ELASTIC_USERNAME}:${process.env.ELASTIC_PASSWORD}`).toString("base64")}`
+        : "");
+
+    if (!AUTH_HEADER) {
+      throw new Error("Elasticsearch credentials missing: set ELASTIC_CLOUD_API_KEY or ELASTIC_USERNAME/ELASTIC_PASSWORD");
+    }
+
     // Chamada ao Elasticsearch
     const response = await fetch(`${process.env.ELASTICSEARCH_URL}/produtos/_search`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "Authorization": AUTH_HEADER },
       body: JSON.stringify(esQuery)
     });
 
