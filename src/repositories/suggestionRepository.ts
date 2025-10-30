@@ -65,6 +65,34 @@ export class SuggestionRepository {
         Logger.successOperation('SuggestionRepository', 'count');
         return count;
     }
+
+    async findAllByUserId(userId: string, page: number, size: number) {
+        Logger.debug('SuggestionRepository', 'findAllByUserId', { userId, page, size });
+
+        const suggestions = await prisma.suggestion.findMany({
+            where: { userId },
+            skip: (page - 1) * size,
+            take: size,
+            orderBy: { createdAt: 'desc' },
+            select: {
+                id: true
+            }
+        });
+
+        Logger.successOperation('SuggestionRepository', 'findAllByUserId');
+        return suggestions;
+    }
+
+    async countByUserId(userId: string) {
+        Logger.debug('SuggestionRepository', 'countByUserId', { userId });
+
+        const count = await prisma.suggestion.count({
+            where: { userId }
+        });
+
+        Logger.successOperation('SuggestionRepository', 'countByUserId');
+        return count;
+    }
 }
 
 export const suggestionRepository = new SuggestionRepository();
