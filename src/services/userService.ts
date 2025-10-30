@@ -7,7 +7,7 @@ class UserService {
         if (existingUser) {
             throw new Error("Email já está em uso");
         }
-        
+
         return await userRepository.createUser(userDTO);
     }
 
@@ -17,6 +17,14 @@ class UserService {
 
     async getUserById(id: string) {
         const user = await userRepository.getUserById(id);
+        if (!user) {
+            throw new Error("Usuário não encontrado");
+        }
+        return user;
+    }
+
+    async getUserByAuth0Id(auth0Id: string) {
+        const user = await userRepository.getUserByAuth0Id(auth0Id);
         if (!user) {
             throw new Error("Usuário não encontrado");
         }

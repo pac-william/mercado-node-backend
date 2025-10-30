@@ -23,6 +23,19 @@ export class UserController {
         }
     }
 
+    async getUserByAuth0Id(req: Request, res: Response) {
+        Logger.controller('User', 'getUserByAuth0Id', 'query', req.query);
+        try {
+            const { auth0Id } = req.params;
+            const user = await userService.getUserByAuth0Id(auth0Id);
+            Logger.successOperation('UserController', 'getUserByAuth0Id');
+            return res.status(200).json(toUserResponseDTO(user));
+        } catch (error) {
+            Logger.errorOperation('UserController', 'getUserByAuth0Id', error);
+            return res.status(500).json({ message: "Erro interno do servidor" });
+        }
+    }
+
     async createUser(req: Request, res: Response) {
         Logger.controller('User', 'createUser', 'req: Request, res: Response', { body: req.body });
         try {
