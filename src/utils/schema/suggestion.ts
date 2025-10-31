@@ -4,7 +4,7 @@ export const suggestionPaths = {
             "tags": ["Suggestions"],
             "summary": "Listar todas as sugestões",
             "description": "Retorna uma lista paginada de todas as sugestões do usuário autenticado salvas no banco de dados.",
-            "security": [{ "BearerAuth": [] }],
+            "security": [{ "bearerAuth": [] }],
             "parameters": [
                 {
                     "name": "page",
@@ -59,8 +59,8 @@ export const suggestionPaths = {
         "post": {
             "tags": ["Suggestions"],
             "summary": "Criar sugestões de produtos",
-            "description": "Cria sugestões de produtos essenciais, produtos comuns e utensílios baseados em IA e salva no banco de dados.",
-            "security": [{ "BearerAuth": [] }],
+            "description": "Cria sugestões baseadas em IA como uma lista única de itens, cada um com tipo (essential, common, utensil), e salva no banco de dados.",
+            "security": [{ "bearerAuth": [] }],
             "requestBody": {
                 "required": true,
                 "content": {
@@ -125,7 +125,7 @@ export const suggestionPaths = {
             "tags": ["Suggestions"],
             "summary": "Listar sugestões do usuário logado",
             "description": "Retorna uma lista paginada de todas as sugestões do usuário autenticado.",
-            "security": [{ "BearerAuth": [] }],
+            "security": [{ "bearerAuth": [] }],
             "parameters": [
                 {
                     "name": "page",
@@ -196,7 +196,7 @@ export const suggestionPaths = {
             "tags": ["Suggestions"],
             "summary": "Obter sugestão por ID",
             "description": "Retorna uma sugestão completa do usuário autenticado salva no banco de dados pelo ID.",
-            "security": [{ "BearerAuth": [] }],
+            "security": [{ "bearerAuth": [] }],
             "parameters": [
                 {
                     "name": "id",
@@ -341,36 +341,15 @@ export const suggestionSchemas = {
                 "type": "object",
                 "description": "Dados completos da sugestão gerada pela IA",
                 "properties": {
-                    "essential_products": {
+                    "items": {
                         "type": "array",
                         "items": {
                             "type": "object",
                             "properties": {
                                 "name": { "type": "string" },
                                 "categoryId": { "type": "string" },
-                                "categoryName": { "type": "string" }
-                            }
-                        }
-                    },
-                    "common_products": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "name": { "type": "string" },
-                                "categoryId": { "type": "string" },
-                                "categoryName": { "type": "string" }
-                            }
-                        }
-                    },
-                    "utensils": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "name": { "type": "string" },
-                                "categoryId": { "type": "string" },
-                                "categoryName": { "type": "string" }
+                                "categoryName": { "type": "string" },
+                                "type": { "type": "string", "enum": ["essential", "common", "utensil"] }
                             }
                         }
                     },
@@ -428,41 +407,18 @@ export const suggestionSchemas = {
     "SuggestionResponse": {
         "type": "object",
         "properties": {
-            "essential_products": {
+            "items": {
                 "type": "array",
                 "items": {
                     "type": "object",
                     "properties": {
                         "name": { "type": "string" },
                         "categoryId": { "type": "string" },
-                        "categoryName": { "type": "string" }
+                        "categoryName": { "type": "string" },
+                        "type": { "type": "string", "enum": ["essential", "common", "utensil"] }
                     }
                 },
-                "description": "Lista de produtos essenciais para a receita"
-            },
-            "common_products": {
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": { "type": "string" },
-                        "categoryId": { "type": "string" },
-                        "categoryName": { "type": "string" }
-                    }
-                },
-                "description": "Lista de produtos comuns para a receita"
-            },
-            "utensils": {
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": { "type": "string" },
-                        "categoryId": { "type": "string" },
-                        "categoryName": { "type": "string" }
-                    }
-                },
-                "description": "Lista de utensílios necessários para a receita"
+                "description": "Lista única de itens com tipo (essential, common, utensil)"
             },
             "searchResults": {
                 "type": "object",
@@ -500,7 +456,7 @@ export const suggestionSchemas = {
                 }
             }
         },
-        "required": ["essential_products", "common_products", "utensils"],
+        "required": ["items"],
         "additionalProperties": false
     }
 };

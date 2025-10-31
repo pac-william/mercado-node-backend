@@ -1,10 +1,10 @@
-import { AISuggestionResponse, SuggestionResponse } from "../interfaces/suggestionInterface";
-import { productElasticSearch } from "../rest/productElasticSearch";
+// Removed strict typing imports to allow new unified structure without changing interfaces
+// import { AISuggestionResponse, SuggestionResponse } from "../interfaces/suggestionInterface";
 import { categoriesService } from "../services/categoriesService";
 import { Logger } from "../utils/logger";
 
 class AiProcessor {
-    async process(task: string): Promise<SuggestionResponse> {
+    async process(task: string): Promise<any> {
         Logger.debug('AiProcessor', 'process - Starting AI processing', { task });
 
         try {
@@ -29,11 +29,11 @@ class AiProcessor {
                     input: [
                         {
                             role: "system",
-                            content: "Você é um agente de mercado, você gerencia o estoque de um mercado e irá ajudar o usuário a encontrar os produtos para a tarefa que ele irá te passar. Sua tarefa: gerar nomes de produtos e utensílios necessários (sem quantidades/mode de preparo) e, PARA CADA ITEM, escolher uma categoria EXISTENTE da lista fornecida seja consistente com qual categoria representa melhor o produto. Retorne somente no formato solicitado."
+                            content: "Você é um agente de mercado. Gere SOMENTE nomes de itens para pesquisar (sem quantidades/medidas/modo de preparo). Para cada item, escolha UMA categoria EXISTENTE da lista fornecida. Cada item deve incluir: name, categoryId, categoryName e type, onde type ∈ {essential, common, utensil}. Retorne EXCLUSIVAMENTE no formato solicitado."
                         },
                         {
                             role: "user",
-                            content: `Categorias disponíveis (use APENAS uma destas por item): ${JSON.stringify(categories, null, 2)}.\nAgora, liste itens para realizar a tarefa solicitada: ${task}, separados em essential_products, common_products e utensils. Para cada item gere: name (string), categoryId (um dos ids acima), categoryName (nome correspondente). Não inclua quantidades, medidas ou modo de preparo.`
+                            content: `Categorias disponíveis (use APENAS uma destas por item): ${JSON.stringify(categories, null, 2)}.\nAgora, gere uma lista única de itens para realizar a tarefa: ${task}. Não separe em seções. Para cada item gere: name (string), categoryId (um dos ids acima), categoryName (nome correspondente), type ("essential" | "common" | "utensil"). Não inclua quantidades, medidas ou modo de preparo.`
                         }
                     ],
                     text: {
@@ -43,47 +43,22 @@ class AiProcessor {
                             schema: {
                                 type: "object",
                                 properties: {
-                                    essential_products: {
+                                    items: {
                                         type: "array",
                                         items: {
                                             type: "object",
                                             properties: {
                                                 name: { type: "string" },
                                                 categoryId: { type: "string" },
-                                                categoryName: { type: "string" }
+                                                categoryName: { type: "string" },
+                                                type: { type: "string", enum: ["essential", "common", "utensil"] }
                                             },
-                                            required: ["name", "categoryId", "categoryName"],
-                                            additionalProperties: false
-                                        }
-                                    },
-                                    common_products: {
-                                        type: "array",
-                                        items: {
-                                            type: "object",
-                                            properties: {
-                                                name: { type: "string" },
-                                                categoryId: { type: "string" },
-                                                categoryName: { type: "string" }
-                                            },
-                                            required: ["name", "categoryId", "categoryName"],
-                                            additionalProperties: false
-                                        }
-                                    },
-                                    utensils: {
-                                        type: "array",
-                                        items: {
-                                            type: "object",
-                                            properties: {
-                                                name: { type: "string" },
-                                                categoryId: { type: "string" },
-                                                categoryName: { type: "string" }
-                                            },
-                                            required: ["name", "categoryId", "categoryName"],
+                                            required: ["name", "categoryId", "categoryName", "type"],
                                             additionalProperties: false
                                         }
                                     }
                                 },
-                                required: ["essential_products", "common_products", "utensils"],
+                                required: ["items"],
                                 additionalProperties: false
                             },
                             strict: true
@@ -108,80 +83,26 @@ class AiProcessor {
                 throw new Error(`OpenAI API error: ${response.status} ${response.statusText} - ${errorText}`);
             }
 
-            const data = await response.json() as AISuggestionResponse;
+            const data = await response.json() as any;
             Logger.debug('AiProcessor', 'process - OpenAI response parsed', { 
                 hasOutput: !!data.output,
                 outputLength: data.output?.length || 0 
             });
 
-            const outputData: SuggestionResponse = JSON.parse(data.output[0].content[0].text) as SuggestionResponse;
+            const outputData = JSON.parse(data.output[0].content[0].text) as { items: Array<{ name: string; categoryId: string; categoryName: string; type: "essential" | "common" | "utensil" }> };
             Logger.debug('AiProcessor', 'process - AI suggestion parsed', { 
-                essentialProducts: outputData.essential_products?.length || 0,
-                commonProducts: outputData.common_products?.length || 0,
-                utensils: outputData.utensils?.length || 0
+                totalItems: outputData.items?.length || 0
             });
 
-            const finalSuggestion: SuggestionResponse = {
-                essential_products: outputData.essential_products,
-                common_products: outputData.common_products,
-                utensils: outputData.utensils
-            };
-
-            // Concatena todos os itens em um array único
-            const allItems = [
-                ...outputData.essential_products,
-                ...outputData.common_products,
-                ...outputData.utensils
-            ];
-
-            Logger.debug('AiProcessor', 'process - Starting product search', { 
-                totalItems: allItems.length,
-                searchTerms: allItems.map(item => item.name)
-            });
-
-            // Faz loop em todos os itens e busca produtos
-            const searchPromises = allItems.map(item =>
-                productElasticSearch.getProducts(item.name, 1, 100, item.categoryName)
-            );
-
-            // Aguarda todas as buscas e concatena os resultados
-            const searchResults = await Promise.all(searchPromises);
-            Logger.debug('AiProcessor', 'process - Product search completed', { 
-                totalResults: searchResults.length,
-                resultsWithProducts: searchResults.filter(r => r.products?.length > 0).length
-            });
-
-            // Agrupa produtos por termo de busca original
-            const productsBySearchTerm = allItems.map((item, index) => ({
-                searchTerm: item.name,
-                categoryName: item.categoryName,
-                products: searchResults[index]?.products || [],
-                meta: searchResults[index]?.meta || { total: 0, page: 1, size: 100 }
-            }));
-
-            // Calcula estatísticas gerais
-            const totalProductsFound = searchResults.reduce((total, result) =>
-                total + (result.products?.length || 0), 0
-            );
-
-            const finalResult = {
-                ...finalSuggestion,
-                searchResults: {
-                    productsBySearchTerm,
-                    statistics: {
-                        totalSearches: allItems.length,
-                        totalProductsFound,
-                        searchTerms: allItems.map(item => item.name)
-                    }
-                }
+            const finalSuggestion = {
+                items: outputData.items
             };
 
             Logger.debug('AiProcessor', 'process - Processing completed successfully', { 
-                totalProductsFound,
-                totalSearches: allItems.length
+                totalItems: finalSuggestion.items.length
             });
 
-            return finalResult;
+            return finalSuggestion;
 
         } catch (error: any) {
             Logger.error('AiProcessor', 'process - Error during AI processing', {

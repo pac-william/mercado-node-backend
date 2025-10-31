@@ -87,12 +87,18 @@ export class SuggestionController {
             const savedSuggestion = await suggestionService.createSuggestion(userId, task, suggestionData);
             
             Logger.successOperation('SuggestionController', 'createSuggestions');
+            const totalItems = Array.isArray(suggestionData.items) ? suggestionData.items.length : 0;
+            const essentialCount = Array.isArray(suggestionData.items) ? suggestionData.items.filter((i: any) => i.type === 'essential').length : 0;
+            const commonCount = Array.isArray(suggestionData.items) ? suggestionData.items.filter((i: any) => i.type === 'common').length : 0;
+            const utensilCount = Array.isArray(suggestionData.items) ? suggestionData.items.filter((i: any) => i.type === 'utensil').length : 0;
+
             Logger.debug('SuggestionController', 'createSuggestions - Suggestion saved', {
                 suggestionId: savedSuggestion.id,
                 userId,
-                essentialProducts: suggestionData.essential_products?.length || 0,
-                commonProducts: suggestionData.common_products?.length || 0,
-                utensils: suggestionData.utensils?.length || 0,
+                items: totalItems,
+                essential: essentialCount,
+                common: commonCount,
+                utensil: utensilCount,
                 totalSearches: suggestionData.searchResults?.statistics?.totalSearches || 0,
                 totalProductsFound: suggestionData.searchResults?.statistics?.totalProductsFound || 0
             });
