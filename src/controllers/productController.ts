@@ -61,6 +61,14 @@ export class ProductController {
         Logger.controller('Product', 'getProductsByMarket', 'query', req.query);
         try {
             const { marketId } = req.params;
+            
+            // Validar se marketId é válido
+            if (!marketId || marketId === 'null' || marketId === 'undefined') {
+                return res.status(400).json({ 
+                    message: "ID do mercado é obrigatório e deve ser válido" 
+                });
+            }
+
             const { page, size, categoryId } = QueryBuilder.from(req.query)
                 .withNumber('page', 1)
                 .withNumber('size', 10)
