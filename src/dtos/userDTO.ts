@@ -21,6 +21,8 @@ export const UserResponseDTO = z.object({
     id: z.string(),
     name: z.string(),
     email: z.string(),
+    marketId: z.string().nullable().optional(),
+    role: z.string().optional(),
     createdAt: z.date(),
     updatedAt: z.date(),
 });
@@ -31,6 +33,8 @@ export const toUserResponseDTO = (u: any): UserResponseDTO => ({
     id: String(u.id),
     name: u.name,
     email: u.email,
+    marketId: u.marketId ? String(u.marketId) : null,
+    role: u.role || undefined,
     createdAt: u.createdAt instanceof Date ? u.createdAt : new Date(u.createdAt),
     updatedAt: u.updatedAt instanceof Date ? u.updatedAt : new Date(u.updatedAt),
 });
