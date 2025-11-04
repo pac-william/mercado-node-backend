@@ -149,22 +149,18 @@ export class AuthController {
     async registerMarket(req: Request, res: Response) {
         Logger.controller('Auth', 'registerMarket', 'body', req.body);
         try {
-            // Validar dados do mercado (sem email e password, que são do usuário)
             const { email, password, name: userName, marketName, ...marketFields } = req.body;
-            // Se marketName foi enviado, usar ele; senão usar name do marketFields
             const marketData = AuthCreateMarketDTO.parse({
                 ...marketFields,
                 name: marketName || marketFields.name,
             });
             
-            // Validar dados do usuário (email e senha são obrigatórios)
             if (!email || !password) {
                 return res.status(400).json({ 
                     message: "Email e senha são obrigatórios" 
                 });
             }
 
-            // Buscar token de management do Auth0
             const auth0Token = await fetch('https://dev-gk5bz75smosenq24.us.auth0.com/oauth/token', {
                 method: 'POST',
                 headers: {
@@ -195,14 +191,12 @@ export class AuthController {
                 return res.status(500).json({ message: "Erro ao obter token de autenticação" });
             }
 
-            // Criar mercado primeiro
             const market = await marketService.createMarket({
                 name: marketData.name,
                 address: marketData.address,
                 profilePicture: marketData.profilePicture || undefined,
             });
 
-            // Criar usuário no Auth0
             const auth0UserData = await fetch('https://dev-gk5bz75smosenq24.us.auth0.com/api/v2/users', {
                 method: 'POST',
                 headers: {
@@ -214,7 +208,6 @@ export class AuthController {
                     email: email,
                     password: password,
                     name: userName || marketData.name,
-                    // Adicionar metadata customizada para role
                     app_metadata: {
                         role: 'MARKET_ADMIN',
                         marketId: market.id
@@ -229,15 +222,12 @@ export class AuthController {
             if (!auth0UserData.ok) {
                 const errorData = await auth0UserData.json();
                 Logger.errorOperation('AuthController', 'registerMarket', `Auth0 user creation failed: ${JSON.stringify(errorData)}`);
-                
-                // Se falhou ao criar usuário, remover mercado criado
                 try {
                     await marketService.deleteMarket(market.id);
                 } catch (deleteError) {
                     Logger.errorOperation('AuthController', 'registerMarket', `Failed to delete market after user creation failure: ${deleteError}`);
                 }
                 
-                // Verificar se é erro de email duplicado
                 if (errorData.code === 'user_exists' || errorData.message?.toLowerCase().includes('user already exists')) {
                     return res.status(409).json({ 
                         message: "Email já está em uso",
@@ -253,7 +243,6 @@ export class AuthController {
 
             const createUserResponse = await auth0UserData.json() as CreateUserResponse;
 
-            // Criar usuário no banco local com role MARKET_ADMIN e vinculado ao mercado
             const { userRepository } = await import('../repositories/userRepository');
             await userRepository.createUserWithRoleAndMarket({
                 name: userName || marketData.name,
@@ -281,7 +270,6 @@ export class AuthController {
         } catch (error: any) {
             Logger.errorOperation('AuthController', 'registerMarket', error);
             
-            // Tratar erro de constraint única do Prisma
             if (error?.code === 'P2002') {
                 const field = error?.meta?.target?.[0] || 'campo';
                 if (field === 'email' || field === 'auth0Id') {
@@ -328,24 +316,20 @@ export class AuthController {
                 });
             }
 
-            // Validar dados do mercado
             const marketData = AuthCreateMarketDTO.parse({
                 name: marketName,
                 address: address,
                 profilePicture: profilePicture,
             });
 
-            // Criar mercado
             const market = await marketService.createMarket({
                 name: marketData.name,
                 address: marketData.address,
                 profilePicture: marketData.profilePicture || undefined,
             });
 
-            // Buscar informações do usuário no Auth0 para obter email
             let userEmail = '';
             try {
-                // Buscar token de management do Auth0
                 const auth0Token = await fetch('https://dev-gk5bz75smosenq24.us.auth0.com/oauth/token', {
                     method: 'POST',
                     headers: {
@@ -363,7 +347,6 @@ export class AuthController {
                     const tokenData = await auth0Token.json();
                     const managementToken = tokenData.access_token;
 
-                    // Buscar usuário no Auth0
                     const auth0UserResponse = await fetch(`https://dev-gk5bz75smosenq24.us.auth0.com/api/v2/users/${auth0Id}`, {
                         headers: {
                             'Authorization': `Bearer ${managementToken}`,
@@ -380,22 +363,19 @@ export class AuthController {
                 Logger.errorOperation('AuthController', 'createMarketForUser', `Erro ao buscar email do Auth0: ${error}`);
             }
 
-            // Buscar usuário pelo auth0Id
             const { userRepository } = await import('../repositories/userRepository');
             const existingUser = await userRepository.getUserByAuth0Id(auth0Id);
 
             if (!existingUser) {
-                // Se usuário não existe no banco local, criar
                 await userRepository.createUserWithRoleAndMarket({
                     name: userName || marketData.name,
-                    email: userEmail || req.body.email || '', // Usar email do Auth0 ou do body
+                    email: userEmail || req.body.email || '',
                     password: '',
                     auth0Id: auth0Id,
                     role: 'MARKET_ADMIN',
                     marketId: market.id,
                 });
             } else {
-                // Se usuário já existe, atualizar para vincular ao mercado
                 const { prisma } = await import('../utils/prisma');
                 await prisma.user.update({
                     where: { id: existingUser.id },
