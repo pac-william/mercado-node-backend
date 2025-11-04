@@ -72,6 +72,27 @@ class UserRepository {
         return user;
     }
 
+    async createUserWithRoleAndMarket(data: {
+        name: string;
+        email: string;
+        password: string;
+        auth0Id: string;
+        role: string;
+        marketId: string;
+    }) {
+        const user = await prisma.user.create({
+            data: {
+                name: data.name,
+                email: data.email,
+                password: data.password || '',
+                auth0Id: data.auth0Id,
+                role: data.role as any,
+                marketId: data.marketId,
+            }
+        });
+        return user;
+    }
+
     async updateUser(id: string, userDTO: UserDTO) {
         const user = await prisma.user.update({
             where: { id },
