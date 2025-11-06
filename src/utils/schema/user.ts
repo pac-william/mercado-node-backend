@@ -184,6 +184,105 @@ export const userPaths = {
                     }
                 }
             }
+        },
+        "patch": {
+            "tags": ["Users"],
+            "summary": "Atualizar parcialmente o usuário autenticado",
+            "description": "Atualiza parcialmente os dados do usuário autenticado baseado no token JWT.",
+            "security": [{ "bearerAuth": [] }],
+            "requestBody": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": { "$ref": "#/components/schemas/UserUpdateDTO" }
+                    }
+                }
+            },
+            "responses": {
+                "200": {
+                    "description": "Usuário atualizado com sucesso",
+                    "content": {
+                        "application/json": {
+                            "schema": { "$ref": "#/components/schemas/UserResponseDTO" }
+                        }
+                    }
+                },
+                "400": {
+                    "description": "Erro de validação",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string" },
+                                    "errors": { 
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "field": { "type": "string" },
+                                                "message": { "type": "string" }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "401": {
+                    "description": "Usuário não autenticado",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string", "example": "Usuário não autenticado" }
+                                }
+                            }
+                        }
+                    }
+                },
+                "404": {
+                    "description": "Usuário não encontrado",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string", "example": "Usuário não encontrado" }
+                                }
+                            }
+                        }
+                    }
+                },
+                "409": {
+                    "description": "Email já está em uso",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string", "example": "Email já está em uso" }
+                                }
+                            }
+                        }
+                    }
+                },
+                "500": {
+                    "description": "Erro interno do servidor",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string", "example": "Erro interno do servidor" }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "/api/v1/users/auth0/{auth0Id}": {

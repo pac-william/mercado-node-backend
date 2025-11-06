@@ -70,6 +70,25 @@ export class UserController {
         }
     }
 
+    async updateMe(req: Request, res: Response) {
+        Logger.controller('User', 'updateMe', 'body', req.body);
+        try {
+            if (!req.user) {
+                return res.status(401).json({ message: "Usuário não autenticado" });
+            }
+            const userUpdateDTO = UserUpdateDTO.parse(req.body);
+            const user = await userService.updateUserPartial(req.user.id, userUpdateDTO);
+            Logger.successOperation('UserController', 'updateMe');
+            return res.status(200).json(user);
+        } catch (error) {
+            Logger.errorOperation('UserController', 'updateMe', error);
+            if (error instanceof Error && (error.message === "Usuário não encontrado" || error.message === "Email já está em uso")) {
+                return res.status(error.message === "Usuário não encontrado" ? 404 : 409).json({ message: error.message });
+            }
+            return res.status(500).json({ message: "Erro interno do servidor" });
+        }
+    }
+
     async getUserById(req: Request, res: Response) {
         Logger.controller('User', 'getUserById', 'query', req.query);
         try {
