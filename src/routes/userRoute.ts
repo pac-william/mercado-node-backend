@@ -10,6 +10,7 @@ router.get('/auth0/:auth0Id', userController.getUserByAuth0Id);
 
 // Privadas
 router.get('/', validateToken, userController.getUsers);
+router.get('/me', validateToken, userController.getMe);
 router.get('/:id', validateToken, userController.getUserById);
 router.put('/:id', validateToken, userController.updateUser);
 router.patch('/:id', validateToken, userController.updateUserPartial);

@@ -33,15 +33,7 @@ class UserRepository {
 
     async getUserById(id: string) {
         const user = await prisma.user.findUnique({
-            where: { id },
-            select: {
-                id: true,
-                name: true,
-                email: true,
-                auth0Id: true,
-                createdAt: true,
-                updatedAt: true,
-            },
+            where: { id }
         });
         return user;
     }

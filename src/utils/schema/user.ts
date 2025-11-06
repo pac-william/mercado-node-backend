@@ -129,6 +129,63 @@ export const userPaths = {
             }
         }
     },
+    "/api/v1/users/me": {
+        "get": {
+            "tags": ["Users"],
+            "summary": "Obter dados do usuário autenticado",
+            "description": "Retorna os dados do usuário autenticado baseado no token JWT.",
+            "security": [{ "bearerAuth": [] }],
+            "responses": {
+                "200": {
+                    "description": "Usuário retornado com sucesso",
+                    "content": {
+                        "application/json": {
+                            "schema": { "$ref": "#/components/schemas/UserResponseDTO" }
+                        }
+                    }
+                },
+                "401": {
+                    "description": "Usuário não autenticado",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string", "example": "Usuário não autenticado" }
+                                }
+                            }
+                        }
+                    }
+                },
+                "404": {
+                    "description": "Usuário não encontrado",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string", "example": "Usuário não encontrado" }
+                                }
+                            }
+                        }
+                    }
+                },
+                "500": {
+                    "description": "Erro interno do servidor",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string", "example": "Erro interno do servidor" }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
     "/api/v1/users/auth0/{auth0Id}": {
         "get": {
             "tags": ["Users"],
