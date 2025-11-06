@@ -41,7 +41,6 @@ app.use('/api/v1/users', routes.userRoute);
 app.use('/api/v1/categories', routes.categoriesRouter);
 app.use('/api/v1/deliverers', routes.delivererRoute);
 app.use('/api/v1/orders', routes.orderRoute);
-app.use('/api/v1/auth', routes.authRoute);
 app.use('/api/v1/suggestions', routes.suggestionRoute);
 app.use('/api/v1/addresses', routes.addressRoute);
 app.use('/api/v1/cart', routes.cartRoute);
