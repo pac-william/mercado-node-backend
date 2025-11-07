@@ -1,9 +1,9 @@
-import { AddressCreateDTO, AddressUpdateDTO } from "../dtos/addressDTO";
+import { AddressDTO, AddressUpdateDTO } from "../dtos/addressDTO";
 import { Logger } from "../utils/logger";
 import { prisma } from "../utils/prisma";
 
 class AddressRepository {
-    async createAddress(userId: string, addressDTO: AddressCreateDTO) {
+    async createAddress(userId: string, addressDTO: AddressDTO) {
         Logger.repository('AddressRepository', 'createAddress', 'userId', userId);
         const address = await prisma.address.create({
             data: {
@@ -29,111 +29,52 @@ class AddressRepository {
 
     async getAddressById(id: string, userId: string) {
         const address = await prisma.address.findFirst({
-            where: { 
+            where: {
                 id,
-                userId 
-            },
-        });
-        return address;
-    }
-
-    async updateAddress(id: string, userId: string, addressDTO: AddressCreateDTO) {
-        const address = await prisma.address.update({
-            where: { 
-                id,
-                userId 
-            },
-            data: addressDTO,
-        });
-        return address;
-    }
-
-    async updateAddressPartial(id: string, userId: string, addressUpdateDTO: AddressUpdateDTO) {
-        const address = await prisma.address.update({
-            where: { 
-                id,
-                userId 
-            },
-            data: addressUpdateDTO,
-        });
-        return address;
-    }
-
-    async deleteAddress(id: string, userId: string) {
-        const address = await prisma.address.delete({
-            where: { 
-                id,
-                userId 
+                userId
             },
         });
         return address;
     }
 
     async getAddressCountByUserId(userId: string) {
+        Logger.repository('AddressRepository', 'getAddressCountByUserId', 'userId', userId);
         const count = await prisma.address.count({
-            where: { userId },
+            where: { userId }
         });
         return count;
     }
 
-    async getFavoriteAddressByUserId(userId: string) {
-        const address = await prisma.address.findFirst({
-            where: { 
-                userId,
-                isFavorite: true,
-                isActive: true 
-            },
-        });
-        return address;
-    }
-
-    async setFavoriteAddress(id: string, userId: string, isFavorite: boolean) {
-        if (isFavorite) {
-            await prisma.address.updateMany({
-                where: { userId },
-                data: { isFavorite: false },
-            });
-        }
-
+    async updateAddress(id: string, userId: string, addressDTO: AddressDTO) {
         const address = await prisma.address.update({
-            where: { 
+            where: {
                 id,
-                userId 
+                userId
             },
-            data: { isFavorite },
+            data: addressDTO,
         });
         return address;
     }
 
-    async getActiveAddressesByUserId(userId: string) {
-        const addresses = await prisma.address.findMany({
-            where: { 
-                userId,
-                isActive: true 
+    async updateAddressPartial(id: string, userId: string, addressDTO: AddressUpdateDTO) {
+        const address = await prisma.address.update({
+            where: {
+                id,
+                userId
             },
-            orderBy: [
-                { isFavorite: 'desc' },
-                { createdAt: 'desc' }
-            ],
+            data: addressDTO,
         });
-        return addresses;
+        return address;
     }
 
-    async getAddressesByZipCode(zipCode: string) {
-        const addresses = await prisma.address.findMany({
-            where: { zipCode },
-        });
-        return addresses;
-    }
-
-    async getAddressesByCity(city: string, state: string) {
-        const addresses = await prisma.address.findMany({
-            where: { 
-                city,
-                state 
+    async deleteAddress(id: string, userId: string) {
+        const address = await prisma.address.delete({
+            where: {
+                id,
+                userId
             },
         });
-        return addresses;
+        return address;
     }
 }
 

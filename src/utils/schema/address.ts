@@ -635,11 +635,6 @@ export const addressSchemas = {
             "meta": {
                 "type": "object",
                 "properties": {
-                    "total": {
-                        "type": "integer",
-                        "example": 3,
-                        "description": "Total de endereços"
-                    },
                     "page": {
                         "type": "integer",
                         "example": 1,
@@ -650,15 +645,20 @@ export const addressSchemas = {
                         "example": 10,
                         "description": "Tamanho da página"
                     },
-                    "favorites": {
-                        "type": "integer",
-                        "example": 1,
-                        "description": "Número de endereços favoritos"
-                    },
-                    "active": {
+                    "total": {
                         "type": "integer",
                         "example": 3,
-                        "description": "Número de endereços ativos"
+                        "description": "Total de endereços retornados na página"
+                    },
+                    "totalPages": {
+                        "type": "integer",
+                        "example": 1,
+                        "description": "Quantidade de páginas disponíveis"
+                    },
+                    "totalItems": {
+                        "type": "integer",
+                        "example": 3,
+                        "description": "Total de endereços cadastrados para o usuário"
                     }
                 }
             }

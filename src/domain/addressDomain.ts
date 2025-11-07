@@ -1,4 +1,6 @@
-export class Address {
+import { Meta } from "./metaDomain";
+
+export class AddressDomain {
     constructor(
         public id: string,
         public userId: string,
@@ -14,5 +16,12 @@ export class Address {
         public isActive: boolean = true,
         public createdAt: Date = new Date(),
         public updatedAt: Date = new Date(),
+    ) { }
+}
+
+export class AddressPaginatedResponse {
+    constructor(
+        public addresses: AddressDomain[],
+        public meta: Meta,
     ) { }
 }

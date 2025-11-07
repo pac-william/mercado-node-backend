@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { AddressCreateDTO, AddressUpdateDTO, toAddressResponseDTO } from "../dtos/addressDTO";
+import { AddressDTO, AddressUpdateDTO } from "../dtos/addressDTO";
 import { addressService } from "../services/addressService";
 import { Logger } from "../utils/logger";
 import { QueryBuilder } from "../utils/queryBuilder";
@@ -18,18 +18,9 @@ export class AddressController {
                 .withNumber('size', 10)
                 .build();
 
-            const result = await addressService.getAddressesByUserId(userId, page, size);
+            const data = await addressService.getAddressesByUserId(userId, page, size);
             Logger.successOperation('AddressController', 'getAddresses');
-            return res.status(200).json({
-                addresses: result.addresses.map(toAddressResponseDTO),
-                meta: {
-                    total: result.total,
-                    page,
-                    size,
-                    favorites: result.favorites,
-                    active: result.active
-                }
-            });
+            return res.status(200).json(data);
         } catch (error) {
             Logger.errorOperation('AddressController', 'getAddresses', error);
             return res.status(500).json({ message: "Erro interno do servidor" });
@@ -44,10 +35,10 @@ export class AddressController {
             }
 
             const userId = req.user.id;
-            const addressDTO = AddressCreateDTO.parse(req.body);
+            const addressDTO = AddressDTO.parse(req.body);
             const address = await addressService.createAddress(userId, addressDTO);
             Logger.successOperation('AddressController', 'createAddress');
-            return res.status(201).json(toAddressResponseDTO(address));
+            return res.status(201).json(address);
         } catch (error) {
             Logger.errorOperation('AddressController', 'createAddress', error);
             if (error instanceof Error && error.message === "Limite máximo de 3 endereços por usuário") {
@@ -68,7 +59,7 @@ export class AddressController {
             const { id } = req.params;
             const address = await addressService.getAddressById(id, userId);
             Logger.successOperation('AddressController', 'getAddressById');
-            return res.status(200).json(toAddressResponseDTO(address));
+            return res.status(200).json(address);
         } catch (error) {
             Logger.errorOperation('AddressController', 'getAddressById', error);
             if (error instanceof Error && error.message === "Endereço não encontrado") {
@@ -87,10 +78,10 @@ export class AddressController {
 
             const userId = req.user.id;
             const { id } = req.params;
-            const addressDTO = AddressCreateDTO.parse(req.body);
+            const addressDTO = AddressDTO.parse(req.body);
             const address = await addressService.updateAddress(id, userId, addressDTO);
             Logger.successOperation('AddressController', 'updateAddress');
-            return res.status(200).json(toAddressResponseDTO(address));
+            return res.status(200).json(address);
         } catch (error) {
             Logger.errorOperation('AddressController', 'updateAddress', error);
             if (error instanceof Error && error.message === "Endereço não encontrado") {
@@ -112,7 +103,7 @@ export class AddressController {
             const addressUpdateDTO = AddressUpdateDTO.parse(req.body);
             const address = await addressService.updateAddressPartial(id, userId, addressUpdateDTO);
             Logger.successOperation('AddressController', 'updateAddressPartial');
-            return res.status(200).json(toAddressResponseDTO(address));
+            return res.status(200).json(address);
         } catch (error) {
             Logger.errorOperation('AddressController', 'updateAddressPartial', error);
             if (error instanceof Error && error.message === "Endereço não encontrado") {
@@ -133,7 +124,7 @@ export class AddressController {
             const { id } = req.params;
             const address = await addressService.deleteAddress(id, userId);
             Logger.successOperation('AddressController', 'deleteAddress');
-            return res.status(200).json(toAddressResponseDTO(address));
+            return res.status(200).json(address);
         } catch (error) {
             Logger.errorOperation('AddressController', 'deleteAddress', error);
             if (error instanceof Error && error.message === "Endereço não encontrado") {
