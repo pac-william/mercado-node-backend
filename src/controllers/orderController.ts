@@ -8,11 +8,15 @@ export class OrderController {
     async getOrders(req: Request, res: Response) {
         Logger.controller('Order', 'getOrders', 'query', req.query);
         try {
-            const { page, size, status, userId, marketId, delivererId } = QueryBuilder.from(req.query)
+            if (!req.user) {
+                return res.status(401).json({ message: "Usuário não autenticado" });
+            }
+
+            const userId = req.user.id;
+            const { page, size, status, marketId, delivererId } = QueryBuilder.from(req.query)
                 .withNumber('page', 1)
                 .withNumber('size', 10)
                 .withString('status')
-                .withString('userId')
                 .withString('marketId')
                 .withString('delivererId')
                 .build();
