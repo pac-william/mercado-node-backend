@@ -489,6 +489,18 @@ export const addressSchemas = {
                 "example": true,
                 "description": "Se o endereço está ativo"
             },
+            "latitude": {
+                "type": "number",
+                "example": -23.55052,
+                "description": "Latitude do endereço",
+                "nullable": true
+            },
+            "longitude": {
+                "type": "number",
+                "example": -46.633308,
+                "description": "Longitude do endereço",
+                "nullable": true
+            },
             "createdAt": {
                 "type": "string",
                 "format": "date-time",
@@ -558,6 +570,18 @@ export const addressSchemas = {
                 "example": false,
                 "description": "Se é o endereço favorito",
                 "default": false
+            },
+            "latitude": {
+                "type": "number",
+                "example": -23.55052,
+                "description": "Latitude do endereço (opcional)",
+                "nullable": true
+            },
+            "longitude": {
+                "type": "number",
+                "example": -46.633308,
+                "description": "Longitude do endereço (opcional)",
+                "nullable": true
             }
         },
         "required": ["name", "street", "number", "neighborhood", "city", "state", "zipCode"]
@@ -621,6 +645,18 @@ export const addressSchemas = {
                 "type": "boolean",
                 "example": true,
                 "description": "Se o endereço está ativo"
+            },
+            "latitude": {
+                "type": "number",
+                "example": -23.55052,
+                "description": "Latitude do endereço (opcional)",
+                "nullable": true
+            },
+            "longitude": {
+                "type": "number",
+                "example": -46.633308,
+                "description": "Longitude do endereço (opcional)",
+                "nullable": true
             }
         }
     },

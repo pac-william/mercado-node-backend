@@ -11,6 +11,8 @@ export const AddressDTO = z.object({
     complement: z.string().optional(),
     isFavorite: z.boolean().optional(),
     isActive: z.boolean().optional(),
+    latitude: z.number({ error: "Latitude do endereço deve ser numérica" }).optional(),
+    longitude: z.number({ error: "Longitude do endereço deve ser numérica" }).optional(),
 });
 
 export type AddressDTO = z.infer<typeof AddressDTO>;

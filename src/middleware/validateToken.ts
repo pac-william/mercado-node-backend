@@ -31,8 +31,9 @@ export function validateToken(req: Request, res: Response, next: NextFunction) {
     return res.status(401).json({ error: "Token ausente ou inválido" });
   }
 
-
   const token = authHeader?.split(" ")[1];
+  console.log(token);
+
   if (!token) {
     Logger.errorOperation('ValidateToken', 'validateToken', 'Token ausente ou inválido');
     return res.status(401).json({ error: "Token ausente ou inválido" });

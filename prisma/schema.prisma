@@ -50,6 +50,8 @@ model Address {
   zipCode      String
   isFavorite   Boolean  @default(false)
   isActive     Boolean  @default(true)
+  latitude     Float?
+  longitude    Float?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }

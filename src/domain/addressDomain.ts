@@ -14,6 +14,8 @@ export class AddressDomain {
         public complement?: string | null,
         public isFavorite: boolean = false,
         public isActive: boolean = true,
+        public latitude?: number | null,
+        public longitude?: number | null,
         public createdAt: Date = new Date(),
         public updatedAt: Date = new Date(),
     ) { }
