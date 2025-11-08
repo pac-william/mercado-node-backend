@@ -3,13 +3,13 @@ class ProductElasticSearch {
     productName: string,
     page: number = 1,
     size: number = 10,
-    categoryName: string // categoria que vem do banco
+    categoryNames: string[] = []
   ) {
     // Monta a query do Elasticsearch
 
     let esQuery;
 
-    if (categoryName) {
+    if (categoryNames.length > 0) {
       esQuery = {
         from: (page - 1) * size,
         size: size,
@@ -27,8 +27,8 @@ class ProductElasticSearch {
             ],
             filter: [
               {
-                term: {
-                  "categoryName.keyword": categoryName // filtro exato
+                terms: {
+                  "categoryName.keyword": categoryNames // filtro exato
                 }
               }
             ]

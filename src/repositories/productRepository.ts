@@ -11,11 +11,21 @@ class ProductRepository {
         return product;
     }
 
-    async getProducts(page: number, size: number, marketId?: string, name?: string, minPrice?: number, maxPrice?: number, categoryId?: string) {
+    async getProducts(
+        page: number,
+        size: number,
+        marketId?: string,
+        name?: string,
+        minPrice?: number,
+        maxPrice?: number,
+        categoryIds: string[] = []
+    ) {
+        const normalizedCategoryIds = Array.isArray(categoryIds) ? categoryIds.filter(Boolean) : [];
+
         const products = await prisma.product.findMany({
             where: {
                 marketId,
-                categoryId,
+                categoryId: normalizedCategoryIds.length > 0 ? { in: normalizedCategoryIds } : undefined,
                 name: name ? { contains: name, mode: 'insensitive' } : undefined,
                 price: {
                     gte: minPrice,
@@ -29,9 +39,9 @@ class ProductRepository {
             }
         });
 
-        const categoryIds = Array.from(new Set(products.map((p) => p.categoryId).filter(Boolean))) as string[];
-        const categoriesRaw = categoryIds.length > 0
-            ? await prisma.categories.findMany({ where: { id: { in: categoryIds } } })
+        const productCategoryIds = Array.from(new Set(products.map((p) => p.categoryId).filter(Boolean))) as string[];
+        const categoriesRaw = productCategoryIds.length > 0
+            ? await prisma.categories.findMany({ where: { id: { in: productCategoryIds } } })
             : [];
         const categoryById = new Map(
             categoriesRaw.map((c) => [
@@ -117,11 +127,19 @@ class ProductRepository {
         return product;
     }
 
-    async countProducts(marketId?: string, name?: string, minPrice?: number, maxPrice?: number, categoryId?: string) {
+    async countProducts(
+        marketId?: string,
+        name?: string,
+        minPrice?: number,
+        maxPrice?: number,
+        categoryIds: string[] = []
+    ) {
+        const normalizedCategoryIds = Array.isArray(categoryIds) ? categoryIds.filter(Boolean) : [];
+
         const products = await prisma.product.findMany({
             where: {
                 marketId,
-                categoryId,
+                categoryId: normalizedCategoryIds.length > 0 ? { in: normalizedCategoryIds } : undefined,
                 name: name ? { contains: name, mode: 'insensitive' } : undefined,
                 price: {
                     gte: minPrice,
