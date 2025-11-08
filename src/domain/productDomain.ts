@@ -10,6 +10,7 @@ export class Product {
         public marketId: string,
         public image?: string | null,
         public categoryId?: string,
+        public sku?: string | null,
         public category?: Category | null,
     ) { }
 }
