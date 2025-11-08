@@ -12,6 +12,8 @@ model Market {
   name           String
   address        String
   profilePicture String?
+  ownerId        String   @db.ObjectId
+  managersIds    String[] @db.ObjectId
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }
@@ -73,7 +75,7 @@ model Product {
   unit       String     @default("unidade")
   marketId   String     @db.ObjectId // ID do mercado (sem relação)
   categoryId String?    @db.ObjectId // ID da categoria (sem relação)
-  sku        String?    @unique
+  sku        String?    @unique @default(uuid())
   image      String?
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt

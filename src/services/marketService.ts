@@ -8,9 +8,9 @@ class MarketService {
         return await marketRepository.createMarket(marketDTO);
     }
 
-    async getMarkets(page: number, size: number, name?: string, address?: string) {
-        const count = await marketRepository.count(name, address);
-        const markets = await marketRepository.getMarkets(page, size, name, address);
+    async getMarkets(page: number, size: number, name?: string, address?: string, ownerId?: string, managersIds?: string[]) {
+        const count = await marketRepository.count(name, address, ownerId, managersIds);
+        const markets = await marketRepository.getMarkets(page, size, name, address, ownerId, managersIds);
         return new MarketPaginatedResponse(markets, new Meta(page, size, count, Math.ceil(count / size), count));
     }
 

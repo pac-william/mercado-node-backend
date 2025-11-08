@@ -10,13 +10,15 @@ class MarketRepository {
         return market;
     }
 
-    async getMarkets(page: number, size: number, name?: string, address?: string) {
+    async getMarkets(page: number, size: number, name?: string, address?: string, ownerId?: string, managersIds?: string[]) {
         const markets = await prisma.market.findMany({
             skip: (page - 1) * size,
             take: size,
             where: {
                 name: name ? { contains: name, mode: 'insensitive' } : undefined,
                 address: address ? { contains: address, mode: 'insensitive' } : undefined,
+                ownerId: ownerId ? { equals: ownerId } : undefined,
+                managersIds: managersIds ? { hasSome: managersIds } : undefined,
             }
         });
         return markets.map((market) => new Market(
@@ -24,6 +26,10 @@ class MarketRepository {
             market.name,
             market.address,
             market.profilePicture ?? '',
+            market.ownerId,
+            market.managersIds ?? [],
+            market.createdAt,
+            market.updatedAt,
         ));
     }
 
@@ -57,11 +63,13 @@ class MarketRepository {
         return market;
     }
 
-    async count(name?: string, address?: string) {
+    async count(name?: string, address?: string, ownerId?: string, managersIds?: string[]) {
         const count = await prisma.market.count({
             where: {
                 name: name ? { contains: name, mode: 'insensitive' } : undefined,
                 address: address ? { contains: address, mode: 'insensitive' } : undefined,
+                ownerId: ownerId ? { equals: ownerId } : undefined,
+                managersIds: managersIds ? { hasSome: managersIds } : undefined,
             },
         });
         return count;
