@@ -73,6 +73,7 @@ model Product {
   unit       String     @default("unidade")
   marketId   String     @db.ObjectId // ID do mercado (sem relação)
   categoryId String?    @db.ObjectId // ID da categoria (sem relação)
+  sku        String?    @unique
   image      String?
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt

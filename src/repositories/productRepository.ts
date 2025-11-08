@@ -66,6 +66,7 @@ class ProductRepository {
             p.marketId,
             p.image ?? null,
             p.categoryId ?? undefined,
+            p.sku ?? null,
             p.categoryId ? categoryById.get(p.categoryId) ?? null : null,
         ));
     }
@@ -100,6 +101,7 @@ class ProductRepository {
             p.marketId,
             p.image ?? null,
             p.categoryId ?? undefined,
+            p.sku ?? null,
             category,
         );
     }
