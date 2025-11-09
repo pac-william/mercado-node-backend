@@ -3,10 +3,26 @@ import { ProductPaginatedResponse } from "../domain/productDomain";
 import { ProductDTO, ProductUpdateDTO } from "../dtos/index";
 import { productRepository } from "../repositories/productRepository";
 import { productElasticSearch } from "../rest/productElasticSearch";
+import { Logger } from "../utils/logger";
+import { categoriesService } from "./categoriesService";
 
 class ProductService {
     async createProduct(productDTO: ProductDTO) {
-        return await productRepository.createProduct(productDTO);
+        const product = await productRepository.createProduct(productDTO);
+
+        if (process.env.ELASTICSEARCH_URL) {
+            try {
+                const category = product.categoryId ? await categoriesService.getCategoryById(product.categoryId) : null;
+                await productElasticSearch.indexProduct({
+                    ...product,
+                    categoryName: category?.name ?? null,
+                });
+            } catch (error) {
+                Logger.errorOperation('ProductService', 'createProduct', error, 'Falha ao indexar produto no Elasticsearch');
+            }
+        }
+
+        return product;
     }
 
     async getProducts(
