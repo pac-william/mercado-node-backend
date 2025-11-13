@@ -9,8 +9,8 @@ class MarketRepository {
             ownerId: { $ne: null, $exists: true }
         };
 
-        if (ownerId) {
-            filter.ownerId = ownerId;
+/*         if (ownerId) {
+            filter.ownerId = { $oid: ownerId };
         }
 
         if (name) {
@@ -22,9 +22,9 @@ class MarketRepository {
         }
 
         if (managersIds && managersIds.length > 0) {
-            filter.managersIds = { $in: managersIds };
+            filter.managersIds = { $in: managersIds.map(id => ({ $oid: id })) };
         }
-
+ */
         return filter;
     }
 
@@ -37,7 +37,7 @@ class MarketRepository {
 
     async getMarkets(page: number, size: number, name?: string, address?: string, ownerId?: string, managersIds?: string[]) {
         const filter = this.buildFilter(name, address, ownerId, managersIds);
-
+        Logger.info('MarketRepository', 'getMarkets', JSON.stringify(filter));
         const marketsRaw = await prisma.market.findRaw({
             filter,
             options: {
