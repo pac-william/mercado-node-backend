@@ -11,6 +11,7 @@ import productRoute from './productRoute';
 import suggestionRoute from './suggestionRoute';
 import uploadRoute from './uploadRoute';
 import userRoute from './userRoute';
+import reportsRoute from './reportsRoute';
 
 export default {
     productRoute,
@@ -25,5 +26,6 @@ export default {
     cartRoute,
     cartItemRoute,
     uploadRoute,
-    deliverySettingsRoute
+    deliverySettingsRoute,
+    reportsRoute
 };
