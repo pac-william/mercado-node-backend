@@ -1,20 +1,10 @@
-import { Buffer } from 'buffer';
 import { Request } from 'express';
-
-export interface UploadedFile {
-  fieldname: string;
-  originalname: string;
-  encoding: string;
-  mimetype: string;
-  size: number;
-  buffer: Buffer;
-}
 
 declare module 'express-serve-static-core' {
   interface Request {
     user?: UserToken
-    file?: UploadedFile
-    files?: UploadedFile[]
+    file?: Express.Multer.File
+    files?: Express.Multer.File[]
   }
 }
 
