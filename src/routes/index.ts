@@ -4,6 +4,7 @@ import cartRoute from './cartRoute';
 import categoriesRouter from './categories.router';
 import couponRoute from './couponRoute';
 import delivererRoute from './delivererRoute';
+import deliverySettingsRoute from './deliverySettingsRoute';
 import marketRoute from './marketRoute';
 import orderRoute from './orderRoute';
 import productRoute from './productRoute';
@@ -23,5 +24,6 @@ export default {
     addressRoute,
     cartRoute,
     cartItemRoute,
-    uploadRoute
+    uploadRoute,
+    deliverySettingsRoute
 };
