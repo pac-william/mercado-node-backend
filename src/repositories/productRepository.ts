@@ -68,6 +68,7 @@ class ProductRepository {
             p.categoryId ?? undefined,
             p.sku ?? null,
             p.categoryId ? categoryById.get(p.categoryId) ?? null : null,
+            p.isActive ?? true,
         ));
     }
 
@@ -103,6 +104,7 @@ class ProductRepository {
             p.categoryId ?? undefined,
             p.sku ?? null,
             category,
+            p.isActive ?? true,
         );
     }
 
