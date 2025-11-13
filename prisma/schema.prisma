@@ -202,6 +202,16 @@ enum PaymentMethod {
   CASH
 }
 
+model DeliverySettings {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  marketId       String   @unique @db.ObjectId
+  deliveryRadius Float    @default(5.0) // Raio em km
+  deliveryFee    Float    @default(5.0) // Valor da entrega
+  allowsPickup   Boolean  @default(true) // Permite retirada
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
 model Suggestion {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   userId    String   @db.ObjectId // ID do usuário (sem relação)
