@@ -8,13 +8,14 @@ export class UserController {
     async getUsers(req: Request, res: Response) {
         Logger.controller('User', 'getUsers', 'query', req.query);
         try {
-            const { page, size, auth0Id } = QueryBuilder.from(req.query)
+            const { page, size, auth0Id, marketId } = QueryBuilder.from(req.query)
                 .withNumber('page', 1)
                 .withNumber('size', 10)
                 .withString('auth0Id')
+                .withString('marketId')
                 .build();
 
-            const users = await userService.getUsers(page, size, auth0Id);
+            const users = await userService.getUsers(page, size, auth0Id, marketId);
             Logger.successOperation('UserController', 'getUsers');
             return res.status(200).json(users);
         } catch (error) {

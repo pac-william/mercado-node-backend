@@ -12,10 +12,11 @@ class UserRepository {
         return user;
     }
 
-    async getUsers(page: number, size: number, auth0Id?: string) {
+    async getUsers(page: number, size: number, auth0Id?: string, marketId?: string) {
         const users = await prisma.user.findMany({
             where: {
                 auth0Id: auth0Id ?? undefined,
+                marketId: marketId ? (marketId as any) : undefined,
             },
             skip: (page - 1) * size,
             take: size,
@@ -24,6 +25,7 @@ class UserRepository {
                 name: true,
                 email: true,
                 auth0Id: true,
+                marketId: true,
                 createdAt: true,
                 updatedAt: true,
             },
