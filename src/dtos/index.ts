@@ -1,4 +1,5 @@
 export * from './addressDTO';
+export * from './blobUploadDTO';
 export * from './cartItemDTO';
 export * from './categoriesDTO';
 export * from './couponDTO';

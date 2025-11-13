@@ -8,6 +8,7 @@ import marketRoute from './marketRoute';
 import orderRoute from './orderRoute';
 import productRoute from './productRoute';
 import suggestionRoute from './suggestionRoute';
+import uploadRoute from './uploadRoute';
 import userRoute from './userRoute';
 
 export default {
@@ -21,5 +22,6 @@ export default {
     suggestionRoute,
     addressRoute,
     cartRoute,
-    cartItemRoute
+    cartItemRoute,
+    uploadRoute
 };

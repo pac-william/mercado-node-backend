@@ -45,6 +45,7 @@ app.use('/api/v1/suggestions', routes.suggestionRoute);
 app.use('/api/v1/addresses', routes.addressRoute);
 app.use('/api/v1/cart', routes.cartRoute);
 app.use('/api/v1/cart-items', routes.cartItemRoute);
+app.use('/api/v1/uploads', routes.uploadRoute);
 
 app.get('/health', (_req, res) => {
     let version = 'unknown';
