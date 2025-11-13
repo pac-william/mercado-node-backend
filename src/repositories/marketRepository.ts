@@ -9,7 +9,7 @@ class MarketRepository {
             ownerId: { $ne: null, $exists: true }
         };
 
-/*         if (ownerId) {
+        if (ownerId) {
             filter.ownerId = { $oid: ownerId };
         }
 
@@ -24,7 +24,7 @@ class MarketRepository {
         if (managersIds && managersIds.length > 0) {
             filter.managersIds = { $in: managersIds.map(id => ({ $oid: id })) };
         }
- */
+
         return filter;
     }
 
