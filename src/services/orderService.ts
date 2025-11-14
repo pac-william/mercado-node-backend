@@ -26,9 +26,14 @@ class OrderService {
             throw new Error('Endereço não encontrado');
         }
 
+        const productIds = orderDTO.items.map(item => item.productId);
+        const products = await prisma.product.findMany({
+            where: { id: { in: productIds } }
+        });
+
+        const foundProductIds = new Set(products.map(p => p.id));
         for (const item of orderDTO.items) {
-            const product = await prisma.product.findUnique({ where: { id: item.productId } });
-            if (!product) {
+            if (!foundProductIds.has(item.productId)) {
                 throw new Error(`Produto com ID ${item.productId} não encontrado`);
             }
         }
