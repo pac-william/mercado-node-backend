@@ -129,6 +129,16 @@ class ChatService {
         
         return await chatRepository.updateChatStatus(chat.id, isActive);
     }
+
+    async markMessagesAsRead(chatId: string, readerUserId: string) {
+        Logger.info('ChatService', 'markMessagesAsRead', `Marking messages as read in chat ${chatId} by user ${readerUserId}`);
+        const chat = await chatRepository.findChatByChatId(chatId);
+        if (!chat) {
+            throw new Error('Chat not found');
+        }
+        
+        return await chatRepository.markMessagesAsRead(chat.id, readerUserId);
+    }
 }
 
 export const chatService = new ChatService();

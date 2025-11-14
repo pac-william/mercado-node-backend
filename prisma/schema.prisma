@@ -237,16 +237,18 @@ model Chat {
 }
 
 model Message {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  chatId    String   @db.ObjectId // ID do chat
-  chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
-  username  String   // Nome do usuário que enviou
-  userId    String   @db.ObjectId // ID do usuário que enviou (cliente ou lojista)
-  message   String   // Conteúdo da mensagem
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  chatId    String    @db.ObjectId // ID do chat
+  chat      Chat      @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  username  String    // Nome do usuário que enviou
+  userId    String    @db.ObjectId // ID do usuário que enviou (cliente ou lojista)
+  message   String    // Conteúdo da mensagem
+  readAt    DateTime? // Quando a mensagem foi lida pelo destinatário
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   @@index([chatId])
   @@index([userId])
   @@index([createdAt])
+  @@index([readAt])
 }

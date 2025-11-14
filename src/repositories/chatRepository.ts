@@ -126,6 +126,22 @@ class ChatRepository {
             data: { isActive },
         });
     }
+
+    async markMessagesAsRead(chatId: string, readerUserId: string) {
+        // Marcar como lidas apenas mensagens do outro usuário (não as próprias)
+        return await prisma.message.updateMany({
+            where: {
+                chatId,
+                userId: {
+                    not: readerUserId
+                },
+                readAt: null
+            },
+            data: {
+                readAt: new Date()
+            }
+        });
+    }
 }
 
 export const chatRepository = new ChatRepository();

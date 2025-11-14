@@ -12,6 +12,7 @@ router.get('/market/:marketId', validateToken, chatController.getChatsByMarketId
 router.post('/:chatId/messages', validateToken, chatController.createMessage);
 router.get('/:chatId/messages', validateToken, chatController.getMessagesByChatId);
 router.patch('/:chatId/status', validateToken, chatController.updateChatStatus);
+router.post('/:chatId/read', validateToken, chatController.markMessagesAsRead);
 router.get('/:chatId', validateToken, chatController.getChatByChatId);
 
 export default router;

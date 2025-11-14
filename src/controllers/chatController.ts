@@ -132,5 +132,30 @@ export class ChatController {
             return res.status(500).json({ message: "Internal server error" });
         }
     }
+
+    async markMessagesAsRead(req: Request, res: Response) {
+        Logger.controller('Chat', 'markMessagesAsRead', 'params', req.params);
+        try {
+            if (!req.user) {
+                return res.status(401).json({ message: "User not authenticated" });
+            }
+
+            const { chatId } = req.params;
+            const readerUserId = req.user.id;
+            
+            const result = await chatService.markMessagesAsRead(chatId, readerUserId);
+            Logger.successOperation('ChatController', 'markMessagesAsRead');
+            return res.status(200).json({ 
+                success: true, 
+                count: result.count 
+            });
+        } catch (error) {
+            Logger.errorOperation('ChatController', 'markMessagesAsRead', error);
+            if (error instanceof Error) {
+                return res.status(404).json({ message: error.message });
+            }
+            return res.status(500).json({ message: "Internal server error" });
+        }
+    }
 }
 

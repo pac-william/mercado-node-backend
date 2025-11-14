@@ -23,6 +23,7 @@ export interface MessageResponseDTO {
     username: string;
     userId: string;
     message: string;
+    readAt: Date | null;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -71,6 +72,7 @@ export function toMessageResponseDTO(message: any): MessageResponseDTO {
         username: message.username,
         userId: message.userId,
         message: message.message,
+        readAt: message.readAt || null,
         createdAt: message.createdAt,
         updatedAt: message.updatedAt,
     };
