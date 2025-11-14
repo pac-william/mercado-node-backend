@@ -11,6 +11,9 @@ declare module 'express-serve-static-core' {
 export interface UserToken {
   id: string;
   role: 'CUSTOMER' | 'MARKET_ADMIN';
+  username: string;
+  email: string;
+  name: string;
   marketId?: string;
   auth0Id?: string;
 }

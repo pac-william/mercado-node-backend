@@ -220,3 +220,33 @@ model Suggestion {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model Chat {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  chatId        String    @unique // Formato: {userId}-{marketId}
+  userId        String    @db.ObjectId // ID do cliente
+  marketId      String    @db.ObjectId // ID do market (lojista)
+  isActive      Boolean   @default(true) // Se o chat está ativo
+  lastMessageAt DateTime? // Timestamp da última mensagem
+  messages      Message[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([marketId])
+}
+
+model Message {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  chatId    String   @db.ObjectId // ID do chat
+  chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  username  String   // Nome do usuário que enviou
+  userId    String   @db.ObjectId // ID do usuário que enviou (cliente ou lojista)
+  message   String   // Conteúdo da mensagem
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([chatId])
+  @@index([userId])
+  @@index([createdAt])
+}

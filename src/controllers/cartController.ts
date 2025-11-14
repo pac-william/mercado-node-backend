@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-import { addMultipleItemsSchema, createCartItemSchema } from "../dtos/cartDTO";
+import { addMultipleItemsSchema } from "../dtos/cartDTO";
+import { CreateCartItemDTO } from "../dtos/cartItemDTO";
 import { cartService } from "../services/cartService";
 import { Logger } from "../utils/logger";
 
@@ -56,7 +57,7 @@ export class CartController {
             }
 
             Logger.info('CartController', 'addItem', 'Validando dados do item...');
-            const itemData = createCartItemSchema.parse(req.body);
+            const itemData = CreateCartItemDTO.parse(req.body);
             Logger.info('CartController', 'addItem', `Dados validados: ${JSON.stringify(itemData)}`);
             
             Logger.info('CartController', 'addItem', 'Chamando cartService.addItem...');

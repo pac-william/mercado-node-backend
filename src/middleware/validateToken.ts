@@ -32,7 +32,6 @@ export function validateToken(req: Request, res: Response, next: NextFunction) {
   }
 
   const token = authHeader?.split(" ")[1];
-  console.log(token);
 
   if (!token) {
     Logger.errorOperation('ValidateToken', 'validateToken', 'Token ausente ou inválido');
@@ -52,11 +51,15 @@ export function validateToken(req: Request, res: Response, next: NextFunction) {
 }
 
 export function getTokenInfo(decoded: any): UserToken {
+
   return {
     id: decoded.id,
     role: decoded['https://yourdomain.com/roles']?.[0] || decoded.role || 'CUSTOMER',
     marketId: decoded['https://yourdomain.com/marketId'] || decoded.marketId,
     auth0Id: decoded.sub || undefined,
+    username: decoded.username || '',
+    email: decoded.email || '',
+    name: decoded.name || '',
   };
 }
 

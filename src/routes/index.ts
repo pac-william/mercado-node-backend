@@ -2,6 +2,7 @@ import addressRoute from './addressRoute';
 import cartItemRoute from './cartItemRoute';
 import cartRoute from './cartRoute';
 import categoriesRouter from './categories.router';
+import chatRoute from './chatRoute';
 import couponRoute from './couponRoute';
 import delivererRoute from './delivererRoute';
 import deliverySettingsRoute from './deliverySettingsRoute';
@@ -27,5 +28,6 @@ export default {
     cartItemRoute,
     uploadRoute,
     deliverySettingsRoute,
-    reportsRoute
+    reportsRoute,
+    chatRoute
 };
