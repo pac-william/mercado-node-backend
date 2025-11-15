@@ -130,7 +130,9 @@ class ChatRepository {
 
     async markMessagesAsRead(chatId: string, readerUserId: string) {
         // Marcar como lidas apenas mensagens do outro usuário (não as próprias)
-        return await prisma.message.updateMany({
+        console.log(`[REPOSITORY] markMessagesAsRead - chatId: ${chatId}, readerUserId: ${readerUserId}`);
+        
+        const result = await prisma.message.updateMany({
             where: {
                 chatId,
                 userId: {
@@ -145,6 +147,9 @@ class ChatRepository {
                 readAt: new Date()
             }
         });
+        
+        console.log(`[REPOSITORY] markMessagesAsRead - result: ${result.count} mensagens atualizadas`);
+        return result;
     }
 
     async countUnreadMessagesByChatId(chatId: string, readerUserId: string) {
@@ -182,6 +187,45 @@ class ChatRepository {
                 chatId: { in: chatIds },
                 userId: {
                     not: userId
+                },
+                status: {
+                    not: "READ"
+                }
+            }
+        });
+    }
+
+    async countUnreadMessagesByMarketId(marketId: string) {
+        // Contar todas as mensagens não lidas de todos os chats do mercado
+        // Mensagens não lidas são aquelas enviadas pelos clientes (não pelo lojista)
+        const chats = await prisma.chat.findMany({
+            where: { marketId },
+            select: { id: true, userId: true }
+        });
+
+        const chatIds = chats.map(chat => chat.id);
+        
+        if (chatIds.length === 0) {
+            return 0;
+        }
+
+        // Buscar o ownerId do mercado para excluir mensagens dele
+        const market = await prisma.market.findUnique({
+            where: { id: marketId },
+            select: { ownerId: true }
+        });
+
+        if (!market) {
+            return 0;
+        }
+
+        // Contar mensagens não lidas enviadas pelos clientes (não pelo lojista)
+        // Excluir mensagens do owner do mercado e considerar apenas status != READ
+        return await prisma.message.count({
+            where: {
+                chatId: { in: chatIds },
+                userId: {
+                    not: market.ownerId
                 },
                 status: {
                     not: "READ"

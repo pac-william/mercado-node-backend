@@ -136,17 +136,29 @@ class ChatService {
 
     async markMessagesAsRead(chatId: string, readerUserId: string) {
         Logger.info('ChatService', 'markMessagesAsRead', `Marking messages as read in chat ${chatId} by user ${readerUserId}`);
+        console.log(`[SERVICE] markMessagesAsRead - chatId: ${chatId}, readerUserId: ${readerUserId}`);
+        
         const chat = await chatRepository.findChatByChatId(chatId);
         if (!chat) {
+            console.log(`[SERVICE] Chat not found for chatId: ${chatId}`);
             throw new Error('Chat not found');
         }
         
-        return await chatRepository.markMessagesAsRead(chat.id, readerUserId);
+        console.log(`[SERVICE] Chat found - internal id: ${chat.id}, marketId: ${chat.marketId}, userId: ${chat.userId}`);
+        const result = await chatRepository.markMessagesAsRead(chat.id, readerUserId);
+        console.log(`[SERVICE] markMessagesAsRead result: ${result.count} mensagens atualizadas`);
+        
+        return result;
     }
 
     async getUnreadMessagesCount(userId: string) {
         Logger.info('ChatService', 'getUnreadMessagesCount', `Getting unread messages count for user ${userId}`);
         return await chatRepository.countUnreadMessagesByUserId(userId);
+    }
+
+    async getUnreadMessagesCountByMarketId(marketId: string) {
+        Logger.info('ChatService', 'getUnreadMessagesCountByMarketId', `Getting unread messages count for market ${marketId}`);
+        return await chatRepository.countUnreadMessagesByMarketId(marketId);
     }
 }
 

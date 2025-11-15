@@ -10,6 +10,7 @@ router.post('/', validateToken, chatController.findOrCreateChat);
 router.get('/user', validateToken, chatController.getChatsByUserId);
 router.get('/user/unread-count', validateToken, chatController.getUnreadMessagesCount);
 router.get('/market/:marketId', validateToken, chatController.getChatsByMarketId);
+router.get('/market/:marketId/unread-count', validateToken, chatController.getUnreadMessagesCountByMarketId);
 router.post('/:chatId/messages', validateToken, chatController.createMessage);
 router.get('/:chatId/messages', validateToken, chatController.getMessagesByChatId);
 router.patch('/:chatId/status', validateToken, chatController.updateChatStatus);
