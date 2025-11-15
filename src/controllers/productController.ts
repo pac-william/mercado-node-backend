@@ -36,7 +36,7 @@ export class ProductController {
                         .map((category) => category.name);
                 }
 
-                products = await productService.getProductsElasticSearch(name, page, size, categoryNames);
+                products = await productService.getProductsElasticSearch(name, page, size, categoryNames, marketId);
             } else {
                 products = await productService.getProducts(page, size, marketId, name, minPrice, maxPrice, normalizedCategoryIds);
             }

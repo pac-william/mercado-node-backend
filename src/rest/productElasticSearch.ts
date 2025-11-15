@@ -17,58 +17,50 @@ class ProductElasticSearch {
     productName: string,
     page: number = 1,
     size: number = 10,
-    categoryNames: string[] = []
+    categoryNames: string[] = [],
+    marketId?: string
   ) {
     // Monta a query do Elasticsearch
 
-    let esQuery;
+    const filters: any[] = [];
 
     if (categoryNames.length > 0) {
-      esQuery = {
-        from: (page - 1) * size,
-        size: size,
-        query: {
-          bool: {
-            must: [
-              {
-                match: {
-                  name: {
-                    query: productName,
-                    fuzziness: "AUTO" // apenas para nome do produto
-                  }
-                }
-              }
-            ],
-            filter: [
-              {
-                terms: {
-                  "categoryName.keyword": categoryNames // filtro exato
-                }
-              }
-            ]
-          }
+      filters.push({
+        terms: {
+          "categoryName.keyword": categoryNames // filtro exato
         }
-      };
+      });
+    }
 
-    } else {
-      esQuery = {
-        from: (page - 1) * size,
-        size: size,
-        query: {
-          bool: {
-            must: [
-              {
-                match: {
-                  name: {
-                    query: productName,
-                    fuzziness: "AUTO" // apenas para nome do produto
-                  }
+    if (marketId) {
+      filters.push({
+        term: {
+          "marketId.keyword": marketId // filtro exato por marketId
+        }
+      });
+    }
+
+    const esQuery: any = {
+      from: (page - 1) * size,
+      size: size,
+      query: {
+        bool: {
+          must: [
+            {
+              match: {
+                name: {
+                  query: productName,
+                  fuzziness: "AUTO" // apenas para nome do produto
                 }
               }
-            ]
-          }
+            }
+          ]
         }
-      };
+      }
+    };
+
+    if (filters.length > 0) {
+      esQuery.query.bool.filter = filters;
     }
 
     const AUTH_HEADER = this.getAuthHeader();
