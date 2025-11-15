@@ -157,5 +157,22 @@ export class ChatController {
             return res.status(500).json({ message: "Internal server error" });
         }
     }
+
+    async getUnreadMessagesCount(req: Request, res: Response) {
+        Logger.controller('Chat', 'getUnreadMessagesCount', 'user', req.user);
+        try {
+            if (!req.user) {
+                return res.status(401).json({ message: "User not authenticated" });
+            }
+
+            const userId = req.user.id;
+            const count = await chatService.getUnreadMessagesCount(userId);
+            Logger.successOperation('ChatController', 'getUnreadMessagesCount');
+            return res.status(200).json({ count });
+        } catch (error) {
+            Logger.errorOperation('ChatController', 'getUnreadMessagesCount', error);
+            return res.status(500).json({ message: "Internal server error" });
+        }
+    }
 }
 

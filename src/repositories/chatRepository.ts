@@ -1,5 +1,5 @@
-import { prisma } from "../utils/prisma";
 import { CreateChatDTO, CreateMessageDTO } from "../dtos/chatDTO";
+import { prisma } from "../utils/prisma";
 
 class ChatRepository {
     async findOrCreateChat(chatDTO: CreateChatDTO) {
@@ -95,6 +95,7 @@ class ChatRepository {
                 username: messageDTO.username,
                 userId: messageDTO.userId,
                 message: messageDTO.message,
+                status: "DELIVERED", // Quando salva no banco, a mensagem foi entregue
             },
         });
 
@@ -135,10 +136,56 @@ class ChatRepository {
                 userId: {
                     not: readerUserId
                 },
-                readAt: null
+                status: {
+                    not: "READ"
+                }
             },
             data: {
+                status: "READ",
                 readAt: new Date()
+            }
+        });
+    }
+
+    async countUnreadMessagesByChatId(chatId: string, readerUserId: string) {
+        // Contar mensagens não lidas do outro usuário (não as próprias)
+        // Mensagens não lidas são aquelas com status diferente de READ
+        return await prisma.message.count({
+            where: {
+                chatId,
+                userId: {
+                    not: readerUserId
+                },
+                status: {
+                    not: "READ"
+                }
+            }
+        });
+    }
+
+    async countUnreadMessagesByUserId(userId: string) {
+        // Contar todas as mensagens não lidas de todos os chats do usuário
+        const chats = await prisma.chat.findMany({
+            where: { userId },
+            select: { id: true }
+        });
+
+        const chatIds = chats.map(chat => chat.id);
+        
+        if (chatIds.length === 0) {
+            return 0;
+        }
+
+        // Mensagens não lidas são aquelas com status diferente de READ
+        return await prisma.message.count({
+            where: {
+                chatId: { in: chatIds },
+                userId: {
+                    not: userId
+                },
+                status: {
+                    not: "READ"
+                }
             }
         });
     }

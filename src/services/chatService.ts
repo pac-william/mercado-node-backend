@@ -46,6 +46,9 @@ class ChatService {
                     ? chat.messages[0]
                     : await chatRepository.findLastMessageByChatId(chat.id);
 
+                // Contar mensagens não lidas deste chat
+                const unreadCount = await chatRepository.countUnreadMessagesByChatId(chat.id, userId);
+
                 return {
                     chatId: chat.chatId,
                     marketId: chat.marketId,
@@ -57,6 +60,7 @@ class ChatService {
                             timestamp: lastMessage.createdAt,
                         }
                         : null,
+                    unreadCount,
                 };
             })
         );
@@ -138,6 +142,11 @@ class ChatService {
         }
         
         return await chatRepository.markMessagesAsRead(chat.id, readerUserId);
+    }
+
+    async getUnreadMessagesCount(userId: string) {
+        Logger.info('ChatService', 'getUnreadMessagesCount', `Getting unread messages count for user ${userId}`);
+        return await chatRepository.countUnreadMessagesByUserId(userId);
     }
 }
 

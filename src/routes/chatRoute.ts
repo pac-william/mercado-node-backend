@@ -8,6 +8,7 @@ const chatController = new ChatController();
 // Rotas específicas devem vir antes das rotas com parâmetros
 router.post('/', validateToken, chatController.findOrCreateChat);
 router.get('/user', validateToken, chatController.getChatsByUserId);
+router.get('/user/unread-count', validateToken, chatController.getUnreadMessagesCount);
 router.get('/market/:marketId', validateToken, chatController.getChatsByMarketId);
 router.post('/:chatId/messages', validateToken, chatController.createMessage);
 router.get('/:chatId/messages', validateToken, chatController.getMessagesByChatId);
