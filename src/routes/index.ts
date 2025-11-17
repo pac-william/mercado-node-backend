@@ -1,4 +1,5 @@
 import addressRoute from './addressRoute';
+import campaignRoute from './campaignRoute';
 import cartItemRoute from './cartItemRoute';
 import cartRoute from './cartRoute';
 import categoriesRouter from './categories.router';
@@ -31,5 +32,6 @@ export default {
     deliverySettingsRoute,
     reportsRoute,
     chatRoute,
-    geocodingRoute
+    geocodingRoute,
+    campaignRoute
 };
