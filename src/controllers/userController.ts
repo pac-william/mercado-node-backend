@@ -59,7 +59,10 @@ export class UserController {
             if (!req.user) {
                 return res.status(401).json({ message: "Usuário não autenticado" });
             }
-            const user = await userService.getUserById(req.user.id);
+            if (!req.user.auth0Id) {
+                return res.status(400).json({ message: "Auth0Id não encontrado no token" });
+            }
+            const user = await userService.getUserByAuth0Id(req.user.auth0Id);
             Logger.successOperation('UserController', 'getMe');
             return res.status(200).json(user);
         } catch (error) {
