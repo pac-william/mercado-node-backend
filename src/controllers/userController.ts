@@ -59,8 +59,16 @@ export class UserController {
             if (!req.user) {
                 return res.status(401).json({ message: "Usuário não autenticado" });
             }
-            console.log(req.user);
-            const user = await userService.getUserById(req.user.id);
+            const id = req.user.id;
+            const auth0Id = req.user.auth0Id;
+            let user;
+            if (id) {
+                user = await userService.getUserById(id);
+            } else if (auth0Id) {
+                user = await userService.getUserByAuth0Id(auth0Id);
+            } else {
+                return res.status(401).json({ message: "Usuário não autenticado" });
+            }
             Logger.successOperation('UserController', 'getMe');
             return res.status(200).json(user);
         } catch (error) {
@@ -79,7 +87,15 @@ export class UserController {
                 return res.status(401).json({ message: "Usuário não autenticado" });
             }
             const userUpdateDTO = UserUpdateDTO.parse(req.body);
-            const user = await userService.updateUserPartial(req.user.id, userUpdateDTO);
+            let userId = req.user.id;
+            if (!userId && req.user.auth0Id) {
+                const existing = await userService.getUserByAuth0Id(req.user.auth0Id);
+                userId = existing.id;
+            }
+            if (!userId) {
+                return res.status(401).json({ message: "Usuário não autenticado" });
+            }
+            const user = await userService.updateUserPartial(userId, userUpdateDTO);
             Logger.successOperation('UserController', 'updateMe');
             return res.status(200).json(user);
         } catch (error) {

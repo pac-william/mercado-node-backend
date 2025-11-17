@@ -6,6 +6,7 @@ import chatRoute from './chatRoute';
 import couponRoute from './couponRoute';
 import delivererRoute from './delivererRoute';
 import deliverySettingsRoute from './deliverySettingsRoute';
+import geocodingRoute from './geocodingRoute';
 import marketRoute from './marketRoute';
 import orderRoute from './orderRoute';
 import productRoute from './productRoute';
@@ -29,5 +30,6 @@ export default {
     uploadRoute,
     deliverySettingsRoute,
     reportsRoute,
-    chatRoute
+    chatRoute,
+    geocodingRoute
 };

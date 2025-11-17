@@ -49,6 +49,7 @@ app.use('/api/v1/cart-items', routes.cartItemRoute);
 app.use('/api/v1/uploads', routes.uploadRoute);
 app.use('/api/v1/reports', routes.reportsRoute);
 app.use('/api/v1/chats', routes.chatRoute);
+app.use('/api/v1/geo-location', routes.geocodingRoute);
 
 app.get('/health', (_req, res) => {
     let version = 'unknown';

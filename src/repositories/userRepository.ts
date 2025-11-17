@@ -8,6 +8,15 @@ class UserRepository {
                 ...userDTO,
                 password: userDTO.password || '',
             },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                auth0Id: true,
+                marketId: true,
+                createdAt: true,
+                updatedAt: true,
+            },
         });
         return user;
     }
@@ -35,7 +44,16 @@ class UserRepository {
 
     async getUserById(id: string) {
         const user = await prisma.user.findUnique({
-            where: { id }
+            where: { id },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                auth0Id: true,
+                marketId: true,
+                createdAt: true,
+                updatedAt: true,
+            },
         });
         return user;
     }
@@ -50,6 +68,15 @@ class UserRepository {
     async getUserByAuth0Id(auth0Id: string) {
         const user = await prisma.user.findUnique({
             where: { auth0Id },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                auth0Id: true,
+                marketId: true,
+                createdAt: true,
+                updatedAt: true,
+            },
         });
         return user;
     }
