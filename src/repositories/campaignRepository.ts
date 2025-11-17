@@ -203,7 +203,6 @@ class CampaignRepository {
         }
 
         const filter: any = {
-            marketId,
             slot,
             status: { in: ["ACTIVE", "SCHEDULED"] },
             id: excludeCampaignId ? { not: excludeCampaignId } : undefined,
