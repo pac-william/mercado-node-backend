@@ -13,10 +13,6 @@ type UploadFileParams = {
 };
 
 class BlobService {
-    private isProduction(): boolean {
-        return process.env.NODE_ENV === "production";
-    }
-
     private getToken() {
         const token = process.env.BLOB_READ_WRITE_TOKEN ?? process.env.VERCEL_BLOB_READ_WRITE_TOKEN;
         if (!token) {
@@ -78,7 +74,7 @@ class BlobService {
             throw new Error("Arquivo vazio ou inválido.");
         }
 
-        if (!this.isProduction() || process.env.UPLOAD_TYPE === "local") {
+        if (process.env.UPLOAD_TYPE === "local") {
             return this.saveFileLocally({ fileName, contentType, buffer, folder });
         }
 
