@@ -13,6 +13,16 @@ export const CampaignDTO = z.object({
     startDate: z.coerce.date({ message: "Data de início é obrigatória" }),
     endDate: z.coerce.date().optional().nullable(),
     status: CampaignStatusEnum.optional().default("DRAFT"),
+}).refine((data) => {
+    if (!data.endDate) return true;
+    
+    const daysDifference = Math.ceil(
+        (data.endDate.getTime() - data.startDate.getTime()) / (1000 * 60 * 60 * 24)
+    );
+    return daysDifference <= 7 && daysDifference >= 0;
+}, {
+    message: "O período da campanha não pode exceder 7 dias (1 semana) e deve ter pelo menos 1 dia",
+    path: ["endDate"],
 });
 
 export type CampaignDTO = z.infer<typeof CampaignDTO>;

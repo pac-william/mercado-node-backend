@@ -38,16 +38,17 @@ export class CampaignController {
 
     async getCampaignsByMarket(req: Request, res: Response) {
         try {
-            const { marketId, status, page, size } = QueryBuilder.from(req.query)
-                .withString('marketId')
+            const { marketId } = req.params;
+            
+            if (!marketId) {
+                return res.status(400).json({ message: "marketId é obrigatório" });
+            }
+
+            const { status, page, size } = QueryBuilder.from(req.query)
                 .withString('status')
                 .withNumber('page', 1)
                 .withNumber('size', 10)
                 .build();
-
-            if (!marketId) {
-                return res.status(400).json({ message: "marketId é obrigatório" });
-            }
 
             const campaigns = await campaignService.getCampaignsByMarket(
                 marketId,
@@ -57,6 +58,7 @@ export class CampaignController {
             );
             return res.status(200).json(campaigns);
         } catch (error) {
+            Logger.errorOperation('CampaignController', 'getCampaignsByMarket', error);
             return res.status(500).json({ message: "Erro interno do servidor" });
         }
     }
