@@ -15,6 +15,9 @@ interface GeocodeResult {
 interface ReverseGeocodeResult {
     address: string;
     formattedAddress?: string;
+    street?: string;
+    number?: string;
+    neighborhood?: string;
     city?: string;
     state?: string;
     country?: string;
@@ -132,6 +135,9 @@ class GeocodingService {
             return {
                 address: result.display_name,
                 formattedAddress,
+                street: address.road || "",
+                number: address.house_number || "",
+                neighborhood: address.suburb || address.neighbourhood || "",
                 city: address.city || address.town || address.village || address.suburb || address.neighbourhood,
                 state: address.state,
                 country: address.country,
