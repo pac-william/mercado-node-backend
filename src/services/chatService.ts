@@ -33,7 +33,7 @@ class ChatService {
         const chats = await chatRepository.findChatsByUserId(userId);
         
         const results: CustomerConversationsDTO[] = await Promise.all(
-            chats.map(async (chat) => {
+            chats.map(async (chat: any) => {
                 const market = await prisma.market.findUnique({
                     where: { id: chat.marketId },
                 });
@@ -74,7 +74,7 @@ class ChatService {
         const chats = await chatRepository.findChatsByMarketId(marketId);
         
         const results: StoreOwnerConversationsDTO[] = await Promise.all(
-            chats.map(async (chat) => {
+            chats.map(async (chat: any) => {
                 const user = await prisma.user.findUnique({
                     where: { id: chat.userId },
                 });
