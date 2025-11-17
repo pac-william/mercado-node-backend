@@ -5,7 +5,7 @@ dotenv.config({
 
 import cors from 'cors';
 import express from 'express';
-import { readFileSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import path from 'path';
 import swaggerUi from 'swagger-ui-express';
 import routes from './routes';
@@ -19,7 +19,14 @@ app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 
 app.use(cors());
 
-// Desabilitar cache para o Swagger
+if (process.env.NODE_ENV !== "production") {
+    const uploadsDir = path.join(process.cwd(), "uploads");
+    if (existsSync(uploadsDir)) {
+        app.use("/uploads", express.static(uploadsDir));
+        Logger.info("Server", "Serving static files from uploads directory", { uploadsDir });
+    }
+}
+
 app.use('/api-docs', (req, res, next) => {
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     res.set('Pragma', 'no-cache');
