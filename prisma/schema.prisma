@@ -210,6 +210,13 @@ enum MessageStatus {
   READ
 }
 
+enum CampaignStatus {
+  DRAFT
+  SCHEDULED
+  ACTIVE
+  EXPIRED
+}
+
 model DeliverySettings {
   id             String   @id @default(auto()) @map("_id") @db.ObjectId
   marketId       String   @unique @db.ObjectId
@@ -261,4 +268,24 @@ model Message {
   @@index([createdAt])
   @@index([readAt])
   @@index([status])
+}
+
+model Campaign {
+  id        String         @id @default(auto()) @map("_id") @db.ObjectId
+  marketId  String         @db.ObjectId
+  title     String
+  imageUrl  String
+  slot      Int            // 1 a 8
+  startDate DateTime
+  endDate   DateTime?
+  status    CampaignStatus @default(DRAFT)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@index([marketId])
+  @@index([slot])
+  @@index([status])
+  @@index([startDate])
+  @@index([endDate])
+  @@unique([marketId, slot, startDate, endDate])
 }
