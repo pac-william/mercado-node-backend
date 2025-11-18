@@ -30,6 +30,78 @@ class GeocodingService {
     private readonly NOMINATIM_BASE_URL = "https://nominatim.openstreetmap.org";
     private readonly USER_AGENT = "MercadoApp/1.0";
 
+    private readonly STATE_TO_UF_MAP: Record<string, string> = {
+        "Acre": "AC",
+        "Alagoas": "AL",
+        "Amapá": "AP",
+        "Amazonas": "AM",
+        "Bahia": "BA",
+        "Ceará": "CE",
+        "Distrito Federal": "DF",
+        "Espírito Santo": "ES",
+        "Goiás": "GO",
+        "Maranhão": "MA",
+        "Mato Grosso": "MT",
+        "Mato Grosso do Sul": "MS",
+        "Minas Gerais": "MG",
+        "Pará": "PA",
+        "Paraíba": "PB",
+        "Paraná": "PR",
+        "Pernambuco": "PE",
+        "Piauí": "PI",
+        "Rio de Janeiro": "RJ",
+        "Rio Grande do Norte": "RN",
+        "Rio Grande do Sul": "RS",
+        "Rondônia": "RO",
+        "Roraima": "RR",
+        "Santa Catarina": "SC",
+        "São Paulo": "SP",
+        "Sergipe": "SE",
+        "Tocantins": "TO",
+    };
+
+    private convertStateToUF(stateName?: string): string | undefined {
+        if (!stateName) return undefined;
+        
+        const trimmedState = stateName.trim();
+        if (trimmedState.length === 2 && /^[A-Z]{2}$/i.test(trimmedState)) {
+            return trimmedState.toUpperCase();
+        }
+        
+        const normalizedState = trimmedState
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .toLowerCase();
+        
+        for (const [fullName, uf] of Object.entries(this.STATE_TO_UF_MAP)) {
+            const normalizedFullName = fullName
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .toLowerCase();
+            
+            if (normalizedState === normalizedFullName) {
+                return uf;
+            }
+        }
+        
+        for (const [fullName, uf] of Object.entries(this.STATE_TO_UF_MAP)) {
+            const normalizedFullName = fullName
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .toLowerCase();
+            
+            if (normalizedState.includes(normalizedFullName) && normalizedFullName.length >= 5) {
+                return uf;
+            }
+            
+            if (normalizedFullName.includes(normalizedState) && normalizedState.length >= 5) {
+                return uf;
+            }
+        }
+        
+        return undefined;
+    }
+
     async geocode(data: GeocodeDTO): Promise<GeocodeResult> {
         try {
             const encodedAddress = encodeURIComponent(data.address);
@@ -73,13 +145,14 @@ class GeocodingService {
 
             const address: any = result.address || {};
             const formattedAddress = this.formatAddress(address, result.display_name);
+            const stateUF = this.convertStateToUF(address.state);
             return {
                 latitude,
                 longitude,
                 address: result.display_name,
                 formattedAddress,
                 city: address.city || address.town || address.village,
-                state: address.state,
+                state: stateUF || address.state,
                 country: address.country,
                 zipCode: address.postcode,
             };
@@ -131,6 +204,7 @@ class GeocodingService {
 
             const address: any = result.address || {};
             const formattedAddress = this.formatAddress(address, result.display_name);
+            const stateUF = this.convertStateToUF(address.state);
             
             return {
                 address: result.display_name,
@@ -139,7 +213,7 @@ class GeocodingService {
                 number: address.house_number || "",
                 neighborhood: address.suburb || address.neighbourhood || "",
                 city: address.city || address.town || address.village || address.suburb || address.neighbourhood,
-                state: address.state,
+                state: stateUF || address.state,
                 country: address.country,
                 zipCode: address.postcode,
                 latitude,
