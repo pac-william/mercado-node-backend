@@ -72,6 +72,10 @@ describe('UserRepository', () => {
           name: true,
           email: true,
           auth0Id: true,
+          phone: true,
+          birthDate: true,
+          profilePicture: true,
+          marketId: true,
           createdAt: true,
           updatedAt: true,
         }
@@ -102,6 +106,10 @@ describe('UserRepository', () => {
           name: true,
           email: true,
           auth0Id: true,
+          phone: true,
+          birthDate: true,
+          profilePicture: true,
+          marketId: true,
           createdAt: true,
           updatedAt: true,
         }
@@ -138,6 +146,10 @@ describe('UserRepository', () => {
           name: true,
           email: true,
           auth0Id: true,
+          phone: true,
+          birthDate: true,
+          profilePicture: true,
+          marketId: true,
           createdAt: true,
           updatedAt: true,
         }
@@ -212,6 +224,9 @@ describe('UserRepository', () => {
           id: true,
           name: true,
           email: true,
+          phone: true,
+          birthDate: true,
+          profilePicture: true,
           createdAt: true,
           updatedAt: true,
         }
@@ -258,6 +273,9 @@ describe('UserRepository', () => {
           id: true,
           name: true,
           email: true,
+          phone: true,
+          birthDate: true,
+          profilePicture: true,
           createdAt: true,
           updatedAt: true,
         }
@@ -286,6 +304,9 @@ describe('UserRepository', () => {
           id: true,
           name: true,
           email: true,
+          phone: true,
+          birthDate: true,
+          profilePicture: true,
           createdAt: true,
           updatedAt: true,
         }
