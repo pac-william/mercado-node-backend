@@ -83,5 +83,5 @@ app.get('/health', (_req, res) => {
 const PORT = Number(process.env.PORT) || 8080;
 
 app.listen(PORT, '0.0.0.0', () => {
-    Logger.info('Server', 'Server running on', { url: `http://10.0.0.174:${PORT}` });
+    Logger.info('Server', 'Server running on', { url: `http://0.0.0.0:${PORT}` });
 });
