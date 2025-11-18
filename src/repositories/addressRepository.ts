@@ -27,14 +27,18 @@ class AddressRepository {
         return addresses;
     }
 
-    async getAddressById(id: string, userId: string) {
-        const address = await prisma.address.findFirst({
-            where: {
-                id,
-                userId
-            },
+    async getAddressById(id: string, userId?: string) {
+        if (userId) {
+            return await prisma.address.findFirst({
+                where: {
+                    id,
+                    userId
+                },
+            });
+        }
+        return await prisma.address.findUnique({
+            where: { id }
         });
-        return address;
     }
 
     async getAddressCountByUserId(userId: string) {

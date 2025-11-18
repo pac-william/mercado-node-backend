@@ -98,6 +98,12 @@ class ProductRepository {
         ));
     }
 
+    async getProductsByIds(ids: string[]) {
+        return await prisma.product.findMany({
+            where: { id: { in: ids } }
+        });
+    }
+
     async getProductById(id: string) {
         const p = await prisma.product.findUnique({
             where: { id },
