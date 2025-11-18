@@ -21,28 +21,54 @@ class ProductRepository {
         categoryIds: string[] = []
     ) {
         const normalizedCategoryIds = Array.isArray(categoryIds) ? categoryIds.filter(Boolean) : [];
+        
+        const where: any = {};
+        if (marketId) where.marketId = marketId;
+        if (normalizedCategoryIds.length > 0) where.categoryId = { in: normalizedCategoryIds };
+        if (name) where.name = { contains: name, mode: 'insensitive' };
+        
+        if (minPrice !== undefined || maxPrice !== undefined) {
+            where.price = {};
+            if (minPrice !== undefined) where.price.gte = minPrice;
+            if (maxPrice !== undefined) where.price.lte = maxPrice;
+        }
 
         const products = await prisma.product.findMany({
-            where: {
-                marketId,
-                categoryId: normalizedCategoryIds.length > 0 ? { in: normalizedCategoryIds } : undefined,
-                name: name ? { contains: name, mode: 'insensitive' } : undefined,
-                price: {
-                    gte: minPrice,
-                    lte: maxPrice,
-                },
-            },
+            where,
             skip: (page - 1) * size,
             take: size,
             orderBy: {
                 name: 'asc',
+            },
+            select: {
+                id: true,
+                name: true,
+                price: true,
+                unit: true,
+                marketId: true,
+                image: true,
+                categoryId: true,
+                sku: true,
+                isActive: true,
             }
         });
 
         const productCategoryIds = Array.from(new Set(products.map((p) => p.categoryId).filter(Boolean))) as string[];
         const categoriesRaw = productCategoryIds.length > 0
-            ? await prisma.categories.findMany({ where: { id: { in: productCategoryIds } } })
+            ? await prisma.categories.findMany({
+                where: { id: { in: productCategoryIds } },
+                select: {
+                    id: true,
+                    name: true,
+                    slug: true,
+                    description: true,
+                    subCategories: true,
+                    createdAt: true,
+                    updatedAt: true,
+                }
+            })
             : [];
+
         const categoryById = new Map(
             categoriesRaw.map((c) => [
                 c.id,
@@ -140,18 +166,18 @@ class ProductRepository {
     ) {
         const normalizedCategoryIds = Array.isArray(categoryIds) ? categoryIds.filter(Boolean) : [];
 
-        const products = await prisma.product.findMany({
-            where: {
-                marketId,
-                categoryId: normalizedCategoryIds.length > 0 ? { in: normalizedCategoryIds } : undefined,
-                name: name ? { contains: name, mode: 'insensitive' } : undefined,
-                price: {
-                    gte: minPrice,
-                    lte: maxPrice,
-                },
-            },
-        });
-        return products.length;
+        const where: any = {};
+        if (marketId) where.marketId = marketId;
+        if (normalizedCategoryIds.length > 0) where.categoryId = { in: normalizedCategoryIds };
+        if (name) where.name = { contains: name, mode: 'insensitive' };
+        
+        if (minPrice !== undefined || maxPrice !== undefined) {
+            where.price = {};
+            if (minPrice !== undefined) where.price.gte = minPrice;
+            if (maxPrice !== undefined) where.price.lte = maxPrice;
+        }
+
+        return await prisma.product.count({ where });
     }
 }
 

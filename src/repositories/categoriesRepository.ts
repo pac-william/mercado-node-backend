@@ -31,17 +31,16 @@ class CategoriesRepository {
             category.name,
             category.slug,
             category.description || "",
-            [], // subCategories - implementar se necessário
+            [],
             category.createdAt,
             category.updatedAt
         ));
     }
 
     async getCategoryById(id: string) {
-        const category = await prisma.categories.findUnique({
+        return await prisma.categories.findUnique({
             where: { id }
         });
-        return category;
     }
 
     async updateCategory(id: string, data: CategoriesDTO) {

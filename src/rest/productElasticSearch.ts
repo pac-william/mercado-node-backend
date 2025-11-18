@@ -20,14 +20,12 @@ class ProductElasticSearch {
     categoryNames: string[] = [],
     marketId?: string
   ) {
-    // Monta a query do Elasticsearch
-
     const filters: any[] = [];
 
     if (categoryNames.length > 0) {
       filters.push({
         terms: {
-          "categoryName.keyword": categoryNames // filtro exato
+          "categoryName.keyword": categoryNames
         }
       });
     }
@@ -35,7 +33,7 @@ class ProductElasticSearch {
     if (marketId) {
       filters.push({
         term: {
-          "marketId.keyword": marketId // filtro exato por marketId
+          "marketId.keyword": marketId
         }
       });
     }
@@ -50,7 +48,7 @@ class ProductElasticSearch {
               match: {
                 name: {
                   query: productName,
-                  fuzziness: "AUTO" // apenas para nome do produto
+                  fuzziness: "AUTO"
                 }
               }
             }
@@ -65,7 +63,6 @@ class ProductElasticSearch {
 
     const AUTH_HEADER = this.getAuthHeader();
 
-    // Chamada ao Elasticsearch
     const response = await fetch(`${process.env.ELASTICSEARCH_URL}/produtos/_search`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": AUTH_HEADER },
@@ -77,8 +74,6 @@ class ProductElasticSearch {
     }
 
     const data = await response.json();
-
-    // Extrai produtos
     const products = (data.hits?.hits || []).map((hit: any) => hit._source);
 
     return {

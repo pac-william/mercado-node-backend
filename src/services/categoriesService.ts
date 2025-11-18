@@ -1,4 +1,3 @@
-
 import { CategoryPaginatedResponse } from "../domain/categoryDomain";
 import { Meta } from "../domain/metaDomain";
 import { CategoriesDTO, CategoriesUpdateDTO } from "../dtos/categoriesDTO";

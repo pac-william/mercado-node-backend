@@ -80,8 +80,8 @@ app.get('/health', (_req, res) => {
     });
 });
 
-const PORT = Number(process.env.PORT) || 8080;
+const PORT = process.env.PORT || 8080;
 
-app.listen(PORT, '0.0.0.0', () => {
-    Logger.info('Server', 'Server running on', { url: `http://10.0.0.174:${PORT}` });
+app.listen(PORT, () => {
+    Logger.info('Server', 'Server running on port', { url: `http://localhost:${PORT}`, apiDocs: `http://localhost:${PORT}/api-docs` });
 });
