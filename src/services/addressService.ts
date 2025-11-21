@@ -3,6 +3,7 @@ import { Meta } from "../domain/metaDomain";
 import { AddressDTO, AddressUpdateDTO } from "../dtos/addressDTO";
 import { addressRepository } from "../repositories/addressRepository";
 import { Logger } from "../utils/logger";
+import { prisma } from "../utils/prisma";
 
 class AddressService {
     async createAddress(userId: string, addressDTO: AddressDTO) {
@@ -13,7 +14,15 @@ class AddressService {
             throw new Error("Limite máximo de 3 endereços por usuário");
         }
 
-        const address = await addressRepository.createAddress(userId, addressDTO);
+        let address;
+        if (addressDTO.isFavorite) {
+            address = await prisma.$transaction(async (tx) => {
+                await addressRepository.unsetFavorite(userId, tx);
+                return await addressRepository.createAddress(userId, addressDTO, tx);
+            });
+        } else {
+            address = await addressRepository.createAddress(userId, addressDTO);
+        }
         Logger.successOperation('AddressService', 'createAddress', address.id);
         return address;
     }
@@ -50,7 +59,15 @@ class AddressService {
             throw new Error("Endereço não encontrado");
         }
 
-        const address = await addressRepository.updateAddress(id, userId, addressDTO);
+        let address;
+        if (addressDTO.isFavorite) {
+            address = await prisma.$transaction(async (tx) => {
+                await addressRepository.unsetFavorite(userId, tx);
+                return await addressRepository.updateAddress(id, userId, addressDTO, tx);
+            });
+        } else {
+            address = await addressRepository.updateAddress(id, userId, addressDTO);
+        }
         Logger.successOperation('AddressService', 'updateAddress', address.id);
         return address;
     }
@@ -63,7 +80,15 @@ class AddressService {
             throw new Error("Endereço não encontrado");
         }
 
-        const address = await addressRepository.updateAddressPartial(id, userId, addressUpdateDTO);
+        let address;
+        if (addressUpdateDTO.isFavorite) {
+            address = await prisma.$transaction(async (tx) => {
+                await addressRepository.unsetFavorite(userId, tx);
+                return await addressRepository.updateAddressPartial(id, userId, addressUpdateDTO, tx);
+            });
+        } else {
+            address = await addressRepository.updateAddressPartial(id, userId, addressUpdateDTO);
+        }
         Logger.successOperation('AddressService', 'updateAddressPartial', address.id);
         return address;
     }

@@ -1,11 +1,17 @@
+import { Prisma } from "@prisma/client";
 import { AddressDTO, AddressUpdateDTO } from "../dtos/addressDTO";
 import { Logger } from "../utils/logger";
 import { prisma } from "../utils/prisma";
 
 class AddressRepository {
-    async createAddress(userId: string, addressDTO: AddressDTO) {
+    private getClient(tx?: Prisma.TransactionClient) {
+        return tx ?? prisma;
+    }
+
+    async createAddress(userId: string, addressDTO: AddressDTO, tx?: Prisma.TransactionClient) {
         Logger.repository('AddressRepository', 'createAddress', 'userId', userId);
-        const address = await prisma.address.create({
+        const client = this.getClient(tx);
+        const address = await client.address.create({
             data: {
                 ...addressDTO,
                 userId,
@@ -49,8 +55,9 @@ class AddressRepository {
         return count;
     }
 
-    async updateAddress(id: string, userId: string, addressDTO: AddressDTO) {
-        const address = await prisma.address.update({
+    async updateAddress(id: string, userId: string, addressDTO: AddressDTO, tx?: Prisma.TransactionClient) {
+        const client = this.getClient(tx);
+        const address = await client.address.update({
             where: {
                 id,
                 userId
@@ -60,8 +67,9 @@ class AddressRepository {
         return address;
     }
 
-    async updateAddressPartial(id: string, userId: string, addressDTO: AddressUpdateDTO) {
-        const address = await prisma.address.update({
+    async updateAddressPartial(id: string, userId: string, addressDTO: AddressUpdateDTO, tx?: Prisma.TransactionClient) {
+        const client = this.getClient(tx);
+        const address = await client.address.update({
             where: {
                 id,
                 userId
@@ -79,6 +87,19 @@ class AddressRepository {
             },
         });
         return address;
+    }
+
+    async unsetFavorite(userId: string, tx?: Prisma.TransactionClient) {
+        const client = this.getClient(tx);
+        await client.address.updateMany({
+            where: {
+                userId,
+                isFavorite: true,
+            },
+            data: {
+                isFavorite: false,
+            },
+        });
     }
 }
 
