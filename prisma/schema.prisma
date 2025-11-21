@@ -16,6 +16,7 @@ model Market {
   managersIds    String[] @db.ObjectId
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+  carts          Cart[]   // Relation for carts per market
 }
 
 model User {
@@ -147,9 +148,13 @@ model Cart {
   id        String     @id @default(auto()) @map("_id") @db.ObjectId
   userId    String     @db.ObjectId
   user      User       @relation(fields: [userId], references: [id])
+  marketId  String?    @db.ObjectId
+  market    Market?    @relation(fields: [marketId], references: [id])
   items     CartItem[]
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
+
+  @@unique([userId, marketId])
 }
 
 model CartItem {

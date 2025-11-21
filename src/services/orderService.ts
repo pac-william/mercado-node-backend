@@ -8,6 +8,7 @@ import { orderRepository } from "../repositories/orderRepository";
 import { productRepository } from "../repositories/productRepository";
 import { userRepository } from "../repositories/userRepository";
 import { Logger } from '../utils/logger';
+import { prisma } from "../utils/prisma";
 import { couponService } from './couponService';
 
 class OrderService {
@@ -71,13 +72,16 @@ class OrderService {
             couponId
         };
 
-        const order = await orderRepository.createOrder(orderData);
-        
-        const cart = await cartRepository.findByUserId(userId);
-        if (cart) {
-            await cartRepository.clearCart(cart.id);
-            Logger.info('OrderService', 'createOrder', 'Cart cleared after order creation');
-        }
+        const order = await prisma.$transaction(async (tx) => {
+            const createdOrder = await orderRepository.createOrder(orderData, tx);
+            const cart = await cartRepository.findByUserAndMarket(userId, orderDTO.marketId, tx);
+            if (cart) {
+                await cartRepository.clearCart(cart.id, tx);
+                await cartRepository.deleteCart(cart.id, tx);
+                Logger.info('OrderService', 'createOrder', 'Cart cleared and deleted after order creation');
+            }
+            return createdOrder;
+        });
 
         return order;
     }

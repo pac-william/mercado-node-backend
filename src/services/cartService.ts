@@ -9,35 +9,28 @@ import { ForbiddenError, NotFoundError } from '../utils/errors';
 import { Logger } from '../utils/logger';
 
 export class CartService {
-  async getUserCart(userId: string): Promise<CartResponseDTO> {
-    Logger.info('CartService', 'getUserCart', `userId: ${userId}`);
+  async getUserCarts(userId: string): Promise<CartResponseDTO[]> {
+    Logger.info('CartService', 'getUserCarts', `userId: ${userId}`);
 
-    let cart = await cartRepository.findByUserId(userId);
+    await cartRepository.deleteLegacyCarts(userId);
+    const carts = await cartRepository.findByUserId(userId);
+    const validCarts = carts.filter((cart) => cart.marketId);
 
-    Logger.info('CartService', 'getUserCart', `Cart encontrado: ${cart ? 'Sim' : 'Não'}`);
+    return validCarts.map((cart) => this.formatCartResponse(cart));
+  }
 
+  async createCart(userId: string, marketId: string): Promise<CartResponseDTO> {
+    Logger.info('CartService', 'createCart', `userId: ${userId} marketId: ${marketId}`);
+
+    let cart = await cartRepository.findByUserAndMarket(userId, marketId);
     if (!cart) {
-      Logger.info('CartService', 'getUserCart', 'Criando novo carrinho');
-      cart = await cartRepository.create(userId);
+      cart = await cartRepository.create(userId, marketId);
     }
 
     return this.formatCartResponse(cart);
   }
 
-  async createCart(userId: string): Promise<CartResponseDTO> {
-    // Verificar se já existe um carrinho para o usuário
-    const existingCart = await cartRepository.findByUserId(userId);
-
-    if (existingCart) {
-      return this.formatCartResponse(existingCart);
-    }
-
-    // Criar novo carrinho
-    const cart = await cartRepository.create(userId);
-    return this.formatCartResponse(cart);
-  }
-
-  async addItem(userId: string, itemData: CreateCartItemDTO): Promise<CartItemResponseDTO> {
+  async addItem(userId: string, itemData: CreateCartItemDTO): Promise<CartResponseDTO> {
     try {
       Logger.info('CartService', 'addItem', JSON.stringify({ userId, productId: itemData.productId, quantity: itemData.quantity }));
 
@@ -50,59 +43,67 @@ export class CartService {
         throw new NotFoundError('Produto não encontrado');
       }
 
-      Logger.info('CartService', 'addItem', 'Buscando carrinho do usuário...');
-      let cart = await cartRepository.findByUserId(userId);
-      Logger.info('CartService', 'addItem', `Carrinho encontrado: ${cart ? 'Sim' : 'Não'}`);
-
-      if (!cart) {
-        Logger.info('CartService', 'addItem', 'Carrinho não encontrado, criando um novo');
-        cart = await cartRepository.create(userId);
-        Logger.info('CartService', 'addItem', `Carrinho criado com ID: ${cart.id}`);
-      }
+      Logger.info('CartService', 'addItem', 'Garantindo carrinho do mercado...');
+      const cart = await this.ensureCartForMarket(userId, product.marketId);
 
       Logger.info('CartService', 'addItem', 'Adicionando item ao carrinho...');
-      const cartItem = await cartRepository.addItem(cart.id, itemData);
-      Logger.info('CartService', 'addItem', 'Item adicionado ao carrinho com sucesso');
+      await cartRepository.addItem(cart.id, itemData);
+      const updatedCart = await cartRepository.findCartWithItems(cart.id);
 
-      Logger.info('CartService', 'addItem', 'Formatando resposta...');
-      const formattedResponse = this.formatCartItemResponse(cartItem);
       Logger.success('CartService', 'addItem', 'Item adicionado com sucesso');
 
-      return formattedResponse;
+      if (!updatedCart) {
+        throw new NotFoundError('Carrinho não encontrado após adicionar item');
+      }
+
+      return this.formatCartResponse(updatedCart);
     } catch (error) {
       Logger.errorOperation('CartService', 'addItem', error);
       throw error;
     }
   }
 
-  async addMultipleItems(userId: string, itemsData: AddMultipleItemsDTO): Promise<CartResponseDTO> {
-    let cart = await cartRepository.findByUserId(userId);
-    if (!cart) {
-      cart = await cartRepository.create(userId);
-    }
+  async addMultipleItems(userId: string, itemsData: AddMultipleItemsDTO): Promise<CartResponseDTO[]> {
+    const marketGroups = new Map<string, { cartId: string; items: CreateCartItemDTO[] }>();
 
     for (const item of itemsData.items) {
       const product = await cartRepository.findProductById(item.productId);
       if (!product) {
         throw new NotFoundError(`Produto com ID ${item.productId} não encontrado`);
       }
+
+      const marketId = product.marketId;
+      let group = marketGroups.get(marketId);
+
+      if (!group) {
+        const cart = await this.ensureCartForMarket(userId, marketId);
+        group = { cartId: cart.id, items: [] };
+        marketGroups.set(marketId, group);
+      }
+
+      group.items.push(item);
     }
 
-    for (const item of itemsData.items) {
-      await cartRepository.addItem(cart.id, item);
+    for (const group of marketGroups.values()) {
+      for (const item of group.items) {
+        await cartRepository.addItem(group.cartId, item);
+      }
     }
 
-    const updatedCart = await cartRepository.findCartWithItems(cart.id);
-    return this.formatCartResponse(updatedCart!);
+    const updatedCarts: CartResponseDTO[] = [];
+    for (const group of marketGroups.values()) {
+      const cart = await cartRepository.findCartWithItems(group.cartId);
+      if (cart) {
+        updatedCarts.push(this.formatCartResponse(cart));
+      }
+    }
+
+    return updatedCarts;
   }
 
-  async updateItemQuantity(userId: string, cartItemId: string, quantity: number): Promise<CartItemResponseDTO> {
-    let cart = await cartRepository.findByUserId(userId);
-    if (!cart) {
-      cart = await cartRepository.create(userId);
-    }
-
+  async updateItemQuantity(userId: string, cartItemId: string, quantity: number): Promise<CartResponseDTO> {
     const cartItem = await cartRepository.findItemById(cartItemId);
+
     if (!cartItem) {
       throw new NotFoundError('Item não encontrado no carrinho');
     }
@@ -111,17 +112,19 @@ export class CartService {
       throw new ForbiddenError('Acesso negado');
     }
 
-    const updatedItem = await cartRepository.updateItemQuantity(cartItemId, quantity);
-    return this.formatCartItemResponse(updatedItem);
+    await cartRepository.updateItemQuantity(cartItemId, quantity);
+
+    const updatedCart = await cartRepository.findCartWithItems(cartItem.cartId);
+    if (!updatedCart) {
+      throw new NotFoundError('Carrinho não encontrado');
+    }
+
+    return this.formatCartResponse(updatedCart);
   }
 
   async removeItem(userId: string, cartItemId: string): Promise<void> {
-    let cart = await cartRepository.findByUserId(userId);
-    if (!cart) {
-      cart = await cartRepository.create(userId);
-    }
-
     const cartItem = await cartRepository.findItemById(cartItemId);
+
     if (!cartItem) {
       throw new NotFoundError('Item não encontrado no carrinho');
     }
@@ -133,22 +136,40 @@ export class CartService {
     await cartRepository.removeItem(cartItemId);
   }
 
-  async clearCart(userId: string): Promise<void> {
-    let cart = await cartRepository.findByUserId(userId);
+  async clearCart(userId: string, cartId: string): Promise<void> {
+    const cart = await cartRepository.findCartWithItems(cartId);
+
     if (!cart) {
-      cart = await cartRepository.create(userId);
+      throw new NotFoundError('Carrinho não encontrado');
     }
 
-    await cartRepository.clearCart(cart.id);
+    if (cart.userId !== userId) {
+      throw new ForbiddenError('Acesso negado');
+    }
+
+    await cartRepository.clearCart(cartId);
   }
 
-  async deleteCart(userId: string): Promise<void> {
-    let cart = await cartRepository.findByUserId(userId);
+  async deleteCart(userId: string, cartId: string): Promise<void> {
+    const cart = await cartRepository.findCartWithItems(cartId);
+
     if (!cart) {
-      cart = await cartRepository.create(userId);
+      throw new NotFoundError('Carrinho não encontrado');
     }
 
-    await cartRepository.deleteCart(cart.id);
+    if (cart.userId !== userId) {
+      throw new ForbiddenError('Acesso negado');
+    }
+
+    await cartRepository.deleteCart(cartId);
+  }
+
+  private async ensureCartForMarket(userId: string, marketId: string) {
+    let cart = await cartRepository.findByUserAndMarket(userId, marketId);
+    if (!cart) {
+      cart = await cartRepository.create(userId, marketId);
+    }
+    return cart;
   }
 
   private formatCartResponse(cart: any): CartResponseDTO {
@@ -158,6 +179,7 @@ export class CartService {
     return {
       id: cart.id,
       userId: cart.userId,
+      marketId: cart.marketId,
       items: cart.items.map((item: any) => this.formatCartItemResponse(item)),
       totalItems,
       totalValue,
