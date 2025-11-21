@@ -46,6 +46,7 @@ app.use('/api/v1/products', routes.productRoute);
 app.use('/api/v1/markets', routes.marketRoute);
 app.use('/api/v1/users', routes.userRoute);
 app.use('/api/v1/categories', routes.categoriesRouter);
+app.use('/api/v1/subcategories', routes.subcategoryRoute);
 app.use('/api/v1/deliverers', routes.delivererRoute);
 app.use('/api/v1/delivery-settings', routes.deliverySettingsRoute);
 app.use('/api/v1/orders', routes.orderRoute);

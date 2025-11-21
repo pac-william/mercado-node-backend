@@ -1,21 +1,21 @@
 import { Meta } from "./metaDomain";
-import { SubCategory } from "./subcategoryDomain";
 
-export class Category {
+export class SubCategory {
     constructor(
         public id: string,
         public name: string,
         public slug: string,
         public description: string,
-        public subCategories: SubCategory[],
+        public categoryId: string,
         public createdAt: Date,
         public updatedAt: Date,
     ) { }
 }
 
-export class CategoryPaginatedResponse {
+export class SubCategoryPaginatedResponse {
     constructor(
-        public categories: Category[],
+        public subcategories: SubCategory[],
         public meta: Meta,
     ) { }
 }
+

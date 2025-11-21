@@ -10,6 +10,7 @@ import { orderPaths, orderSchemas, orderTags } from './schema/order';
 import { productPaths, productSchemas, productTags } from './schema/product';
 import { suggestionPaths, suggestionSchemas, suggestionTags } from './schema/suggestion';
 import { userPaths, userSchemas, userTags } from './schema/user';
+import { subcategoryPaths, subcategorySchemas, subcategoryTags } from './schema/subcategory';
 
 export const swaggerDocument = {
     openapi: '3.0.0',
@@ -38,6 +39,7 @@ export const swaggerDocument = {
             ...productSchemas,
             ...userSchemas,
             ...categoriesSchemas,
+        ...subcategorySchemas,
             ...couponSchemas,
             ...delivererSchemas,
             ...orderSchemas,
@@ -52,6 +54,7 @@ export const swaggerDocument = {
         ...productTags,
         ...userTags,
         ...categoriesTags,
+        ...subcategoryTags,
         ...couponTags,
         ...delivererTags,
         ...orderTags,
@@ -65,6 +68,7 @@ export const swaggerDocument = {
         ...productPaths,
         ...userPaths,
         ...categoriesPaths,
+        ...subcategoryPaths,
         ...couponPaths,
         ...delivererPaths,
         ...orderPaths,

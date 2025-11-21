@@ -6,6 +6,7 @@ export const ProductDTO = z.object({
     unit: z.string().default("unidade"),
     marketId: z.string({ error: "ID do mercado é obrigatório" }),
     categoryId: z.string({ error: "ID da categoria é obrigatório" }).min(1, { message: "ID da categoria é obrigatório" }),
+    subCategoryId: z.string().optional(),
     sku: z.string().trim().optional(),
     image: z.string().optional(),
     isActive: z.boolean().optional(),

@@ -3,6 +3,7 @@ export * from './blobUploadDTO';
 export * from './cartDTO';
 export * from './cartItemDTO';
 export * from './categoriesDTO';
+export * from './subcategoryDTO';
 export * from './chatDTO';
 export * from './couponDTO';
 export * from './delivererDTO';

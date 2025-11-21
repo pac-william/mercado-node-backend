@@ -63,24 +63,29 @@ model Categories {
   name          String        @unique
   slug          String        @unique
   description   String?
-  subCategories SubCategory[] // array de subcategorias embutidas
+  subCategories SubCategory[] @relation("CategorySubCategories")
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
+  products      Product[]
+
 }
 
 model Product {
-  id         String     @id @default(auto()) @map("_id") @db.ObjectId
-  name       String
-  price      Float
-  unit       String     @default("unidade")
-  marketId   String     @db.ObjectId // ID do mercado (sem relação)
-  categoryId String?    @db.ObjectId // ID da categoria (sem relação)
-  sku        String?    @unique @default(uuid())
-  image      String?
-  isActive   Boolean    @default(true)
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
-  cartItems  CartItem[]
+  id            String       @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  price         Float
+  unit          String       @default("unidade")
+  marketId      String       @db.ObjectId // ID do mercado (sem relação)
+  categoryId    String?      @db.ObjectId
+  category      Categories?  @relation(fields: [categoryId], references: [id])
+  subCategoryId String?      @db.ObjectId
+  subCategory   SubCategory? @relation(fields: [subCategoryId], references: [id])
+  sku           String?      @unique @default(uuid())
+  image         String?
+  isActive      Boolean      @default(true)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  cartItems     CartItem[]
 }
 
 model Deliverer {
@@ -158,10 +163,19 @@ model CartItem {
   updatedAt DateTime @updatedAt
 }
 
-type SubCategory {
+model SubCategory {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
   name        String
   slug        String
   description String?
+  categoryId  String    @db.ObjectId
+  category    Categories @relation("CategorySubCategories", fields: [categoryId], references: [id])
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([categoryId])
+  @@map("SubCategories")
 }
 
 type Vehicle {
@@ -252,16 +266,16 @@ model Chat {
 }
 
 model Message {
-  id        String       @id @default(auto()) @map("_id") @db.ObjectId
-  chatId    String       @db.ObjectId // ID do chat
-  chat      Chat         @relation(fields: [chatId], references: [id], onDelete: Cascade)
-  username  String       // Nome do usuário que enviou
-  userId    String       @db.ObjectId // ID do usuário que enviou (cliente ou lojista)
-  message   String       // Conteúdo da mensagem
+  id        String        @id @default(auto()) @map("_id") @db.ObjectId
+  chatId    String        @db.ObjectId // ID do chat
+  chat      Chat          @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  username  String // Nome do usuário que enviou
+  userId    String        @db.ObjectId // ID do usuário que enviou (cliente ou lojista)
+  message   String // Conteúdo da mensagem
   status    MessageStatus @default(SENT) // Status da mensagem
-  readAt    DateTime?    // Quando a mensagem foi lida pelo destinatário
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
+  readAt    DateTime? // Quando a mensagem foi lida pelo destinatário
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
 
   @@index([chatId])
   @@index([userId])
@@ -275,17 +289,17 @@ model Campaign {
   marketId  String         @db.ObjectId
   title     String
   imageUrl  String
-  slot      Int            // 1 a 8
+  slot      Int // 1 a 8
   startDate DateTime
   endDate   DateTime?
   status    CampaignStatus @default(DRAFT)
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
 
+  @@unique([marketId, slot, startDate, endDate])
   @@index([marketId])
   @@index([slot])
   @@index([status])
   @@index([startDate])
   @@index([endDate])
-  @@unique([marketId, slot, startDate, endDate])
 }

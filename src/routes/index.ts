@@ -3,6 +3,7 @@ import campaignRoute from './campaignRoute';
 import cartItemRoute from './cartItemRoute';
 import cartRoute from './cartRoute';
 import categoriesRouter from './categories.router';
+import subcategoryRoute from './subcategoryRoute';
 import chatRoute from './chatRoute';
 import couponRoute from './couponRoute';
 import delivererRoute from './delivererRoute';
@@ -21,6 +22,7 @@ export default {
     marketRoute,
     userRoute,
     categoriesRouter,
+    subcategoryRoute,
     delivererRoute,
     orderRoute,
     couponRoute,
