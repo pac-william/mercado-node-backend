@@ -134,6 +134,7 @@ export class CartService {
     }
 
     await cartRepository.removeItem(cartItemId);
+    await this.deleteCartIfEmpty(cartItem.cartId);
   }
 
   async clearCart(userId: string, cartId: string): Promise<void> {
@@ -148,6 +149,7 @@ export class CartService {
     }
 
     await cartRepository.clearCart(cartId);
+    await this.deleteCartIfEmpty(cartId);
   }
 
   async deleteCart(userId: string, cartId: string): Promise<void> {
@@ -170,6 +172,13 @@ export class CartService {
       cart = await cartRepository.create(userId, marketId);
     }
     return cart;
+  }
+
+  private async deleteCartIfEmpty(cartId: string) {
+    const cart = await cartRepository.findCartWithItems(cartId);
+    if (cart && cart.items.length === 0) {
+      await cartRepository.deleteCart(cartId);
+    }
   }
 
   private formatCartResponse(cart: any): CartResponseDTO {
