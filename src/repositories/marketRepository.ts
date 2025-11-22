@@ -1,6 +1,5 @@
 import { Market } from "../domain/marketDomain";
 import { MarketDTO, MarketUpdateDTO } from "../dtos/marketDTO";
-import { Logger } from "../utils/logger";
 import { prisma } from "../utils/prisma";
 
 class MarketRepository {
@@ -36,38 +35,49 @@ class MarketRepository {
     }
 
     async getMarkets(page: number, size: number, name?: string, address?: string, ownerId?: string, managersIds?: string[]) {
-        const filter = this.buildFilter(name, address, ownerId, managersIds);
-        Logger.info('MarketRepository', 'getMarkets', JSON.stringify(filter));
-        const marketsRaw = await prisma.market.findRaw({
-            filter,
-            options: {
-                skip: (page - 1) * size,
-                limit: size,
-            }
-        }) as unknown as any[];
+        const whereClause: any = {};
+        
+        if (ownerId) {
+            whereClause.ownerId = ownerId;
+        } else {
+            whereClause.ownerId = { not: null };
+        }
+        
+        if (name) {
+            whereClause.name = { contains: name };
+        }
+        
+        if (managersIds && managersIds.length > 0) {
+            whereClause.managersIds = { hasSome: managersIds };
+        }
+        
+        const marketsRaw = await prisma.market.findMany({
+            where: whereClause,
+            include: {
+                address: true
+            },
+            skip: (page - 1) * size,
+            take: size,
+        });
 
-        const markets = marketsRaw.map((doc: any) => ({
-            id: doc._id?.$oid || doc._id,
-            name: doc.name,
-            address: doc.address,
-            profilePicture: doc.profilePicture || '',
-            ownerId: doc.ownerId?.$oid || doc.ownerId,
-            managersIds: doc.managersIds?.map((id: any) => id?.$oid || id) || [],
-            createdAt: doc.createdAt?.$date ? new Date(doc.createdAt.$date) : doc.createdAt,
-            updatedAt: doc.updatedAt?.$date ? new Date(doc.updatedAt.$date) : doc.updatedAt,
-        }));
-
-        return markets.map((market) => new Market(
-            market.id,
-            market.name,
-            market.address,
-            market.profilePicture ?? '',
-            market.ownerId,
-            market.managersIds ?? [],
-            market.createdAt,
-            market.updatedAt,
-        ));
+        return marketsRaw.map((market: any) => {
+            const addressString = market.address 
+                ? `${market.address.street}, ${market.address.number}${market.address.complement ? ` - ${market.address.complement}` : ''} - ${market.address.neighborhood}, ${market.address.city} - ${market.address.state}`
+                : '';
+            
+            return new Market(
+                market.id,
+                market.name,
+                addressString,
+                market.profilePicture ?? '',
+                market.ownerId,
+                market.managersIds ?? [],
+                market.createdAt,
+                market.updatedAt,
+            );
+        });
     }
+
 
     async getMarketById(id: string) {
         const market = await prisma.market.findUnique({

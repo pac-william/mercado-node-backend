@@ -30,7 +30,6 @@ model User {
   profilePicture String?
   birthDate      DateTime?
   gender         String?
-  address        String?
   refreshToken   String?
   role           UserRole  @default(CUSTOMER)
   marketId       String?   @db.ObjectId // ID do mercado (sem relação)
