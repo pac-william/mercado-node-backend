@@ -3,7 +3,7 @@ import { Meta } from "./metaDomain";
 export class AddressDomain {
     constructor(
         public id: string,
-        public userId: string,
+        public userId: string | null,
         public name: string,
         public street: string,
         public number: string,
@@ -16,6 +16,7 @@ export class AddressDomain {
         public isActive: boolean = true,
         public latitude?: number | null,
         public longitude?: number | null,
+        public marketId?: string | null,
         public createdAt: Date = new Date(),
         public updatedAt: Date = new Date(),
     ) { }

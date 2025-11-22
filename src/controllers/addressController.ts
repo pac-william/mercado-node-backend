@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { AddressDTO, AddressUpdateDTO } from "../dtos/addressDTO";
+import { addressRepository } from "../repositories/addressRepository";
 import { addressService } from "../services/addressService";
 import { Logger } from "../utils/logger";
 import { QueryBuilder } from "../utils/queryBuilder";
@@ -36,7 +37,7 @@ export class AddressController {
 
             const userId = req.user.id;
             const addressDTO = AddressDTO.parse(req.body);
-            const address = await addressService.createAddress(userId, addressDTO);
+            const address = await addressService.createAddress(addressDTO, userId);
             Logger.successOperation('AddressController', 'createAddress');
             return res.status(201).json(address);
         } catch (error) {
@@ -79,7 +80,17 @@ export class AddressController {
             const userId = req.user.id;
             const { id } = req.params;
             const addressDTO = AddressDTO.parse(req.body);
-            const address = await addressService.updateAddress(id, userId, addressDTO);
+            
+            // Verificar se é endereço de usuário ou mercado
+            const existingAddress = await addressRepository.getAddressById(id);
+            if (!existingAddress) {
+                return res.status(404).json({ message: "Endereço não encontrado" });
+            }
+            
+            // Se é endereço de mercado, atualizar sem userId
+            // Se é endereço de usuário, atualizar com userId
+            const addressUserId = existingAddress.userId ? userId : undefined;
+            const address = await addressService.updateAddress(id, addressDTO, addressUserId);
             Logger.successOperation('AddressController', 'updateAddress');
             return res.status(200).json(address);
         } catch (error) {
@@ -101,7 +112,17 @@ export class AddressController {
             const userId = req.user.id;
             const { id } = req.params;
             const addressUpdateDTO = AddressUpdateDTO.parse(req.body);
-            const address = await addressService.updateAddressPartial(id, userId, addressUpdateDTO);
+            
+            // Verificar se é endereço de usuário ou mercado
+            const existingAddress = await addressRepository.getAddressById(id);
+            if (!existingAddress) {
+                return res.status(404).json({ message: "Endereço não encontrado" });
+            }
+            
+            // Se é endereço de mercado, atualizar sem userId
+            // Se é endereço de usuário, atualizar com userId
+            const addressUserId = existingAddress.userId ? userId : undefined;
+            const address = await addressService.updateAddressPartial(id, addressUpdateDTO, addressUserId);
             Logger.successOperation('AddressController', 'updateAddressPartial');
             return res.status(200).json(address);
         } catch (error) {

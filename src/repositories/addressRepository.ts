@@ -8,13 +8,14 @@ class AddressRepository {
         return tx ?? prisma;
     }
 
-    async createAddress(userId: string, addressDTO: AddressDTO, tx?: Prisma.TransactionClient) {
-        Logger.repository('AddressRepository', 'createAddress', 'userId', userId);
+    async createAddress(addressDTO: AddressDTO, userId?: string | null, tx?: Prisma.TransactionClient) {
+        Logger.repository('AddressRepository', 'createAddress', 'userId', userId || 'market');
         const client = this.getClient(tx);
         const address = await client.address.create({
             data: {
                 ...addressDTO,
-                userId,
+                userId: userId ?? null,
+                marketId: userId ? null : null, // Será atualizado após criar o mercado se for mercado
             },
         });
         return address;
@@ -55,26 +56,30 @@ class AddressRepository {
         return count;
     }
 
-    async updateAddress(id: string, userId: string, addressDTO: AddressDTO, tx?: Prisma.TransactionClient) {
+    async updateAddress(id: string, addressDTO: AddressDTO, userId?: string | null, tx?: Prisma.TransactionClient) {
         const client = this.getClient(tx);
+        // Se userId for fornecido, verificar que o endereço pertence ao usuário
+        // Se não, atualizar diretamente (pode ser endereço de mercado)
+        const whereClause = userId 
+            ? { id, userId }
+            : { id };
+            
         const address = await client.address.update({
-            where: {
-                id,
-                userId
-            },
+            where: whereClause,
             data: addressDTO,
         });
         return address;
     }
 
-    async updateAddressPartial(id: string, userId: string, addressDTO: AddressUpdateDTO, tx?: Prisma.TransactionClient) {
+    async updateAddressPartial(id: string, addressUpdateDTO: AddressUpdateDTO, userId?: string | null, tx?: Prisma.TransactionClient) {
         const client = this.getClient(tx);
+        const whereClause = userId 
+            ? { id, userId }
+            : { id };
+            
         const address = await client.address.update({
-            where: {
-                id,
-                userId
-            },
-            data: addressDTO,
+            where: whereClause,
+            data: addressUpdateDTO,
         });
         return address;
     }
