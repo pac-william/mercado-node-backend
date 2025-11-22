@@ -9,13 +9,12 @@ class AddressRepository {
     }
 
     async createAddress(addressDTO: AddressDTO, userId?: string | null, tx?: Prisma.TransactionClient) {
-        Logger.repository('AddressRepository', 'createAddress', 'userId', userId || 'market');
+        Logger.repository('AddressRepository', 'createAddress', 'userId', userId || 'user');
         const client = this.getClient(tx);
         const address = await client.address.create({
             data: {
                 ...addressDTO,
                 userId: userId ?? null,
-                marketId: userId ? null : null, // Será atualizado após criar o mercado se for mercado
             },
         });
         return address;
@@ -58,14 +57,18 @@ class AddressRepository {
 
     async updateAddress(id: string, addressDTO: AddressDTO, userId?: string | null, tx?: Prisma.TransactionClient) {
         const client = this.getClient(tx);
-        // Se userId for fornecido, verificar que o endereço pertence ao usuário
-        // Se não, atualizar diretamente (pode ser endereço de mercado)
-        const whereClause = userId 
-            ? { id, userId }
-            : { id };
-            
+        Logger.repository('AddressRepository', 'updateAddress', 'id', id);
+        
+        const addressExists = await client.address.findUnique({
+            where: { id }
+        });
+        
+        if (!addressExists) {
+            throw new Error("Endereço não encontrado");
+        }
+        
         const address = await client.address.update({
-            where: whereClause,
+            where: { id },
             data: addressDTO,
         });
         return address;

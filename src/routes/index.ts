@@ -3,7 +3,6 @@ import campaignRoute from './campaignRoute';
 import cartItemRoute from './cartItemRoute';
 import cartRoute from './cartRoute';
 import categoriesRouter from './categories.router';
-import subcategoryRoute from './subcategoryRoute';
 import chatRoute from './chatRoute';
 import couponRoute from './couponRoute';
 import delivererRoute from './delivererRoute';
@@ -12,10 +11,11 @@ import geocodingRoute from './geocodingRoute';
 import marketRoute from './marketRoute';
 import orderRoute from './orderRoute';
 import productRoute from './productRoute';
+import reportsRoute from './reportsRoute';
+import subcategoryRoute from './subcategoryRoute';
 import suggestionRoute from './suggestionRoute';
 import uploadRoute from './uploadRoute';
 import userRoute from './userRoute';
-import reportsRoute from './reportsRoute';
 
 export default {
     productRoute,

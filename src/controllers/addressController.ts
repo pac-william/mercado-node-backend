@@ -35,8 +35,12 @@ export class AddressController {
                 return res.status(401).json({ message: "Usuário não autenticado" });
             }
 
-            const userId = req.user.id;
             const addressDTO = AddressDTO.parse(req.body);
+            const body = req.body as any;
+            
+            // Se for endereço de mercado (tem marketId ou isMarketAddress), criar sem userId
+            const userId = (body.marketId || body.isMarketAddress) ? undefined : req.user.id;
+            
             const address = await addressService.createAddress(addressDTO, userId);
             Logger.successOperation('AddressController', 'createAddress');
             return res.status(201).json(address);
