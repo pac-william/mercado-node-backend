@@ -17,14 +17,15 @@ export class MarketController {
                 .withArray('managersIds')
                 .build();
 
-            console.log(page, size, name, address, ownerId, managersIds);
-
             const markets = await marketService.getMarkets(page, size, name, address, ownerId, managersIds);
             Logger.successOperation('MarketController', 'getMarkets');
             return res.status(200).json(markets);
-        } catch (error) {
+        } catch (error: any) {
             Logger.errorOperation('MarketController', 'getMarkets', error);
-            return res.status(500).json({ message: "Erro interno do servidor" });
+            return res.status(500).json({ 
+                message: "Erro interno do servidor",
+                error: process.env.NODE_ENV === 'development' ? error.message : undefined
+            });
         }
     }
 

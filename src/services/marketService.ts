@@ -1,4 +1,3 @@
-import { MarketPaginatedResponse } from "../domain/marketDomain";
 import { Meta } from "../domain/metaDomain";
 import { MarketCreateDTO, MarketDTO, MarketUpdateDTO } from "../dtos/index";
 import { marketAddressRepository } from "../repositories/marketAddressRepository";
@@ -36,8 +35,30 @@ class MarketService {
 
     async getMarkets(page: number, size: number, name?: string, address?: string, ownerId?: string, managersIds?: string[]) {
         const count = await marketRepository.count(name, address, ownerId, managersIds);
-        const markets = await marketRepository.getMarkets(page, size, name, address, ownerId, managersIds);
-        return new MarketPaginatedResponse(markets, new Meta(page, size, count, Math.ceil(count / size), count));
+        const marketsData = await marketRepository.getMarkets(page, size, name, address, ownerId, managersIds);
+        const markets = marketsData.map((m: any) => ({
+            id: m.id,
+            name: m.name,
+            address: m.address,
+            profilePicture: m.profilePicture,
+            bannerImage: m.bannerImage || '',
+            ownerId: m.ownerId,
+            managersIds: m.managersIds,
+            createdAt: m.createdAt,
+            updatedAt: m.updatedAt,
+        }));
+        const totalPages = count > 0 ? Math.ceil(count / size) : 0;
+        const meta = new Meta(page, size, count, totalPages, count);
+        return {
+            markets,
+            meta: {
+                page: meta.page,
+                size: meta.size,
+                total: meta.total,
+                totalPages: meta.totalPages,
+                totalItems: meta.totalItems,
+            },
+        };
     }
 
     async getMarketById(id: string) {

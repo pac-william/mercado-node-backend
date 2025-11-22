@@ -1,4 +1,3 @@
-import { Market } from "../domain/marketDomain";
 import { MarketDTO, MarketUpdateDTO } from "../dtos/marketDTO";
 import { prisma } from "../utils/prisma";
 
@@ -39,8 +38,6 @@ class MarketRepository {
         
         if (ownerId) {
             whereClause.ownerId = ownerId;
-        } else {
-            whereClause.ownerId = { not: null };
         }
         
         if (name) {
@@ -65,16 +62,17 @@ class MarketRepository {
                 ? `${market.address.street}, ${market.address.number}${market.address.complement ? ` - ${market.address.complement}` : ''} - ${market.address.neighborhood}, ${market.address.city} - ${market.address.state}`
                 : '';
             
-            return new Market(
-                market.id,
-                market.name,
-                addressString,
-                market.profilePicture ?? '',
-                market.ownerId,
-                market.managersIds ?? [],
-                market.createdAt,
-                market.updatedAt,
-            );
+            return {
+                id: market.id,
+                name: market.name,
+                address: addressString,
+                profilePicture: market.profilePicture ?? '',
+                bannerImage: '',
+                ownerId: market.ownerId,
+                managersIds: market.managersIds ?? [],
+                createdAt: market.createdAt,
+                updatedAt: market.updatedAt,
+            };
         });
     }
 
@@ -148,13 +146,23 @@ class MarketRepository {
     }
 
     async count(name?: string, address?: string, ownerId?: string, managersIds?: string[]) {
-        const filter = this.buildFilter(name, address, ownerId, managersIds);
+        const whereClause: any = {};
+        
+        if (ownerId) {
+            whereClause.ownerId = ownerId;
+        }
+        
+        if (name) {
+            whereClause.name = { contains: name };
+        }
+        
+        if (managersIds && managersIds.length > 0) {
+            whereClause.managersIds = { hasSome: managersIds };
+        }
 
-        const marketsRaw = await prisma.market.findRaw({
-            filter,
-        }) as unknown as any[];
-
-        return marketsRaw.length;
+        return await prisma.market.count({
+            where: whereClause,
+        });
     }
 }
 
