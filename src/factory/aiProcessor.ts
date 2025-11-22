@@ -29,11 +29,11 @@ class AiProcessor {
                     input: [
                         {
                             role: "system",
-                            content: "Você é um agente de mercado. Gere SOMENTE nomes de itens para pesquisar (sem quantidades/medidas/modo de preparo). Para cada item, escolha UMA categoria EXISTENTE da lista fornecida. Cada item deve incluir: name, categoryId, categoryName e type, onde type ∈ {essential, common, utensil}. Retorne EXCLUSIVAMENTE no formato solicitado."
+                            content: "Você é um agente de mercado. Gere SOMENTE nomes de itens para pesquisar (sem quantidades/medidas/modo de preparo). Para cada item, escolha UMA categoria EXISTENTE da lista fornecida. Cada item deve incluir: name, categoryId, categoryName e type, onde type ∈ {essential, common, utensil}. Se a tarefa fizer sentido ter uma receita (ex: fazer um prato, preparar uma comida, receita culinária), gere também um campo receipt com a receita completa incluindo nome, descrição, ingredientes com quantidades, instruções de preparo, tempo de preparo e porções. Retorne EXCLUSIVAMENTE no formato solicitado."
                         },
                         {
                             role: "user",
-                            content: `Categorias disponíveis (use APENAS uma destas por item): ${JSON.stringify(categories, null, 2)}.\nAgora, gere uma lista única de itens para realizar a tarefa: ${task}. Não separe em seções. Para cada item gere: name (string), categoryId (um dos ids acima), categoryName (nome correspondente), type ("essential" | "common" | "utensil"). Não inclua quantidades, medidas ou modo de preparo.`
+                            content: `Categorias disponíveis (use APENAS uma destas por item): ${JSON.stringify(categories, null, 2)}.\nAgora, gere uma lista única de itens para realizar a tarefa: ${task}. Não separe em seções. Para cada item gere: name (string), categoryId (um dos ids acima), categoryName (nome correspondente), type ("essential" | "common" | "utensil"). Não inclua quantidades, medidas ou modo de preparo nos itens.\n\nIMPORTANTE: Se a tarefa "${task}" fizer sentido ter uma receita (ex: fazer um prato, preparar uma comida, receita culinária), gere também um campo receipt opcional no objeto raiz com: name (nome da receita), description (descrição breve), ingredients (array de objetos com name e quantity), instructions (array de strings com os passos), prepTime (tempo de preparo em minutos), cookTime (tempo de cozimento em minutos, opcional), servings (número de porções). Se a tarefa não fizer sentido ter receita (ex: comprar produtos básicos, fazer limpeza), não inclua o campo receipt.`
                         }
                     ],
                     text: {
@@ -56,6 +56,34 @@ class AiProcessor {
                                             required: ["name", "categoryId", "categoryName", "type"],
                                             additionalProperties: false
                                         }
+                                    },
+                                    receipt: {
+                                        type: "object",
+                                        properties: {
+                                            name: { type: "string" },
+                                            description: { type: "string" },
+                                            ingredients: {
+                                                type: "array",
+                                                items: {
+                                                    type: "object",
+                                                    properties: {
+                                                        name: { type: "string" },
+                                                        quantity: { type: "string" }
+                                                    },
+                                                    required: ["name", "quantity"],
+                                                    additionalProperties: false
+                                                }
+                                            },
+                                            instructions: {
+                                                type: "array",
+                                                items: { type: "string" }
+                                            },
+                                            prepTime: { type: "number" },
+                                            cookTime: { type: "number" },
+                                            servings: { type: "number" }
+                                        },
+                                        required: ["name", "description", "ingredients", "instructions", "prepTime", "servings"],
+                                        additionalProperties: false
                                     }
                                 },
                                 required: ["items"],
@@ -89,17 +117,45 @@ class AiProcessor {
                 outputLength: data.output?.length || 0 
             });
 
-            const outputData = JSON.parse(data.output[0].content[0].text) as { items: Array<{ name: string; categoryId: string; categoryName: string; type: "essential" | "common" | "utensil" }> };
+            const outputData = JSON.parse(data.output[0].content[0].text) as { 
+                items: Array<{ name: string; categoryId: string; categoryName: string; type: "essential" | "common" | "utensil" }>;
+                receipt?: {
+                    name: string;
+                    description: string;
+                    ingredients: Array<{ name: string; quantity: string }>;
+                    instructions: string[];
+                    prepTime: number;
+                    cookTime?: number;
+                    servings: number;
+                };
+            };
             Logger.debug('AiProcessor', 'process - AI suggestion parsed', { 
-                totalItems: outputData.items?.length || 0
+                totalItems: outputData.items?.length || 0,
+                hasReceipt: !!outputData.receipt
             });
 
-            const finalSuggestion = {
+            const finalSuggestion: {
+                items: Array<{ name: string; categoryId: string; categoryName: string; type: "essential" | "common" | "utensil" }>;
+                receipt?: {
+                    name: string;
+                    description: string;
+                    ingredients: Array<{ name: string; quantity: string }>;
+                    instructions: string[];
+                    prepTime: number;
+                    cookTime?: number;
+                    servings: number;
+                };
+            } = {
                 items: outputData.items
             };
 
+            if (outputData.receipt) {
+                finalSuggestion.receipt = outputData.receipt;
+            }
+
             Logger.debug('AiProcessor', 'process - Processing completed successfully', { 
-                totalItems: finalSuggestion.items.length
+                totalItems: finalSuggestion.items.length,
+                hasReceipt: !!finalSuggestion.receipt
             });
 
             return finalSuggestion;
