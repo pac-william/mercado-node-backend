@@ -8,6 +8,7 @@ const router = Router();
 // Rotas públicas
 router.get('/', marketController.getMarkets);
 router.get('/:id', marketController.getMarketById);
+router.get('/:marketId/address', marketAddressController.getMarketAddressByMarketId);
 
 // Rotas protegidas
 router.post('/', validateToken, marketController.createMarket);

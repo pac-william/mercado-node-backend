@@ -28,10 +28,6 @@ export class MarketAddressController {
     async getMarketAddressByMarketId(req: Request, res: Response) {
         Logger.controller('MarketAddress', 'getMarketAddressByMarketId', 'params', req.params);
         try {
-            if (!req.user) {
-                return res.status(401).json({ message: "Usuário não autenticado" });
-            }
-
             const { marketId } = req.params;
             const address = await marketAddressService.getMarketAddressByMarketId(marketId);
             Logger.successOperation('MarketAddressController', 'getMarketAddressByMarketId');
