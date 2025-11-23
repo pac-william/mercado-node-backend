@@ -2,10 +2,126 @@ import { categoriesService } from "../services/categoriesService";
 import { Logger } from "../utils/logger";
 
 class AiProcessor {
+    private validateEthicalPolicy(task: string): void {
+        const taskLower = task.toLowerCase().trim();
+        
+        const prohibitedPatterns = [
+            /\b(drogas|drogas|maconha|cocaína|heroína|crack|lsd|ecstasy|metanfetamina)\b/i,
+            /\b(armas|arma de fogo|pistola|revólver|rifle|fuzil|munição|balas)\b/i,
+            /\b(explosivos|bomba|dinamite|nitroglicerina)\b/i,
+            /\b(veneno|toxina|cianeto|arsênico)\b/i,
+            /\b(contrabando|tráfico|ilegal)\b/i,
+            /\b(prostituição|escravo|tráfico de pessoas)\b/i,
+            /\b(aposta ilegal|jogo ilegal|loteria ilegal)\b/i,
+            /\b(pornografia infantil|conteúdo ilegal)\b/i,
+            /\b(hackear|invadir|malware|vírus|phishing)\b/i,
+            /\b(falsificação|documento falso|dinheiro falso)\b/i
+        ];
+
+        for (const pattern of prohibitedPatterns) {
+            if (pattern.test(taskLower)) {
+                Logger.warn('AiProcessor', 'validateEthicalPolicy - Task violates ethical policy', { task });
+                throw new Error('A tarefa solicitada viola as políticas éticas do sistema e não pode ser processada.');
+            }
+        }
+    }
+
+    private async validateWithAI(task: string): Promise<void> {
+        Logger.debug('AiProcessor', 'validateWithAI - Starting AI ethical validation', { task });
+
+        try {
+            const response = await fetch("https://api.openai.com/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    model: "gpt-4o-mini",
+                    messages: [
+                        {
+                            role: "system",
+                            content: "Você é um validador de políticas éticas. Analise a tarefa fornecida e determine se ela viola políticas éticas, incluindo: atividades ilegais, drogas ilícitas, armas, violência, conteúdo ofensivo, discriminação, ou qualquer atividade que possa causar dano. Responda APENAS com 'valid' se a tarefa for ética e apropriada, ou 'invalid' se violar políticas éticas."
+                        },
+                        {
+                            role: "user",
+                            content: `Analise esta tarefa e determine se ela viola políticas éticas: "${task}". Responda apenas com 'valid' ou 'invalid'.`
+                        }
+                    ],
+                    response_format: {
+                        type: "json_schema",
+                        json_schema: {
+                            name: "ethical_validation_schema",
+                            schema: {
+                                type: "object",
+                                properties: {
+                                    valid: {
+                                        type: "boolean",
+                                        description: "true se a tarefa é ética e apropriada, false se viola políticas"
+                                    },
+                                    reason: {
+                                        type: "string",
+                                        description: "Breve explicação do motivo (apenas se valid for false)"
+                                    }
+                                },
+                                required: ["valid"],
+                                additionalProperties: false
+                            },
+                            strict: true
+                        }
+                    },
+                    max_tokens: 100
+                })
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                Logger.warn('AiProcessor', 'validateWithAI - OpenAI validation API error, allowing task', {
+                    status: response.status,
+                    errorText
+                });
+                return;
+            }
+
+            const data = await response.json() as any;
+            const validationResult = JSON.parse(data.choices[0].message.content) as {
+                valid: boolean;
+                reason?: string;
+            };
+
+            Logger.debug('AiProcessor', 'validateWithAI - AI validation result', {
+                valid: validationResult.valid,
+                reason: validationResult.reason
+            });
+
+            if (!validationResult.valid) {
+                Logger.warn('AiProcessor', 'validateWithAI - Task rejected by AI validation', {
+                    task,
+                    reason: validationResult.reason
+                });
+                throw new Error(
+                    validationResult.reason 
+                        ? `A tarefa solicitada viola as políticas éticas do sistema: ${validationResult.reason}`
+                        : 'A tarefa solicitada viola as políticas éticas do sistema e não pode ser processada.'
+                );
+            }
+
+        } catch (error: any) {
+            if (error.message && error.message.includes('viola as políticas éticas')) {
+                throw error;
+            }
+            Logger.warn('AiProcessor', 'validateWithAI - Error during AI validation, allowing task', {
+                message: error.message
+            });
+        }
+    }
+
     async process(task: string): Promise<any> {
         Logger.debug('AiProcessor', 'process - Starting AI processing', { task });
 
         try {
+            this.validateEthicalPolicy(task);
+            await this.validateWithAI(task);
             Logger.debug('AiProcessor', 'process - Fetching categories');
             const categoriesResponse = await categoriesService.getCategories(1, 1000);
             const categories = categoriesResponse.categories.map(c => ({ id: c.id, name: c.name }));
