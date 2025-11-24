@@ -8,16 +8,36 @@ export class MarketController {
     async getMarkets(req: Request, res: Response) {
         Logger.controller('Market', 'getMarkets', 'query', req.query);
         try {
-            const { page, size, name, address, ownerId, managersIds } = QueryBuilder.from(req.query)
+            const {
+                page,
+                size,
+                name,
+                address,
+                ownerId,
+                managersIds,
+                userLatitude,
+                userLongitude,
+            } = QueryBuilder.from(req.query)
                 .withNumber('page', 1)
                 .withNumber('size', 10)
                 .withString('name')
                 .withString('address')
                 .withString('ownerId')
                 .withArray('managersIds')
+                .withNumber('userLatitude')
+                .withNumber('userLongitude')
                 .build();
 
-            const markets = await marketService.getMarkets(page, size, name, address, ownerId, managersIds);
+            const markets = await marketService.getMarkets(
+                page,
+                size,
+                name,
+                address,
+                ownerId,
+                managersIds,
+                userLatitude,
+                userLongitude
+            );
             Logger.successOperation('MarketController', 'getMarkets');
             return res.status(200).json(markets);
         } catch (error: any) {

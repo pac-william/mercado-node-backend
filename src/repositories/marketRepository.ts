@@ -1,4 +1,5 @@
 import { MarketDTO, MarketUpdateDTO } from "../dtos/marketDTO";
+import { calculateDistanceInKm } from "../utils/distance";
 import { prisma } from "../utils/prisma";
 
 class MarketRepository {
@@ -33,7 +34,16 @@ class MarketRepository {
         return market;
     }
 
-    async getMarkets(page: number, size: number, name?: string, address?: string, ownerId?: string, managersIds?: string[]) {
+    async getMarkets(
+        page: number,
+        size: number,
+        name?: string,
+        address?: string,
+        ownerId?: string,
+        managersIds?: string[],
+        userLatitude?: number,
+        userLongitude?: number
+    ) {
         const whereClause: any = {};
         
         if (ownerId) {
@@ -57,10 +67,18 @@ class MarketRepository {
             take: size,
         });
 
-        return marketsRaw.map((market: any) => {
+        const hasUserLocation = typeof userLatitude === "number" && typeof userLongitude === "number";
+
+        const markets = marketsRaw.map((market: any) => {
             const addressString = market.address 
                 ? `${market.address.street}, ${market.address.number}${market.address.complement ? ` - ${market.address.complement}` : ''} - ${market.address.neighborhood}, ${market.address.city} - ${market.address.state}`
                 : '';
+
+            const latitude = market.address?.latitude ?? null;
+            const longitude = market.address?.longitude ?? null;
+            const distance = hasUserLocation && latitude !== null && longitude !== null
+                ? calculateDistanceInKm(userLatitude!, userLongitude!, latitude, longitude)
+                : null;
             
             return {
                 id: market.id,
@@ -72,8 +90,22 @@ class MarketRepository {
                 managersIds: market.managersIds ?? [],
                 createdAt: market.createdAt,
                 updatedAt: market.updatedAt,
+                latitude,
+                longitude,
+                distance,
             };
         });
+
+        if (hasUserLocation) {
+            markets.sort((a, b) => {
+                if (a.distance === null && b.distance === null) return 0;
+                if (a.distance === null) return 1;
+                if (b.distance === null) return -1;
+                return a.distance - b.distance;
+            });
+        }
+
+        return markets;
     }
 
 

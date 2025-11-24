@@ -33,9 +33,27 @@ class MarketService {
         return market;
     }
 
-    async getMarkets(page: number, size: number, name?: string, address?: string, ownerId?: string, managersIds?: string[]) {
+    async getMarkets(
+        page: number,
+        size: number,
+        name?: string,
+        address?: string,
+        ownerId?: string,
+        managersIds?: string[],
+        userLatitude?: number,
+        userLongitude?: number
+    ) {
         const count = await marketRepository.count(name, address, ownerId, managersIds);
-        const marketsData = await marketRepository.getMarkets(page, size, name, address, ownerId, managersIds);
+        const marketsData = await marketRepository.getMarkets(
+            page,
+            size,
+            name,
+            address,
+            ownerId,
+            managersIds,
+            userLatitude,
+            userLongitude
+        );
         const markets = marketsData.map((m: any) => ({
             id: m.id,
             name: m.name,
@@ -46,6 +64,9 @@ class MarketService {
             managersIds: m.managersIds,
             createdAt: m.createdAt,
             updatedAt: m.updatedAt,
+            latitude: m.latitude,
+            longitude: m.longitude,
+            distance: m.distance,
         }));
         const totalPages = count > 0 ? Math.ceil(count / size) : 0;
         const meta = new Meta(page, size, count, totalPages, count);

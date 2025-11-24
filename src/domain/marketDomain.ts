@@ -10,6 +10,9 @@ export class Market {
         public managersIds: string[],
         public createdAt: Date,
         public updatedAt: Date,
+        public latitude?: number | null,
+        public longitude?: number | null,
+        public distance?: number | null,
     ) { }
 }
 
