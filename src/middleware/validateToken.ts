@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import jwksClient from "jwks-rsa";
 import { UserToken } from "../@types/express";
+import { userService } from "../services/userService";
 import { Logger } from "../utils/logger";
 
 const client = jwksClient({
@@ -31,20 +32,40 @@ export function validateToken(req: Request, res: Response, next: NextFunction) {
     return res.status(401).json({ error: "Token ausente ou inválido" });
   }
 
-
   const token = authHeader?.split(" ")[1];
+
   if (!token) {
     Logger.errorOperation('ValidateToken', 'validateToken', 'Token ausente ou inválido');
     return res.status(401).json({ error: "Token ausente ou inválido" });
   }
 
-  jwt.verify(token as string, getKey, { issuer: ISSUER, algorithms: ["RS256"] }, (err: any, decoded: any) => {
+  jwt.verify(token as string, getKey, { issuer: ISSUER, algorithms: ["RS256"] }, async (err: any, decoded: any) => {
     if (err) {
       Logger.errorOperation('ValidateToken', 'validateToken', err.message);
       return res.status(401).json({ error: "Token inválido" });
     }
 
     req.user = getTokenInfo(decoded);
+
+    if (!req.user.id && req.user.auth0Id) {
+      try {
+        const dbUser = await userService.getUserByAuth0Id(req.user.auth0Id);
+        if (dbUser) {
+          req.user = {
+            ...req.user,
+            id: dbUser.id,
+            role: req.user.role || 'CUSTOMER',
+            username: dbUser.name || '',
+            email: dbUser.email || '',
+            name: dbUser.name || '',
+            marketId: dbUser.marketId as string,
+            auth0Id: dbUser.auth0Id || req.user.auth0Id
+          };
+        }
+      } catch (error) {
+        return res.status(401).json({ error: "Usuário não encontrado" });
+      }
+    }
 
     next();
   });
@@ -56,6 +77,9 @@ export function getTokenInfo(decoded: any): UserToken {
     role: decoded['https://yourdomain.com/roles']?.[0] || decoded.role || 'CUSTOMER',
     marketId: decoded['https://yourdomain.com/marketId'] || decoded.marketId,
     auth0Id: decoded.sub || undefined,
+    username: decoded.username || '',
+    email: decoded.email || '',
+    name: decoded.name || '',
   };
 }
 

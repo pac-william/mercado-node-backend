@@ -1,12 +1,5 @@
 import { Meta } from "./metaDomain";
-
-export class SubCategory {
-    constructor(
-        public name: string,
-        public slug: string,
-        public description: string,
-    ) { }
-}
+import { SubCategory } from "./subcategoryDomain";
 
 export class Category {
     constructor(

@@ -1,30 +1,25 @@
 import { z } from "zod";
+import { AddressDTO } from "./addressDTO";
 
 export const MarketDTO = z.object({
     name: z.string({ error: "Nome do mercado é obrigatório" }),
-    address: z.string({ error: "Endereço do mercado é obrigatório" }),
+    addressId: z.string({ error: "ID do endereço do mercado é obrigatório" }),
     profilePicture: z.string({ error: "Logo do mercado é obrigatório" }).optional(),
+    ownerId: z.string({ error: "ID do proprietário é obrigatório" }),
+    managersIds: z.array(z.string({ error: "ID do gerente é obrigatório" })).optional().default([]),
 });
 
 export type MarketDTO = z.infer<typeof MarketDTO>;
 
+export const MarketCreateDTO = z.object({
+    name: z.string({ error: "Nome do mercado é obrigatório" }),
+    address: AddressDTO,
+    profilePicture: z.string({ error: "Logo do mercado é obrigatório" }).optional(),
+    ownerId: z.string({ error: "ID do proprietário é obrigatório" }),
+    managersIds: z.array(z.string({ error: "ID do gerente é obrigatório" })).optional().default([]),
+});
+
+export type MarketCreateDTO = z.infer<typeof MarketCreateDTO>;
+
 export const MarketUpdateDTO = MarketDTO.partial();
 export type MarketUpdateDTO = z.infer<typeof MarketUpdateDTO>;
-
-export type MarketResponseDTO = {
-    id: string;
-    name: string;
-    address: string;
-    profilePicture?: string | null;
-    createdAt?: Date;
-    updatedAt?: Date;
-};
-
-export const toMarketResponseDTO = (m: any): MarketResponseDTO => ({
-    id: String(m.id),
-    name: m.name,
-    address: m.address,
-    profilePicture: m.profilePicture ?? null,
-    createdAt: m.createdAt ? (m.createdAt instanceof Date ? m.createdAt : new Date(m.createdAt)) : undefined,
-    updatedAt: m.updatedAt ? (m.updatedAt instanceof Date ? m.updatedAt : new Date(m.updatedAt)) : undefined,
-});

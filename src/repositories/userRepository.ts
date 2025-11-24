@@ -8,14 +8,27 @@ class UserRepository {
                 ...userDTO,
                 password: userDTO.password || '',
             },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                auth0Id: true,
+                phone: true,
+                birthDate: true,
+                profilePicture: true,
+                marketId: true,
+                createdAt: true,
+                updatedAt: true,
+            },
         });
         return user;
     }
 
-    async getUsers(page: number, size: number, auth0Id?: string) {
+    async getUsers(page: number, size: number, auth0Id?: string, marketId?: string) {
         const users = await prisma.user.findMany({
             where: {
                 auth0Id: auth0Id ?? undefined,
+                marketId: marketId ? (marketId as any) : undefined,
             },
             skip: (page - 1) * size,
             take: size,
@@ -24,6 +37,10 @@ class UserRepository {
                 name: true,
                 email: true,
                 auth0Id: true,
+                phone: true,
+                birthDate: true,
+                profilePicture: true,
+                marketId: true,
                 createdAt: true,
                 updatedAt: true,
             },
@@ -39,6 +56,10 @@ class UserRepository {
                 name: true,
                 email: true,
                 auth0Id: true,
+                phone: true,
+                birthDate: true,
+                profilePicture: true,
+                marketId: true,
                 createdAt: true,
                 updatedAt: true,
             },
@@ -56,6 +77,18 @@ class UserRepository {
     async getUserByAuth0Id(auth0Id: string) {
         const user = await prisma.user.findUnique({
             where: { auth0Id },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                auth0Id: true,
+                phone: true,
+                birthDate: true,
+                profilePicture: true,
+                marketId: true,
+                createdAt: true,
+                updatedAt: true,
+            },
         });
         return user;
     }
@@ -83,6 +116,9 @@ class UserRepository {
                 id: true,
                 name: true,
                 email: true,
+                phone: true,
+                birthDate: true,
+                profilePicture: true,
                 createdAt: true,
                 updatedAt: true,
             },
@@ -98,6 +134,9 @@ class UserRepository {
                 id: true,
                 name: true,
                 email: true,
+                phone: true,
+                birthDate: true,
+                profilePicture: true,
                 createdAt: true,
                 updatedAt: true,
             },

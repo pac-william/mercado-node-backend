@@ -2,15 +2,18 @@ export const cartPaths = {
     "/api/v1/cart": {
         "get": {
             "tags": ["Cart"],
-            "summary": "Buscar carrinho do usuário",
-            "description": "Retorna o carrinho do usuário autenticado. Se não existir, cria um novo carrinho vazio.",
+            "summary": "Buscar carrinhos do usuário",
+            "description": "Retorna os carrinhos do usuário autenticado. Opcionalmente pode ser filtrado por mercado via query string.",
             "security": [{ "bearerAuth": [] }],
             "responses": {
                 "200": {
-                    "description": "Carrinho retornado com sucesso",
+                    "description": "Carrinhos retornados com sucesso",
                     "content": {
                         "application/json": {
-                            "schema": { "$ref": "#/components/schemas/CartResponse" }
+                            "schema": {
+                                "type": "array",
+                                "items": { "$ref": "#/components/schemas/CartResponse" }
+                            }
                         }
                     }
                 },
@@ -45,7 +48,16 @@ export const cartPaths = {
         "delete": {
             "tags": ["Cart"],
             "summary": "Limpar carrinho",
-            "description": "Remove todos os itens do carrinho do usuário autenticado.",
+            "description": "Remove todos os itens de um carrinho específico do usuário autenticado.",
+            "parameters": [
+                {
+                    "name": "cartId",
+                    "in": "query",
+                    "required": true,
+                    "schema": { "type": "string" },
+                    "description": "ID do carrinho a ser limpo"
+                }
+            ],
             "security": [{ "bearerAuth": [] }],
             "responses": {
                 "204": {
@@ -112,7 +124,7 @@ export const cartPaths = {
                     "description": "Item adicionado ao carrinho com sucesso",
                     "content": {
                         "application/json": {
-                            "schema": { "$ref": "#/components/schemas/CartItemResponse" }
+                            "schema": { "$ref": "#/components/schemas/CartResponse" }
                         }
                     }
                 },
@@ -200,7 +212,10 @@ export const cartPaths = {
                     "description": "Itens adicionados ao carrinho com sucesso",
                     "content": {
                         "application/json": {
-                            "schema": { "$ref": "#/components/schemas/CartResponse" }
+                            "schema": {
+                                "type": "array",
+                                "items": { "$ref": "#/components/schemas/CartResponse" }
+                            }
                         }
                     }
                 },
@@ -297,7 +312,7 @@ export const cartPaths = {
                     "description": "Quantidade atualizada com sucesso",
                     "content": {
                         "application/json": {
-                            "schema": { "$ref": "#/components/schemas/CartItemResponse" }
+                            "schema": { "$ref": "#/components/schemas/CartResponse" }
                         }
                     }
                 },
@@ -455,7 +470,16 @@ export const cartPaths = {
         "delete": {
             "tags": ["Cart"],
             "summary": "Deletar carrinho",
-            "description": "Remove completamente o carrinho do usuário autenticado.",
+            "description": "Remove completamente um carrinho específico do usuário autenticado.",
+            "parameters": [
+                {
+                    "name": "cartId",
+                    "in": "query",
+                    "required": true,
+                    "schema": { "type": "string" },
+                    "description": "ID do carrinho a ser deletado"
+                }
+            ],
             "security": [{ "bearerAuth": [] }],
             "responses": {
                 "204": {
@@ -509,6 +533,7 @@ export const cartSchemas = {
     "CartResponse": {
         "type": "object",
         "properties": {
+            "marketId": { "type": "string", "example": "507f1f77bcf86cd799439013" },
             "id": { "type": "string", "example": "507f1f77bcf86cd799439011" },
             "userId": { "type": "string", "example": "507f1f77bcf86cd799439012" },
             "items": {

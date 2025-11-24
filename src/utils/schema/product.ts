@@ -51,9 +51,14 @@ export const productPaths = {
                 {
                     "name": "categoryId",
                     "in": "query",
-                    "description": "ID da categoria para filtrar produtos",
+                    "description": "IDs das categorias para filtrar produtos (pode repetir o parâmetro)",
                     "required": false,
-                    "schema": { "type": "string" }
+                    "schema": {
+                        "type": "array",
+                        "items": { "type": "string" }
+                    },
+                    "style": "form",
+                    "explode": true
                 }
             ],
             "responses": {
@@ -171,9 +176,14 @@ export const productPaths = {
                 {
                     "name": "categoryId",
                     "in": "query",
-                    "description": "ID da categoria para filtrar produtos",
+                    "description": "IDs das categorias para filtrar produtos (pode repetir o parâmetro)",
                     "required": false,
-                    "schema": { "type": "string" }
+                    "schema": {
+                        "type": "array",
+                        "items": { "type": "string" }
+                    },
+                    "style": "form",
+                    "explode": true
                 }
             ],
             "responses": {

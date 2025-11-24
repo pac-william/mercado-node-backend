@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-import { addMultipleItemsSchema, createCartItemSchema } from "../dtos/cartDTO";
+import { addMultipleItemsSchema, createCartSchema } from "../dtos/cartDTO";
+import { CreateCartItemDTO } from "../dtos/cartItemDTO";
 import { cartService } from "../services/cartService";
 import { Logger } from "../utils/logger";
 
@@ -17,10 +18,11 @@ export class CartController {
 
             const userId = req.user.id;
             Logger.info('CartController', 'getUserCart', `userId: ${userId}`);
-            
-            const cart = await cartService.getUserCart(userId);
+            const carts = await cartService.getUserCarts(userId);
+            const marketId = typeof req.query.marketId === 'string' ? req.query.marketId : undefined;
+            const response = marketId ? carts.filter((cart) => cart.marketId === marketId) : carts;
             Logger.successOperation('CartController', 'getUserCart');
-            return res.status(200).json(cart);
+            return res.status(200).json(response);
         } catch (error) {
             Logger.errorOperation('CartController', 'getUserCart', error);
             return res.status(500).json({ message: "Erro interno do servidor" });
@@ -35,7 +37,8 @@ export class CartController {
             }
 
             const userId = req.user.id;
-            const cart = await cartService.createCart(userId);
+            const { marketId } = createCartSchema.parse(req.body);
+            const cart = await cartService.createCart(userId, marketId);
             Logger.successOperation('CartController', 'createCart');
             return res.status(201).json(cart);
         } catch (error) {
@@ -56,14 +59,14 @@ export class CartController {
             }
 
             Logger.info('CartController', 'addItem', 'Validando dados do item...');
-            const itemData = createCartItemSchema.parse(req.body);
+            const itemData = CreateCartItemDTO.parse(req.body);
             Logger.info('CartController', 'addItem', `Dados validados: ${JSON.stringify(itemData)}`);
             
             Logger.info('CartController', 'addItem', 'Chamando cartService.addItem...');
-            const cartItem = await cartService.addItem(userId, itemData);
+            const cart = await cartService.addItem(userId, itemData);
             
             Logger.successOperation('CartController', 'addItem');
-            return res.status(201).json(cartItem);
+            return res.status(201).json(cart);
         } catch (error) {
             Logger.errorOperation('CartController', 'addItem', error);
             Logger.error('CartController', 'addItem', `Error type: ${error?.constructor?.name}`);
@@ -100,9 +103,9 @@ export class CartController {
             }
 
             const itemsData = addMultipleItemsSchema.parse(req.body);
-            const cart = await cartService.addMultipleItems(userId, itemsData);
+            const carts = await cartService.addMultipleItems(userId, itemsData);
             Logger.successOperation('CartController', 'addMultipleItems');
-            return res.status(201).json(cart);
+            return res.status(201).json(carts);
         } catch (error) {
             Logger.errorOperation('CartController', 'addMultipleItems', error);
             if (error instanceof Error && error.message.includes("não encontrado")) {
@@ -127,9 +130,9 @@ export class CartController {
                 return res.status(400).json({ message: "Quantidade deve ser pelo menos 1" });
             }
 
-            const cartItem = await cartService.updateItemQuantity(userId, cartItemId, quantity);
+            const cart = await cartService.updateItemQuantity(userId, cartItemId, quantity);
             Logger.successOperation('CartController', 'updateItemQuantity');
-            return res.status(200).json(cartItem);
+            return res.status(200).json(cart);
         } catch (error) {
             Logger.errorOperation('CartController', 'updateItemQuantity', error);
             if (error instanceof Error && (error.message === "Item não encontrado no carrinho" || error.message === "Acesso negado")) {
@@ -168,7 +171,12 @@ export class CartController {
                 return res.status(401).json({ message: "Usuário não autenticado" });
             }
 
-            await cartService.clearCart(userId);
+            const cartId = typeof req.query.cartId === 'string' ? req.query.cartId : undefined;
+            if (!cartId) {
+                return res.status(400).json({ message: "cartId é obrigatório" });
+            }
+
+            await cartService.clearCart(userId, cartId);
             Logger.successOperation('CartController', 'clearCart');
             return res.status(204).send();
         } catch (error) {
@@ -188,7 +196,12 @@ export class CartController {
                 return res.status(401).json({ message: "Usuário não autenticado" });
             }
 
-            await cartService.deleteCart(userId);
+            const cartId = typeof req.query.cartId === 'string' ? req.query.cartId : undefined;
+            if (!cartId) {
+                return res.status(400).json({ message: "cartId é obrigatório" });
+            }
+
+            await cartService.deleteCart(userId, cartId);
             Logger.successOperation('CartController', 'deleteCart');
             return res.status(204).send();
         } catch (error) {

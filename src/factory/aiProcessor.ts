@@ -1,24 +1,138 @@
-import { AISuggestionResponse, SuggestionResponse } from "../interfaces/suggestionInterface";
-import { productElasticSearch } from "../rest/productElasticSearch";
 import { categoriesService } from "../services/categoriesService";
 import { Logger } from "../utils/logger";
 
 class AiProcessor {
-    async process(task: string): Promise<SuggestionResponse> {
+    private validateEthicalPolicy(task: string): void {
+        const taskLower = task.toLowerCase().trim();
+        
+        const prohibitedPatterns = [
+            /\b(drogas|drogas|maconha|cocaína|heroína|crack|lsd|ecstasy|metanfetamina)\b/i,
+            /\b(armas|arma de fogo|pistola|revólver|rifle|fuzil|munição|balas)\b/i,
+            /\b(explosivos|bomba|dinamite|nitroglicerina)\b/i,
+            /\b(veneno|toxina|cianeto|arsênico)\b/i,
+            /\b(contrabando|tráfico|ilegal)\b/i,
+            /\b(prostituição|escravo|tráfico de pessoas)\b/i,
+            /\b(aposta ilegal|jogo ilegal|loteria ilegal)\b/i,
+            /\b(pornografia infantil|conteúdo ilegal)\b/i,
+            /\b(hackear|invadir|malware|vírus|phishing)\b/i,
+            /\b(falsificação|documento falso|dinheiro falso)\b/i
+        ];
+
+        for (const pattern of prohibitedPatterns) {
+            if (pattern.test(taskLower)) {
+                Logger.warn('AiProcessor', 'validateEthicalPolicy - Task violates ethical policy', { task });
+                throw new Error('A tarefa solicitada viola as políticas éticas do sistema e não pode ser processada.');
+            }
+        }
+    }
+
+    private async validateWithAI(task: string): Promise<void> {
+        Logger.debug('AiProcessor', 'validateWithAI - Starting AI ethical validation', { task });
+
+        try {
+            const response = await fetch("https://api.openai.com/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    model: "gpt-4o-mini",
+                    messages: [
+                        {
+                            role: "system",
+                            content: "Você é um validador de políticas éticas. Analise a tarefa fornecida e determine se ela viola políticas éticas, incluindo: atividades ilegais, drogas ilícitas, armas, violência, conteúdo ofensivo, discriminação, ou qualquer atividade que possa causar dano. Responda APENAS com 'valid' se a tarefa for ética e apropriada, ou 'invalid' se violar políticas éticas."
+                        },
+                        {
+                            role: "user",
+                            content: `Analise esta tarefa e determine se ela viola políticas éticas: "${task}". Responda apenas com 'valid' ou 'invalid'.`
+                        }
+                    ],
+                    response_format: {
+                        type: "json_schema",
+                        json_schema: {
+                            name: "ethical_validation_schema",
+                            schema: {
+                                type: "object",
+                                properties: {
+                                    valid: {
+                                        type: "boolean",
+                                        description: "true se a tarefa é ética e apropriada, false se viola políticas"
+                                    },
+                                    reason: {
+                                        type: "string",
+                                        description: "Breve explicação do motivo (apenas se valid for false)"
+                                    }
+                                },
+                                required: ["valid"],
+                                additionalProperties: false
+                            },
+                            strict: true
+                        }
+                    },
+                    max_tokens: 100
+                })
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                Logger.warn('AiProcessor', 'validateWithAI - OpenAI validation API error, allowing task', {
+                    status: response.status,
+                    errorText
+                });
+                return;
+            }
+
+            const data = await response.json() as any;
+            const validationResult = JSON.parse(data.choices[0].message.content) as {
+                valid: boolean;
+                reason?: string;
+            };
+
+            Logger.debug('AiProcessor', 'validateWithAI - AI validation result', {
+                valid: validationResult.valid,
+                reason: validationResult.reason
+            });
+
+            if (!validationResult.valid) {
+                Logger.warn('AiProcessor', 'validateWithAI - Task rejected by AI validation', {
+                    task,
+                    reason: validationResult.reason
+                });
+                throw new Error(
+                    validationResult.reason 
+                        ? `A tarefa solicitada viola as políticas éticas do sistema: ${validationResult.reason}`
+                        : 'A tarefa solicitada viola as políticas éticas do sistema e não pode ser processada.'
+                );
+            }
+
+        } catch (error: any) {
+            if (error.message && error.message.includes('viola as políticas éticas')) {
+                throw error;
+            }
+            Logger.warn('AiProcessor', 'validateWithAI - Error during AI validation, allowing task', {
+                message: error.message
+            });
+        }
+    }
+
+    async process(task: string): Promise<any> {
         Logger.debug('AiProcessor', 'process - Starting AI processing', { task });
 
         try {
+            this.validateEthicalPolicy(task);
+            await this.validateWithAI(task);
             Logger.debug('AiProcessor', 'process - Fetching categories');
             const categoriesResponse = await categoriesService.getCategories(1, 1000);
             const categories = categoriesResponse.categories.map(c => ({ id: c.id, name: c.name }));
 
-            Logger.debug('AiProcessor', 'process - Categories fetched', { 
+            Logger.debug('AiProcessor', 'process - Categories fetched', {
                 totalCategories: categories.length,
-                categories: categories.slice(0, 5) // Log apenas as primeiras 5 para não poluir
+                categories: categories.slice(0, 5)
             });
 
             Logger.debug('AiProcessor', 'process - Making OpenAI API request');
-            const response = await fetch("https://api.openai.com/v1/responses", {
+            const response = await fetch("https://api.openai.com/v1/chat/completions", {
                 method: "POST",
                 headers: {
                     "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
@@ -26,162 +140,151 @@ class AiProcessor {
                 },
                 body: JSON.stringify({
                     model: "gpt-4o-2024-08-06",
-                    input: [
+                    messages: [
                         {
                             role: "system",
-                            content: "Você é um agente de mercado, você gerencia o estoque de um mercado e irá ajudar o usuário a encontrar os produtos para a tarefa que ele irá te passar. Sua tarefa: gerar nomes de produtos e utensílios necessários (sem quantidades/mode de preparo) e, PARA CADA ITEM, escolher uma categoria EXISTENTE da lista fornecida seja consistente com qual categoria representa melhor o produto. Retorne somente no formato solicitado."
+                            content: `Você é um agente de mercado criativo e experiente. Gere uma lista ABRANGENTE, VARIADA e CRIATIVA de itens para a tarefa, considerando o contexto e o número de pessoas (ex: para 20 pessoas, sugira itens em escala maior). Gere PELO MENOS 15-20 itens únicos, incluindo variedades típicas (ex: para churrasco, inclua diferentes carnes, acompanhamentos, molhos, saladas, bebidas e utensílios). SOMENTE nomes de itens para pesquisar (sem quantidades/medidas/modo de preparo nos itens individuais). Para cada item, escolha UMA categoria EXISTENTE da lista fornecida. Cada item deve incluir: name, categoryId, categoryName e type, onde type ∈ {essential, common, utensil}. Não duplique itens.
+
+Se a tarefa fizer sentido ter uma receita (ex: fazer um prato, preparar uma comida, receita culinária), gere também um campo receipt com uma receita DETALHADA e COMPLETA, incluindo nome, descrição (com dicas e variações), ingredientes com quantidades ESCALADAS para o número de pessoas na tarefa, instruções de preparo (passos detalhados), prepTime (tempo de preparo em minutos), cookTime (tempo de cozimento em minutos, opcional) e servings (número de porções). Retorne EXCLUSIVAMENTE no formato solicitado em JSON.`
                         },
                         {
                             role: "user",
-                            content: `Categorias disponíveis (use APENAS uma destas por item): ${JSON.stringify(categories, null, 2)}.\nAgora, liste itens para realizar a tarefa solicitada: ${task}, separados em essential_products, common_products e utensils. Para cada item gere: name (string), categoryId (um dos ids acima), categoryName (nome correspondente). Não inclua quantidades, medidas ou modo de preparo.`
+                            content: `Categorias disponíveis (use APENAS uma destas por item): ${JSON.stringify(categories, null, 2)}.\nAgora, gere uma lista única e variada de itens para realizar a tarefa: ${task}. Não separe em seções. Para cada item gere: name (string), categoryId (um dos ids acima), categoryName (nome correspondente), type ("essential" | "common" | "utensil"). Não inclua quantidades, medidas ou modo de preparo nos itens.\n\nIMPORTANTE: Se a tarefa "${task}" fizer sentido ter uma receita (ex: fazer um prato, preparar uma comida, receita culinária), gere também um campo receipt opcional no objeto raiz com: name (nome da receita), description (descrição breve com dicas), ingredients (array de objetos com name e quantity escalada para o número de pessoas), instructions (array de strings com passos detalhados), prepTime (tempo de preparo em minutos), cookTime (tempo de cozimento em minutos, opcional), servings (número de porções). Se a tarefa não fizer sentido ter receita (ex: comprar produtos básicos, fazer limpeza), não inclua o campo receipt.`
                         }
                     ],
-                    text: {
-                        format: {
-                            type: "json_schema",
+                    response_format: {
+                        type: "json_schema",
+                        json_schema: {
                             name: "suggestion_schema",
                             schema: {
                                 type: "object",
                                 properties: {
-                                    essential_products: {
+                                    items: {
                                         type: "array",
                                         items: {
                                             type: "object",
                                             properties: {
                                                 name: { type: "string" },
                                                 categoryId: { type: "string" },
-                                                categoryName: { type: "string" }
+                                                categoryName: { type: "string" },
+                                                type: { type: "string", enum: ["essential", "common", "utensil"] }
                                             },
-                                            required: ["name", "categoryId", "categoryName"],
+                                            required: ["name", "categoryId", "categoryName", "type"],
                                             additionalProperties: false
                                         }
                                     },
-                                    common_products: {
-                                        type: "array",
-                                        items: {
-                                            type: "object",
-                                            properties: {
-                                                name: { type: "string" },
-                                                categoryId: { type: "string" },
-                                                categoryName: { type: "string" }
+                                    receipt: {
+                                        type: "object",
+                                        properties: {
+                                            name: { type: "string" },
+                                            description: { type: "string" },
+                                            ingredients: {
+                                                type: "array",
+                                                items: {
+                                                    type: "object",
+                                                    properties: {
+                                                        name: { type: "string" },
+                                                        quantity: { type: "string" }
+                                                    },
+                                                    required: ["name", "quantity"],
+                                                    additionalProperties: false
+                                                }
                                             },
-                                            required: ["name", "categoryId", "categoryName"],
-                                            additionalProperties: false
-                                        }
-                                    },
-                                    utensils: {
-                                        type: "array",
-                                        items: {
-                                            type: "object",
-                                            properties: {
-                                                name: { type: "string" },
-                                                categoryId: { type: "string" },
-                                                categoryName: { type: "string" }
+                                            instructions: {
+                                                type: "array",
+                                                items: { type: "string" }
                                             },
-                                            required: ["name", "categoryId", "categoryName"],
-                                            additionalProperties: false
-                                        }
+                                            prepTime: { type: "number" },
+                                            cookTime: { type: "number" },
+                                            servings: { type: "number" }
+                                        },
+                                        required: ["name", "description", "ingredients", "instructions", "prepTime", "cookTime", "servings"],
+                                        additionalProperties: false
                                     }
                                 },
-                                required: ["essential_products", "common_products", "utensils"],
+                                required: ["items"],
                                 additionalProperties: false
                             },
-                            strict: true
+                            strict: false
                         }
                     }
                 })
             });
 
-            Logger.debug('AiProcessor', 'process - OpenAI API response received', { 
-                status: response.status, 
+            Logger.debug('AiProcessor', 'process - OpenAI API response received', {
+                status: response.status,
                 statusText: response.statusText,
-                ok: response.ok 
+                ok: response.ok
             });
 
             if (!response.ok) {
                 const errorText = await response.text();
-                Logger.error('AiProcessor', 'process - OpenAI API error', { 
-                    status: response.status, 
+                Logger.error('AiProcessor', 'process - OpenAI API error', {
+                    status: response.status,
                     statusText: response.statusText,
-                    errorText 
+                    errorText
                 });
                 throw new Error(`OpenAI API error: ${response.status} ${response.statusText} - ${errorText}`);
             }
 
-            const data = await response.json() as AISuggestionResponse;
-            Logger.debug('AiProcessor', 'process - OpenAI response parsed', { 
-                hasOutput: !!data.output,
-                outputLength: data.output?.length || 0 
+            const data = await response.json() as any;
+            Logger.debug('AiProcessor', 'process - OpenAI response parsed', {
+                hasChoices: !!data.choices,
+                contentLength: data.choices?.[0]?.message?.content?.length || 0
             });
 
-            const outputData: SuggestionResponse = JSON.parse(data.output[0].content[0].text) as SuggestionResponse;
-            Logger.debug('AiProcessor', 'process - AI suggestion parsed', { 
-                essentialProducts: outputData.essential_products?.length || 0,
-                commonProducts: outputData.common_products?.length || 0,
-                utensils: outputData.utensils?.length || 0
-            });
-
-            const finalSuggestion: SuggestionResponse = {
-                essential_products: outputData.essential_products,
-                common_products: outputData.common_products,
-                utensils: outputData.utensils
+            const outputData = JSON.parse(data.choices[0].message.content) as {
+                items: Array<{ name: string; categoryId: string; categoryName: string; type: "essential" | "common" | "utensil" }>;
+                receipt?: {
+                    name: string;
+                    description: string;
+                    ingredients: Array<{ name: string; quantity: string }>;
+                    instructions: string[];
+                    prepTime: number;
+                    cookTime?: number;
+                    servings: number;
+                };
             };
 
-            // Concatena todos os itens em um array único
-            const allItems = [
-                ...outputData.essential_products,
-                ...outputData.common_products,
-                ...outputData.utensils
-            ];
-
-            Logger.debug('AiProcessor', 'process - Starting product search', { 
-                totalItems: allItems.length,
-                searchTerms: allItems.map(item => item.name)
-            });
-
-            // Faz loop em todos os itens e busca produtos
-            const searchPromises = allItems.map(item =>
-                productElasticSearch.getProducts(item.name, 1, 100, item.categoryName)
-            );
-
-            // Aguarda todas as buscas e concatena os resultados
-            const searchResults = await Promise.all(searchPromises);
-            Logger.debug('AiProcessor', 'process - Product search completed', { 
-                totalResults: searchResults.length,
-                resultsWithProducts: searchResults.filter(r => r.products?.length > 0).length
-            });
-
-            // Agrupa produtos por termo de busca original
-            const productsBySearchTerm = allItems.map((item, index) => ({
-                searchTerm: item.name,
-                categoryName: item.categoryName,
-                products: searchResults[index]?.products || [],
-                meta: searchResults[index]?.meta || { total: 0, page: 1, size: 100 }
-            }));
-
-            // Calcula estatísticas gerais
-            const totalProductsFound = searchResults.reduce((total, result) =>
-                total + (result.products?.length || 0), 0
-            );
-
-            const finalResult = {
-                ...finalSuggestion,
-                searchResults: {
-                    productsBySearchTerm,
-                    statistics: {
-                        totalSearches: allItems.length,
-                        totalProductsFound,
-                        searchTerms: allItems.map(item => item.name)
-                    }
+            outputData.items = outputData.items.filter(item => {
+                const validCategory = categories.find(c => c.id === item.categoryId && c.name === item.categoryName);
+                if (!validCategory) {
+                    Logger.warn('AiProcessor', 'process - Invalid category in item', { item });
+                    return false;
                 }
-            };
-
-            Logger.debug('AiProcessor', 'process - Processing completed successfully', { 
-                totalProductsFound,
-                totalSearches: allItems.length
+                return true;
             });
 
-            return finalResult;
+            Logger.debug('AiProcessor', 'process - AI suggestion parsed', {
+                totalItems: outputData.items?.length || 0,
+                hasReceipt: !!outputData.receipt
+            });
+
+            const finalSuggestion: {
+                items: Array<{ name: string; categoryId: string; categoryName: string; type: "essential" | "common" | "utensil" }>;
+                receipt?: {
+                    name: string;
+                    description: string;
+                    ingredients: Array<{ name: string; quantity: string }>;
+                    instructions: string[];
+                    prepTime: number;
+                    cookTime?: number;
+                    servings: number;
+                };
+            } = {
+                items: outputData.items
+            };
+
+            if (outputData.receipt) {
+                finalSuggestion.receipt = outputData.receipt;
+            }
+
+            Logger.debug('AiProcessor', 'process - Processing completed successfully', {
+                totalItems: finalSuggestion.items.length,
+                hasReceipt: !!finalSuggestion.receipt
+            });
+
+            return finalSuggestion;
 
         } catch (error: any) {
             Logger.error('AiProcessor', 'process - Error during AI processing', {

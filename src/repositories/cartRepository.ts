@@ -1,11 +1,18 @@
+import { Prisma } from '@prisma/client';
 import { CreateCartItemDTO } from '../dtos/cartDTO';
 import { prisma } from '../utils/prisma';
 
 class CartRepository {
-  async findByUserId(userId: string) {
-    return await prisma.cart.findFirst({
+  private getClient(tx?: Prisma.TransactionClient) {
+    return tx ?? prisma;
+  }
+
+  async findByUserId(userId: string, tx?: Prisma.TransactionClient) {
+    const client = this.getClient(tx);
+    return await client.cart.findMany({
       where: { userId },
       include: {
+        market: true,
         items: {
           include: {
             product: true,
@@ -15,10 +22,39 @@ class CartRepository {
     });
   }
 
-  async create(userId: string) {
-    return await prisma.cart.create({
-      data: { userId },
+  async deleteLegacyCarts(userId: string, tx?: Prisma.TransactionClient) {
+    const client = this.getClient(tx);
+    return await client.cart.deleteMany({
+      where: {
+        userId,
+        marketId: null,
+      },
+    });
+  }
+
+  async findByUserAndMarket(userId: string, marketId: string, tx?: Prisma.TransactionClient) {
+    const client = this.getClient(tx);
+    return await client.cart.findFirst({
+      where: {
+        userId,
+        marketId,
+      },
       include: {
+        market: true,
+        items: {
+          include: {
+            product: true,
+          },
+        },
+      },
+    });
+  }
+
+  async create(userId: string, marketId: string) {
+    return await prisma.cart.create({
+      data: { userId, marketId },
+      include: {
+        market: true,
         items: {
           include: {
             product: true,
@@ -74,8 +110,9 @@ class CartRepository {
     });
   }
 
-  async clearCart(cartId: string) {
-    return await prisma.cartItem.deleteMany({
+  async clearCart(cartId: string, tx?: Prisma.TransactionClient) {
+    const client = this.getClient(tx);
+    return await client.cartItem.deleteMany({
       where: { cartId },
     });
   }
@@ -117,12 +154,14 @@ class CartRepository {
             product: true,
           },
         },
+        market: true,
       },
     });
   }
 
-  async deleteCart(cartId: string) {
-    return await prisma.cart.delete({
+  async deleteCart(cartId: string, tx?: Prisma.TransactionClient) {
+    const client = this.getClient(tx);
+    return await client.cart.delete({
       where: { id: cartId },
     });
   }

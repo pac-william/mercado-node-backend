@@ -1,4 +1,3 @@
-
 import { CategoryPaginatedResponse } from "../domain/categoryDomain";
 import { Meta } from "../domain/metaDomain";
 import { CategoriesDTO, CategoriesUpdateDTO } from "../dtos/categoriesDTO";
@@ -33,8 +32,9 @@ class CategoriesService {
     }
 
     async getProductsByCategory(categoryId: string, page: number = 1, size: number = 10) {
-        const count = await productRepository.countProducts(undefined, undefined, undefined, undefined, categoryId);
-        const products = await productRepository.getProducts(page, size, undefined, undefined, undefined, undefined, categoryId);
+        const categoriesFilter = [categoryId];
+        const count = await productRepository.countProducts(undefined, undefined, undefined, undefined, categoriesFilter);
+        const products = await productRepository.getProducts(page, size, undefined, undefined, undefined, undefined, categoriesFilter);
         return { products, count };
     }
 }

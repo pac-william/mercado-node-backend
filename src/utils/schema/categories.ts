@@ -443,9 +443,13 @@ export const categoriesSchemas = {
                 "items": {
                     "type": "object",
                     "properties": {
+                        "id": { "type": "string", "example": "507f1f77bcf86cd799439014" },
                         "name": { "type": "string", "example": "Frutas Cítricas" },
                         "slug": { "type": "string", "example": "frutas-citricas" },
-                        "description": { "type": "string", "example": "Frutas cítricas como laranja, limão, etc." }
+                        "description": { "type": "string", "example": "Frutas cítricas como laranja, limão, etc." },
+                        "categoryId": { "type": "string", "example": "507f1f77bcf86cd799439013" },
+                        "createdAt": { "type": "string", "format": "date-time", "example": "2024-07-16T00:00:00Z" },
+                        "updatedAt": { "type": "string", "format": "date-time", "example": "2024-07-16T00:00:00Z" }
                     }
                 }
             },

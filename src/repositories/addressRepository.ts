@@ -1,14 +1,20 @@
-import { AddressCreateDTO, AddressUpdateDTO } from "../dtos/addressDTO";
+import { Prisma } from "@prisma/client";
+import { AddressDTO, AddressUpdateDTO } from "../dtos/addressDTO";
 import { Logger } from "../utils/logger";
 import { prisma } from "../utils/prisma";
 
 class AddressRepository {
-    async createAddress(userId: string, addressDTO: AddressCreateDTO) {
-        Logger.repository('AddressRepository', 'createAddress', 'userId', userId);
-        const address = await prisma.address.create({
+    private getClient(tx?: Prisma.TransactionClient) {
+        return tx ?? prisma;
+    }
+
+    async createAddress(addressDTO: AddressDTO, userId?: string | null, tx?: Prisma.TransactionClient) {
+        Logger.repository('AddressRepository', 'createAddress', 'userId', userId || 'user');
+        const client = this.getClient(tx);
+        const address = await client.address.create({
             data: {
                 ...addressDTO,
-                userId,
+                userId: userId ?? null,
             },
         });
         return address;
@@ -27,33 +33,55 @@ class AddressRepository {
         return addresses;
     }
 
-    async getAddressById(id: string, userId: string) {
-        const address = await prisma.address.findFirst({
-            where: { 
-                id,
-                userId 
-            },
+    async getAddressById(id: string, userId?: string) {
+        if (userId) {
+            return await prisma.address.findFirst({
+                where: {
+                    id,
+                    userId
+                },
+            });
+        }
+        return await prisma.address.findUnique({
+            where: { id }
         });
-        return address;
     }
 
-    async updateAddress(id: string, userId: string, addressDTO: AddressCreateDTO) {
-        const address = await prisma.address.update({
-            where: { 
-                id,
-                userId 
-            },
+    async getAddressCountByUserId(userId: string) {
+        Logger.repository('AddressRepository', 'getAddressCountByUserId', 'userId', userId);
+        const count = await prisma.address.count({
+            where: { userId }
+        });
+        return count;
+    }
+
+    async updateAddress(id: string, addressDTO: AddressDTO, userId?: string | null, tx?: Prisma.TransactionClient) {
+        const client = this.getClient(tx);
+        Logger.repository('AddressRepository', 'updateAddress', 'id', id);
+        
+        const addressExists = await client.address.findUnique({
+            where: { id }
+        });
+        
+        if (!addressExists) {
+            throw new Error("Endereço não encontrado");
+        }
+        
+        const address = await client.address.update({
+            where: { id },
             data: addressDTO,
         });
         return address;
     }
 
-    async updateAddressPartial(id: string, userId: string, addressUpdateDTO: AddressUpdateDTO) {
-        const address = await prisma.address.update({
-            where: { 
-                id,
-                userId 
-            },
+    async updateAddressPartial(id: string, addressUpdateDTO: AddressUpdateDTO, userId?: string | null, tx?: Prisma.TransactionClient) {
+        const client = this.getClient(tx);
+        const whereClause = userId 
+            ? { id, userId }
+            : { id };
+            
+        const address = await client.address.update({
+            where: whereClause,
             data: addressUpdateDTO,
         });
         return address;
@@ -61,79 +89,25 @@ class AddressRepository {
 
     async deleteAddress(id: string, userId: string) {
         const address = await prisma.address.delete({
-            where: { 
+            where: {
                 id,
-                userId 
+                userId
             },
         });
         return address;
     }
 
-    async getAddressCountByUserId(userId: string) {
-        const count = await prisma.address.count({
-            where: { userId },
-        });
-        return count;
-    }
-
-    async getFavoriteAddressByUserId(userId: string) {
-        const address = await prisma.address.findFirst({
-            where: { 
+    async unsetFavorite(userId: string, tx?: Prisma.TransactionClient) {
+        const client = this.getClient(tx);
+        await client.address.updateMany({
+            where: {
                 userId,
                 isFavorite: true,
-                isActive: true 
+            },
+            data: {
+                isFavorite: false,
             },
         });
-        return address;
-    }
-
-    async setFavoriteAddress(id: string, userId: string, isFavorite: boolean) {
-        if (isFavorite) {
-            await prisma.address.updateMany({
-                where: { userId },
-                data: { isFavorite: false },
-            });
-        }
-
-        const address = await prisma.address.update({
-            where: { 
-                id,
-                userId 
-            },
-            data: { isFavorite },
-        });
-        return address;
-    }
-
-    async getActiveAddressesByUserId(userId: string) {
-        const addresses = await prisma.address.findMany({
-            where: { 
-                userId,
-                isActive: true 
-            },
-            orderBy: [
-                { isFavorite: 'desc' },
-                { createdAt: 'desc' }
-            ],
-        });
-        return addresses;
-    }
-
-    async getAddressesByZipCode(zipCode: string) {
-        const addresses = await prisma.address.findMany({
-            where: { zipCode },
-        });
-        return addresses;
-    }
-
-    async getAddressesByCity(city: string, state: string) {
-        const addresses = await prisma.address.findMany({
-            where: { 
-                city,
-                state 
-            },
-        });
-        return addresses;
     }
 }
 

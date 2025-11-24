@@ -121,7 +121,14 @@ export class Logger {
     }
 
     static errorOperation(context: string, operation: string, error: any, message?: string) {
-        this.error(context, `${operation} - error ${message ? `- ${message}` : ''}`, error);
+        const errorData = error instanceof Error
+            ? {
+                message: error.message,
+                stack: error.stack,
+                name: error.name,
+            }
+            : error;
+        this.error(context, `${operation} - error ${message ? `- ${message}` : ''}`, errorData);
     }
 
     static performance(context: string, operation: string, duration: number) {

@@ -1,41 +1,47 @@
+import { Prisma } from "@prisma/client";
 import { Order } from "../domain/orderDomain";
 import { OrderItem } from "../domain/orderItemDomain";
 import { OrderDTO, OrderUpdateDTO } from "../dtos/orderDTO";
 import { prisma } from "../utils/prisma";
 
 class OrderRepository {
-    async createOrder(orderDTO: OrderDTO & { userId: string; total: number; discount?: number; couponId?: string | null }) {
-        const { items, ...orderData } = orderDTO;
+    async createOrder(
+        orderDTO: OrderDTO & { userId: string; total: number; discount?: number; couponId?: string | null },
+        txClient?: Prisma.TransactionClient,
+    ) {
+        const { items } = orderDTO;
 
-        // Usar transação para garantir que order e items sejam criados juntos
-        const order = await prisma.$transaction(async (tx) => {
-            const order = await tx.order.create({
+        const createOrderWithClient = async (client: Prisma.TransactionClient) => {
+            const order = await client.order.create({
                 data: {
                     userId: orderDTO.userId,
                     marketId: orderDTO.marketId,
                     addressId: orderDTO.addressId,
                     paymentMethod: orderDTO.paymentMethod,
-                    status: 'PENDING',
+                    status: "PENDING",
                     total: orderDTO.total,
                     discount: orderDTO.discount || null,
                     couponId: orderDTO.couponId || null,
-                }
+                },
             });
 
-            // Criar os itens do pedido separadamente
             if (items && items.length > 0) {
-                await tx.orderItem.createMany({
-                    data: items.map(item => ({
+                await client.orderItem.createMany({
+                    data: items.map((item) => ({
                         orderId: order.id,
                         productId: item.productId,
                         quantity: item.quantity,
                         price: item.price,
-                    }))
+                    })),
                 });
             }
 
             return order;
-        });
+        };
+
+        const order = txClient
+            ? await createOrderWithClient(txClient)
+            : await prisma.$transaction(async (tx) => createOrderWithClient(tx));
 
         // Buscar os items criados para retornar o order completo
         const orderItems = await prisma.orderItem.findMany({

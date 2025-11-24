@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-import { AddressCreateDTO, AddressUpdateDTO, toAddressResponseDTO } from "../dtos/addressDTO";
+import { AddressDTO, AddressUpdateDTO } from "../dtos/addressDTO";
+import { addressRepository } from "../repositories/addressRepository";
 import { addressService } from "../services/addressService";
 import { Logger } from "../utils/logger";
 import { QueryBuilder } from "../utils/queryBuilder";
@@ -18,18 +19,9 @@ export class AddressController {
                 .withNumber('size', 10)
                 .build();
 
-            const result = await addressService.getAddressesByUserId(userId, page, size);
+            const data = await addressService.getAddressesByUserId(userId, page, size);
             Logger.successOperation('AddressController', 'getAddresses');
-            return res.status(200).json({
-                addresses: result.addresses.map(toAddressResponseDTO),
-                meta: {
-                    total: result.total,
-                    page,
-                    size,
-                    favorites: result.favorites,
-                    active: result.active
-                }
-            });
+            return res.status(200).json(data);
         } catch (error) {
             Logger.errorOperation('AddressController', 'getAddresses', error);
             return res.status(500).json({ message: "Erro interno do servidor" });
@@ -43,11 +35,15 @@ export class AddressController {
                 return res.status(401).json({ message: "Usuário não autenticado" });
             }
 
-            const userId = req.user.id;
-            const addressDTO = AddressCreateDTO.parse(req.body);
-            const address = await addressService.createAddress(userId, addressDTO);
+            const addressDTO = AddressDTO.parse(req.body);
+            const body = req.body as any;
+            
+            // Se for endereço de mercado (tem marketId ou isMarketAddress), criar sem userId
+            const userId = (body.marketId || body.isMarketAddress) ? undefined : req.user.id;
+            
+            const address = await addressService.createAddress(addressDTO, userId);
             Logger.successOperation('AddressController', 'createAddress');
-            return res.status(201).json(toAddressResponseDTO(address));
+            return res.status(201).json(address);
         } catch (error) {
             Logger.errorOperation('AddressController', 'createAddress', error);
             if (error instanceof Error && error.message === "Limite máximo de 3 endereços por usuário") {
@@ -68,7 +64,7 @@ export class AddressController {
             const { id } = req.params;
             const address = await addressService.getAddressById(id, userId);
             Logger.successOperation('AddressController', 'getAddressById');
-            return res.status(200).json(toAddressResponseDTO(address));
+            return res.status(200).json(address);
         } catch (error) {
             Logger.errorOperation('AddressController', 'getAddressById', error);
             if (error instanceof Error && error.message === "Endereço não encontrado") {
@@ -87,10 +83,20 @@ export class AddressController {
 
             const userId = req.user.id;
             const { id } = req.params;
-            const addressDTO = AddressCreateDTO.parse(req.body);
-            const address = await addressService.updateAddress(id, userId, addressDTO);
+            const addressDTO = AddressDTO.parse(req.body);
+            
+            // Verificar se é endereço de usuário ou mercado
+            const existingAddress = await addressRepository.getAddressById(id);
+            if (!existingAddress) {
+                return res.status(404).json({ message: "Endereço não encontrado" });
+            }
+            
+            // Se é endereço de mercado, atualizar sem userId
+            // Se é endereço de usuário, atualizar com userId
+            const addressUserId = existingAddress.userId ? userId : undefined;
+            const address = await addressService.updateAddress(id, addressDTO, addressUserId);
             Logger.successOperation('AddressController', 'updateAddress');
-            return res.status(200).json(toAddressResponseDTO(address));
+            return res.status(200).json(address);
         } catch (error) {
             Logger.errorOperation('AddressController', 'updateAddress', error);
             if (error instanceof Error && error.message === "Endereço não encontrado") {
@@ -110,9 +116,19 @@ export class AddressController {
             const userId = req.user.id;
             const { id } = req.params;
             const addressUpdateDTO = AddressUpdateDTO.parse(req.body);
-            const address = await addressService.updateAddressPartial(id, userId, addressUpdateDTO);
+            
+            // Verificar se é endereço de usuário ou mercado
+            const existingAddress = await addressRepository.getAddressById(id);
+            if (!existingAddress) {
+                return res.status(404).json({ message: "Endereço não encontrado" });
+            }
+            
+            // Se é endereço de mercado, atualizar sem userId
+            // Se é endereço de usuário, atualizar com userId
+            const addressUserId = existingAddress.userId ? userId : undefined;
+            const address = await addressService.updateAddressPartial(id, addressUpdateDTO, addressUserId);
             Logger.successOperation('AddressController', 'updateAddressPartial');
-            return res.status(200).json(toAddressResponseDTO(address));
+            return res.status(200).json(address);
         } catch (error) {
             Logger.errorOperation('AddressController', 'updateAddressPartial', error);
             if (error instanceof Error && error.message === "Endereço não encontrado") {
@@ -133,7 +149,7 @@ export class AddressController {
             const { id } = req.params;
             const address = await addressService.deleteAddress(id, userId);
             Logger.successOperation('AddressController', 'deleteAddress');
-            return res.status(200).json(toAddressResponseDTO(address));
+            return res.status(200).json(address);
         } catch (error) {
             Logger.errorOperation('AddressController', 'deleteAddress', error);
             if (error instanceof Error && error.message === "Endereço não encontrado") {

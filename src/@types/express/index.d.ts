@@ -3,12 +3,17 @@ import { Request } from 'express';
 declare module 'express-serve-static-core' {
   interface Request {
     user?: UserToken
+    file?: Express.Multer.File
+    files?: Express.Multer.File[]
   }
 }
 
 export interface UserToken {
   id: string;
   role: 'CUSTOMER' | 'MARKET_ADMIN';
+  username: string;
+  email: string;
+  name: string;
   marketId?: string;
   auth0Id?: string;
 }

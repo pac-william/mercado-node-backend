@@ -1,4 +1,5 @@
 import { Category } from "./categoryDomain";
+import { SubCategory } from "./subcategoryDomain";
 import { Meta } from "./metaDomain";
 
 export class Product {
@@ -10,7 +11,11 @@ export class Product {
         public marketId: string,
         public image?: string | null,
         public categoryId?: string,
+        public subCategoryId?: string | null,
+        public sku?: string | null,
         public category?: Category | null,
+        public subCategory?: SubCategory | null,
+        public isActive?: boolean,
     ) { }
 }
 

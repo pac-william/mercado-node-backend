@@ -4,19 +4,19 @@ import { suggestionRepository } from "../repositories/suggestionRepository";
 import { Logger } from "../utils/logger";
 
 export class SuggestionService {
-    async createSuggestion(task: string, data: any) {
-        Logger.debug('SuggestionService', 'createSuggestion', { task });
+    async createSuggestion(userId: string, task: string, data: any) {
+        Logger.debug('SuggestionService', 'createSuggestion', { userId, task });
         
-        const suggestion = await suggestionRepository.create(task, data);
+        const suggestion = await suggestionRepository.create(userId, task, data);
         
         Logger.successOperation('SuggestionService', 'createSuggestion');
         return suggestion;
     }
 
-    async getSuggestionById(id: string) {
-        Logger.debug('SuggestionService', 'getSuggestionById', { id });
+    async getSuggestionById(id: string, userId: string) {
+        Logger.debug('SuggestionService', 'getSuggestionById', { id, userId });
         
-        const suggestion = await suggestionRepository.findById(id);
+        const suggestion = await suggestionRepository.findById(id, userId);
         
         if (!suggestion) {
             throw new Error('Sugestão não encontrada');
@@ -26,15 +26,27 @@ export class SuggestionService {
         return suggestion;
     }
 
-    async getSuggestions(page: number, size: number) {
-        Logger.debug('SuggestionService', 'getSuggestions', { page, size });
+    async getSuggestions(userId: string, page: number, size: number) {
+        Logger.debug('SuggestionService', 'getSuggestions', { userId, page, size });
         
-        const count = await suggestionRepository.count();
-        const suggestionsData = await suggestionRepository.findAll(page, size);
+        const count = await suggestionRepository.count(userId);
+        const suggestionsData = await suggestionRepository.findAll(userId, page, size);
         
         const suggestions = suggestionsData.map((s: any) => new SuggestionListItem(s.id));
-        
+
         Logger.successOperation('SuggestionService', 'getSuggestions');
+        return new SuggestionPaginatedResponse(suggestions, new Meta(page, size, count, Math.ceil(count / size), count));
+    }
+
+    async getSuggestionsByUserId(userId: string, page: number, size: number) {
+        Logger.debug('SuggestionService', 'getSuggestionsByUserId', { userId, page, size });
+
+        const count = await suggestionRepository.countByUserId(userId);
+        const suggestionsData = await suggestionRepository.findAllByUserId(userId, page, size);
+
+        const suggestions = suggestionsData.map((s: any) => new SuggestionListItem(s.id));
+
+        Logger.successOperation('SuggestionService', 'getSuggestionsByUserId');
         return new SuggestionPaginatedResponse(suggestions, new Meta(page, size, count, Math.ceil(count / size), count));
     }
 }

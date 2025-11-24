@@ -3,8 +3,8 @@ export const suggestionPaths = {
         "get": {
             "tags": ["Suggestions"],
             "summary": "Listar todas as sugestões",
-            "description": "Retorna uma lista paginada de todas as sugestões salvas no banco de dados.",
-            "security": [{ "BearerAuth": [] }],
+            "description": "Retorna uma lista paginada de todas as sugestões do usuário autenticado salvas no banco de dados.",
+            "security": [{ "bearerAuth": [] }],
             "parameters": [
                 {
                     "name": "page",
@@ -59,8 +59,8 @@ export const suggestionPaths = {
         "post": {
             "tags": ["Suggestions"],
             "summary": "Criar sugestões de produtos",
-            "description": "Cria sugestões de produtos essenciais, produtos comuns e utensílios baseados em IA e salva no banco de dados.",
-            "security": [{ "BearerAuth": [] }],
+            "description": "Cria sugestões baseadas em IA como uma lista única de itens, cada um com tipo (essential, common, utensil), e salva no banco de dados.",
+            "security": [{ "bearerAuth": [] }],
             "requestBody": {
                 "required": true,
                 "content": {
@@ -96,6 +96,85 @@ export const suggestionPaths = {
                         }
                     }
                 },
+                "401": {
+                    "description": "Usuário não autenticado",
+                    "content": {
+                        "application/json": {
+                            "schema": { "type": "object", "properties": { "message": { "type": "string", "example": "Usuário não autenticado" } } }
+                        }
+                    }
+                },
+                "500": {
+                    "description": "Erro interno do servidor",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string", "example": "Erro interno do servidor" }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "/api/v1/suggestions/user/me": {
+        "get": {
+            "tags": ["Suggestions"],
+            "summary": "Listar sugestões do usuário logado",
+            "description": "Retorna uma lista paginada de todas as sugestões do usuário autenticado.",
+            "security": [{ "bearerAuth": [] }],
+            "parameters": [
+                {
+                    "name": "page",
+                    "in": "query",
+                    "required": false,
+                    "description": "Número da página",
+                    "schema": {
+                        "type": "integer",
+                        "default": 1,
+                        "minimum": 1,
+                        "example": 1
+                    }
+                },
+                {
+                    "name": "size",
+                    "in": "query",
+                    "required": false,
+                    "description": "Quantidade de itens por página",
+                    "schema": {
+                        "type": "integer",
+                        "default": 10,
+                        "minimum": 1,
+                        "maximum": 100,
+                        "example": 10
+                    }
+                }
+            ],
+            "responses": {
+                "200": {
+                    "description": "Sugestões retornadas com sucesso",
+                    "content": {
+                        "application/json": {
+                            "schema": { "$ref": "#/components/schemas/SuggestionPaginatedResponse" }
+                        }
+                    }
+                },
+                "401": {
+                    "description": "Usuário não autenticado",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string", "example": "Usuário não autenticado" }
+                                }
+                            }
+                        }
+                    }
+                },
                 "500": {
                     "description": "Erro interno do servidor",
                     "content": {
@@ -116,8 +195,8 @@ export const suggestionPaths = {
         "get": {
             "tags": ["Suggestions"],
             "summary": "Obter sugestão por ID",
-            "description": "Retorna uma sugestão completa salva no banco de dados pelo ID.",
-            "security": [{ "BearerAuth": [] }],
+            "description": "Retorna uma sugestão completa do usuário autenticado salva no banco de dados pelo ID.",
+            "security": [{ "bearerAuth": [] }],
             "parameters": [
                 {
                     "name": "id",
@@ -248,6 +327,11 @@ export const suggestionSchemas = {
                 "description": "ID da sugestão",
                 "example": "507f1f77bcf86cd799439011"
             },
+            "userId": {
+                "type": "string",
+                "description": "ID do usuário que criou a sugestão",
+                "example": "507f1f77bcf86cd799439012"
+            },
             "task": {
                 "type": "string",
                 "description": "Tarefa solicitada",
@@ -257,36 +341,15 @@ export const suggestionSchemas = {
                 "type": "object",
                 "description": "Dados completos da sugestão gerada pela IA",
                 "properties": {
-                    "essential_products": {
+                    "items": {
                         "type": "array",
                         "items": {
                             "type": "object",
                             "properties": {
                                 "name": { "type": "string" },
                                 "categoryId": { "type": "string" },
-                                "categoryName": { "type": "string" }
-                            }
-                        }
-                    },
-                    "common_products": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "name": { "type": "string" },
-                                "categoryId": { "type": "string" },
-                                "categoryName": { "type": "string" }
-                            }
-                        }
-                    },
-                    "utensils": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "name": { "type": "string" },
-                                "categoryId": { "type": "string" },
-                                "categoryName": { "type": "string" }
+                                "categoryName": { "type": "string" },
+                                "type": { "type": "string", "enum": ["essential", "common", "utensil"] }
                             }
                         }
                     },
@@ -338,47 +401,24 @@ export const suggestionSchemas = {
                 "description": "Data da última atualização"
             }
         },
-        "required": ["id", "task", "data", "createdAt", "updatedAt"],
+        "required": ["id", "userId", "task", "data", "createdAt", "updatedAt"],
         "additionalProperties": false
     },
     "SuggestionResponse": {
         "type": "object",
         "properties": {
-            "essential_products": {
+            "items": {
                 "type": "array",
                 "items": {
                     "type": "object",
                     "properties": {
                         "name": { "type": "string" },
                         "categoryId": { "type": "string" },
-                        "categoryName": { "type": "string" }
+                        "categoryName": { "type": "string" },
+                        "type": { "type": "string", "enum": ["essential", "common", "utensil"] }
                     }
                 },
-                "description": "Lista de produtos essenciais para a receita"
-            },
-            "common_products": {
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": { "type": "string" },
-                        "categoryId": { "type": "string" },
-                        "categoryName": { "type": "string" }
-                    }
-                },
-                "description": "Lista de produtos comuns para a receita"
-            },
-            "utensils": {
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": { "type": "string" },
-                        "categoryId": { "type": "string" },
-                        "categoryName": { "type": "string" }
-                    }
-                },
-                "description": "Lista de utensílios necessários para a receita"
+                "description": "Lista única de itens com tipo (essential, common, utensil)"
             },
             "searchResults": {
                 "type": "object",
@@ -416,7 +456,7 @@ export const suggestionSchemas = {
                 }
             }
         },
-        "required": ["essential_products", "common_products", "utensils"],
+        "required": ["items"],
         "additionalProperties": false
     }
 };

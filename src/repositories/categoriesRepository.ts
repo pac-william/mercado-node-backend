@@ -1,4 +1,5 @@
 import { Category } from "../domain/categoryDomain";
+import { SubCategory } from "../domain/subcategoryDomain";
 import { CategoriesDTO, CategoriesUpdateDTO } from "../dtos/categoriesDTO";
 import { prisma } from "../utils/prisma";
 
@@ -24,24 +25,57 @@ class CategoriesRepository {
             },
             orderBy: {
                 name: 'asc',
-            }
+            },
+            include: {
+                subCategories: {
+                    select: {
+                        id: true,
+                        name: true,
+                        slug: true,
+                        description: true,
+                        categoryId: true,
+                        createdAt: true,
+                        updatedAt: true,
+                    },
+                },
+            },
         });
         return categories.map((category) => new Category(
             category.id,
             category.name,
             category.slug,
             category.description || "",
-            [], // subCategories - implementar se necessário
+            (category.subCategories ?? []).map((sc) => new SubCategory(
+                sc.id,
+                sc.name,
+                sc.slug,
+                sc.description ?? "",
+                sc.categoryId,
+                sc.createdAt,
+                sc.updatedAt,
+            )),
             category.createdAt,
             category.updatedAt
         ));
     }
 
     async getCategoryById(id: string) {
-        const category = await prisma.categories.findUnique({
-            where: { id }
+        return await prisma.categories.findUnique({
+            where: { id },
+            include: {
+                subCategories: {
+                    select: {
+                        id: true,
+                        name: true,
+                        slug: true,
+                        description: true,
+                        categoryId: true,
+                        createdAt: true,
+                        updatedAt: true,
+                    },
+                },
+            },
         });
-        return category;
     }
 
     async updateCategory(id: string, data: CategoriesDTO) {

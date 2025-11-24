@@ -1,5 +1,4 @@
 import { addressPaths, addressSchemas, addressTags } from './schema/address';
-import { authPaths, authSchemas, authTags } from './schema/auth';
 import { cartPaths, cartSchemas, cartTags } from './schema/cart';
 import { cartItemPaths, cartItemSchemas, cartItemTags } from './schema/cartItem';
 import { categoriesPaths, categoriesSchemas, categoriesTags } from './schema/categories';
@@ -11,6 +10,7 @@ import { orderPaths, orderSchemas, orderTags } from './schema/order';
 import { productPaths, productSchemas, productTags } from './schema/product';
 import { suggestionPaths, suggestionSchemas, suggestionTags } from './schema/suggestion';
 import { userPaths, userSchemas, userTags } from './schema/user';
+import { subcategoryPaths, subcategorySchemas, subcategoryTags } from './schema/subcategory';
 
 export const swaggerDocument = {
     openapi: '3.0.0',
@@ -39,10 +39,10 @@ export const swaggerDocument = {
             ...productSchemas,
             ...userSchemas,
             ...categoriesSchemas,
+        ...subcategorySchemas,
             ...couponSchemas,
             ...delivererSchemas,
             ...orderSchemas,
-            ...authSchemas,
             ...suggestionSchemas,
             ...addressSchemas,
             ...cartSchemas,
@@ -54,10 +54,10 @@ export const swaggerDocument = {
         ...productTags,
         ...userTags,
         ...categoriesTags,
+        ...subcategoryTags,
         ...couponTags,
         ...delivererTags,
         ...orderTags,
-        ...authTags,
         ...suggestionTags,
         ...addressTags,
         ...cartTags,
@@ -68,10 +68,10 @@ export const swaggerDocument = {
         ...productPaths,
         ...userPaths,
         ...categoriesPaths,
+        ...subcategoryPaths,
         ...couponPaths,
         ...delivererPaths,
         ...orderPaths,
-        ...authPaths,
         ...suggestionPaths,
         ...addressPaths,
         ...cartPaths,

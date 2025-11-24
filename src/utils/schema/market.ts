@@ -33,6 +33,25 @@ export const marketPaths = {
                     "description": "Endereço do mercado para filtrar",
                     "required": false,
                     "schema": { "type": "string" }
+                },
+                {
+                    "name": "ownerId",
+                    "in": "query",
+                    "description": "ID do proprietário para filtrar",
+                    "required": false,
+                    "schema": { "type": "string", "example": "507f1f77bcf86cd799439011" }
+                },
+                {
+                    "name": "managersIds",
+                    "in": "query",
+                    "description": "IDs dos gerentes para filtrar (repita o parâmetro para múltiplos valores)",
+                    "required": false,
+                    "schema": {
+                        "type": "array",
+                        "items": { "type": "string", "example": "507f1f77bcf86cd799439012" }
+                    },
+                    "style": "form",
+                    "explode": true
                 }
             ],
             "responses": {
@@ -394,6 +413,11 @@ export const marketSchemas = {
             "name": { "type": "string", "example": "Supermercado Central" },
             "address": { "type": "string", "example": "Rua das Flores, 123, Centro" },
             "profilePicture": { "type": "string", "example": "https://example.com/logo.png" },
+            "ownerId": { "type": "string", "example": "507f1f77bcf86cd799439011" },
+            "managersIds": {
+                "type": "array",
+                "items": { "type": "string", "example": "507f1f77bcf86cd799439012" }
+            },
             "products": {
                 "type": "array",
                 "items": { "$ref": "#/components/schemas/Product" }
@@ -407,9 +431,14 @@ export const marketSchemas = {
         "properties": {
             "name": { "type": "string", "example": "Supermercado Central" },
             "address": { "type": "string", "example": "Rua das Flores, 123, Centro" },
-            "profilePicture": { "type": "string", "example": "https://example.com/logo.png" }
+            "profilePicture": { "type": "string", "example": "https://example.com/logo.png" },
+            "ownerId": { "type": "string", "example": "507f1f77bcf86cd799439011" },
+            "managersIds": {
+                "type": "array",
+                "items": { "type": "string", "example": "507f1f77bcf86cd799439012" }
+            }
         },
-        "required": ["name", "address", "profilePicture"]
+        "required": ["name", "address", "ownerId"]
     },
     "MarketUpdateDTO": {
         "type": "object",

@@ -1,34 +1,41 @@
 import { Meta } from "../domain/metaDomain";
 import { OrderPaginatedResponse } from "../domain/orderDomain";
 import { AssignDelivererDTO, OrderDTO, OrderUpdateDTO } from "../dtos/orderDTO";
+import { addressRepository } from "../repositories/addressRepository";
 import { cartRepository } from '../repositories/cartRepository';
+import { marketRepository } from "../repositories/marketRepository";
 import { orderRepository } from "../repositories/orderRepository";
+import { productRepository } from "../repositories/productRepository";
+import { userRepository } from "../repositories/userRepository";
 import { Logger } from '../utils/logger';
-import { prisma } from '../utils/prisma';
+import { prisma } from "../utils/prisma";
 import { couponService } from './couponService';
 
 class OrderService {
     async createOrder(userId: string, orderDTO: OrderDTO) {
         Logger.info('OrderService', 'createOrder', `Creating order for user ${userId}`);
 
-        const user = await prisma.user.findUnique({ where: { id: userId } });
+        const user = await userRepository.getUserById(userId);
         if (!user) {
             throw new Error('Usuário não encontrado');
         }
 
-        const market = await prisma.market.findUnique({ where: { id: orderDTO.marketId } });
+        const market = await marketRepository.getMarketById(orderDTO.marketId);
         if (!market) {
             throw new Error('Mercado não encontrado');
         }
 
-        const address = await prisma.address.findUnique({ where: { id: orderDTO.addressId } });
+        const address = await addressRepository.getAddressById(orderDTO.addressId);
         if (!address) {
             throw new Error('Endereço não encontrado');
         }
 
+        const productIds = orderDTO.items.map(item => item.productId);
+        const products = await productRepository.getProductsByIds(productIds);
+
+        const foundProductIds = new Set(products.map(p => p.id));
         for (const item of orderDTO.items) {
-            const product = await prisma.product.findUnique({ where: { id: item.productId } });
-            if (!product) {
+            if (!foundProductIds.has(item.productId)) {
                 throw new Error(`Produto com ID ${item.productId} não encontrado`);
             }
         }
@@ -65,13 +72,16 @@ class OrderService {
             couponId
         };
 
-        const order = await orderRepository.createOrder(orderData);
-        
-        const cart = await cartRepository.findByUserId(userId);
-        if (cart) {
-            await cartRepository.clearCart(cart.id);
-            Logger.info('OrderService', 'createOrder', 'Cart cleared after order creation');
-        }
+        const order = await prisma.$transaction(async (tx) => {
+            const createdOrder = await orderRepository.createOrder(orderData, tx);
+            const cart = await cartRepository.findByUserAndMarket(userId, orderDTO.marketId, tx);
+            if (cart) {
+                await cartRepository.clearCart(cart.id, tx);
+                await cartRepository.deleteCart(cart.id, tx);
+                Logger.info('OrderService', 'createOrder', 'Cart cleared and deleted after order creation');
+            }
+            return createdOrder;
+        });
 
         return order;
     }

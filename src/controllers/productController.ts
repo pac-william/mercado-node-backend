@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { ProductDTO, ProductUpdateDTO, toProductResponseDTO } from "../dtos/productDTO";
+import { ProductDTO, ProductUpdateDTO } from "../dtos/productDTO";
 import { categoriesService } from "../services/categoriesService";
 import { productService } from "../services/productService";
 import { Logger } from "../utils/logger";
@@ -9,33 +9,40 @@ export class ProductController {
     async getProducts(req: Request, res: Response) {
         Logger.controller('Product', 'getProducts', 'query', req.query);
         try {
-            const { page, size, marketId, name, minPrice, maxPrice, categoryId } = QueryBuilder.from(req.query)
+            const { page, size, marketId, name, minPrice, maxPrice, categoryId: categoryIds } = QueryBuilder.from(req.query)
                 .withNumber('page', 1)
                 .withNumber('size', 10)
                 .withString('marketId')
                 .withString('name')
                 .withNumber('minPrice')
                 .withNumber('maxPrice')
-                .withString('categoryId')
+                .withArray('categoryId')
                 .build();
 
             const elasticSearchEnv = process.env.ELASTICSEARCH_URL;
+            const normalizedCategoryIds = Array.isArray(categoryIds)
+                ? categoryIds.filter((id): id is string => typeof id === 'string' && id.trim().length > 0)
+                : [];
 
             let products;
             if (name && elasticSearchEnv) {
-                let categoryName = "";
-                if (categoryId) {
-                    const category = await categoriesService.getCategoryById(categoryId);
-                    categoryName = category?.name ?? "";
+                let categoryNames: string[] = [];
+                if (normalizedCategoryIds.length > 0) {
+                    const categories = await Promise.all(
+                        normalizedCategoryIds.map((id) => categoriesService.getCategoryById(id))
+                    );
+                    categoryNames = categories
+                        .filter((category): category is NonNullable<typeof category> => !!category?.name)
+                        .map((category) => category.name);
                 }
 
-                products = await productService.getProductsElasticSearch(name, page, size, categoryName);
+                products = await productService.getProductsElasticSearch(name, page, size, categoryNames, marketId);
             } else {
-                products = await productService.getProducts(page, size, marketId, name, minPrice, maxPrice, categoryId);
+                products = await productService.getProducts(page, size, marketId, name, minPrice, maxPrice, normalizedCategoryIds);
             }
             Logger.successOperation('ProductController', 'getProducts');
             return res.status(200).json({
-                products: products.products.map(toProductResponseDTO),
+                products: products.products,
                 meta: products.meta,
             });
         } catch (error) {
@@ -50,7 +57,7 @@ export class ProductController {
             const productDTO = ProductDTO.parse(req.body);
             const product = await productService.createProduct(productDTO);
             Logger.successOperation('ProductController', 'createProduct');
-            return res.status(201).json(toProductResponseDTO(product));
+            return res.status(201).json(product);
         } catch (error) {
             Logger.errorOperation('ProductController', 'createProduct', error);
             return res.status(500).json({ message: "Erro interno do servidor" });
@@ -61,16 +68,20 @@ export class ProductController {
         Logger.controller('Product', 'getProductsByMarket', 'query', req.query);
         try {
             const { marketId } = req.params;
-            const { page, size, categoryId } = QueryBuilder.from(req.query)
+            const { page, size, categoryId: categoryIds } = QueryBuilder.from(req.query)
                 .withNumber('page', 1)
                 .withNumber('size', 10)
-                .withString('categoryId')
+                .withArray('categoryId')
                 .build();
 
-            const products = await productService.getProducts(page, size, marketId, undefined, undefined, undefined, categoryId);
+            const normalizedCategoryIds = Array.isArray(categoryIds)
+                ? categoryIds.filter((id): id is string => typeof id === 'string' && id.trim().length > 0)
+                : [];
+
+            const products = await productService.getProducts(page, size, marketId, undefined, undefined, undefined, normalizedCategoryIds);
             Logger.successOperation('ProductController', 'getProductsByMarket');
             return res.status(200).json({
-                products: products.products.map(toProductResponseDTO),
+                products: products.products,
                 meta: products.meta,
             });
         } catch (error) {
@@ -85,7 +96,7 @@ export class ProductController {
             const { id } = req.params;
             const product = await productService.getProductById(id);
             Logger.successOperation('ProductController', 'getProductById');
-            return res.status(200).json(toProductResponseDTO(product));
+            return res.status(200).json(product);
         } catch (error) {
             Logger.errorOperation('ProductController', 'getProductById', error);
             return res.status(500).json({ message: "Erro interno do servidor" });
@@ -99,7 +110,7 @@ export class ProductController {
             const productDTO = ProductDTO.parse(req.body);
             const product = await productService.updateProduct(id, productDTO);
             Logger.successOperation('ProductController', 'updateProduct');
-            return res.status(200).json(toProductResponseDTO(product));
+            return res.status(200).json(product);
         } catch (error) {
             Logger.errorOperation('ProductController', 'updateProduct', error);
             return res.status(500).json({ message: "Erro interno do servidor" });
@@ -113,7 +124,7 @@ export class ProductController {
             const productUpdateDTO = ProductUpdateDTO.parse(req.body);
             const product = await productService.updateProductPartial(id, productUpdateDTO);
             Logger.successOperation('ProductController', 'updateProductPartial');
-            return res.status(200).json(toProductResponseDTO(product));
+            return res.status(200).json(product);
         } catch (error) {
             Logger.errorOperation('ProductController', 'updateProductPartial', error);
             return res.status(500).json({ message: "Erro interno do servidor" });
@@ -126,7 +137,7 @@ export class ProductController {
             const { id } = req.params;
             const product = await productService.deleteProduct(id);
             Logger.successOperation('ProductController', 'deleteProduct');
-            return res.status(200).json(toProductResponseDTO(product));
+            return res.status(200).json(product);
         } catch (error) {
             Logger.errorOperation('ProductController', 'deleteProduct', error);
             return res.status(500).json({ message: "Erro interno do servidor" });
