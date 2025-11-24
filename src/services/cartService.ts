@@ -189,6 +189,7 @@ export class CartService {
       id: cart.id,
       userId: cart.userId,
       marketId: cart.marketId,
+      marketName: cart.market?.name || 'Mercado',
       items: cart.items.map((item: any) => this.formatCartItemResponse(item)),
       totalItems,
       totalValue,

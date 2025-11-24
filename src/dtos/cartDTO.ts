@@ -15,6 +15,7 @@ export const cartResponseSchema = z.object({
   id: z.string(),
   userId: z.string(),
   marketId: z.string(),
+  marketName: z.string().optional(),
   items: z.array(CartItemResponseDTO),
   totalItems: z.number(),
   totalValue: z.number(),
