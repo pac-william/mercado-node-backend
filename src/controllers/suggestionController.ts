@@ -46,7 +46,7 @@ export class SuggestionController {
             
             return res.status(500).json({ 
                 message: `Erro interno do servidor: ${error.message}`,
-                error: process.env.NODE_ENV === 'development' ? errorDetails : undefined
+                error: errorDetails
             });
         }
     }
@@ -102,7 +102,7 @@ export class SuggestionController {
             
             return res.status(500).json({ 
                 message: `Erro interno do servidor: ${error.message}`,
-                error: process.env.NODE_ENV === 'development' ? errorDetails : undefined
+                error: errorDetails
             });
         }
     }
@@ -156,7 +156,7 @@ export class SuggestionController {
             
             return res.status(500).json({ 
                 message: `Erro interno do servidor: ${error.message}`,
-                error: process.env.NODE_ENV === 'development' ? errorDetails : undefined
+                error: errorDetails
             });
         }
     }
