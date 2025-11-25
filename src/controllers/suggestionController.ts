@@ -119,8 +119,18 @@ export class SuggestionController {
             Logger.errorOperation('SuggestionController', 'createSuggestions', error, 'fetch failed');
             Logger.error('SuggestionController', 'createSuggestions - Detailed error info', errorDetails);
 
-            return res.status(500).json({
-                message: `Erro interno do servidor: ${error.message}`,
+            // Se o erro for de validação ética do AI, retorna 400 com a mensagem específica
+            if (error.message && error.message.includes('viola as políticas éticas')) {
+                return res.status(400).json({
+                    message: error.message,
+                    error: errorDetails
+                });
+            }
+
+            // Retorna sempre a mensagem específica do erro, nunca uma mensagem genérica
+            const statusCode = error.status || error.statusCode || 500;
+            return res.status(statusCode).json({
+                message: error.message || 'Erro interno do servidor',
                 error: errorDetails
             });
         }
@@ -181,7 +191,7 @@ export class SuggestionController {
 
             return res.status(500).json({
                 message: `Erro interno do servidor: ${error.message}`,
-                error: process.env.NODE_ENV === 'development' ? errorDetails : undefined
+                error: errorDetails
             });
         }
     }
