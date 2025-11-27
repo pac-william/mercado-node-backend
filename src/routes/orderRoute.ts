@@ -7,6 +7,7 @@ const orderController = new OrderController();
 
 // Rotas públicas 
 router.get('/', validateToken, orderController.getOrders);
+router.get('/market/:marketId', validateToken, orderController.getOrdersByMarketId);
 router.get('/:id', validateToken, orderController.getOrderById);
 
 // Rotas protegidas

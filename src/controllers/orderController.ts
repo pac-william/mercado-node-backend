@@ -76,6 +76,33 @@ export class OrderController {
         }
     }
 
+    async getOrdersByMarketId(req: Request, res: Response) {
+        Logger.controller('Order', 'getOrdersByMarketId', 'params', req.params);
+        try {
+            if (!req.user) {
+                return res.status(401).json({ message: "Usuário não autenticado" });
+            }
+
+            const { marketId } = req.params;
+            const { page, size, status, delivererId } = QueryBuilder.from(req.query)
+                .withNumber('page', 1)
+                .withNumber('size', 10)
+                .withString('status')
+                .withString('delivererId')
+                .build();
+
+            const orders = await orderService.getOrders(page, size, status, undefined, marketId, delivererId);
+            Logger.successOperation('OrderController', 'getOrdersByMarketId');
+            return res.status(200).json({
+                orders: orders.orders.map(toOrderResponseDTO),
+                meta: orders.meta,
+            });
+        } catch (error) {
+            Logger.errorOperation('OrderController', 'getOrdersByMarketId', error);
+            return res.status(500).json({ message: "Erro interno do servidor" });
+        }
+    }
+
     async updateOrder(req: Request, res: Response) {
         Logger.controller('Order', 'updateOrder', 'params', req.params);
         try {
