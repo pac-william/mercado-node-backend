@@ -11,6 +11,7 @@ import swaggerUi from 'swagger-ui-express';
 import routes from './routes';
 import { Logger } from './utils/logger';
 import { swaggerDocument } from './utils/swagger';
+import { initializeFirebaseAdmin } from './services/notificationService';
 
 const app = express();
 
@@ -58,6 +59,13 @@ app.use('/api/v1/reports', routes.reportsRoute);
 app.use('/api/v1/chats', routes.chatRoute);
 app.use('/api/v1/geo-location', routes.geocodingRoute);
 app.use('/api/v1/campaigns', routes.campaignRoute);
+app.use('/api/v1/notifications', routes.notificationRoute);
+
+try {
+    initializeFirebaseAdmin();
+} catch (error: any) {
+    Logger.errorOperation('Server', 'initializeFirebaseAdmin', error.message);
+}
 
 app.get('/health', (_req, res) => {
     let version = 'unknown';
