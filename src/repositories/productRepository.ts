@@ -19,7 +19,8 @@ class ProductRepository {
         name?: string,
         minPrice?: number,
         maxPrice?: number,
-        categoryIds: string[] = []
+        categoryIds: string[] = [],
+        sort?: string
     ) {
         const normalizedCategoryIds = Array.isArray(categoryIds) ? categoryIds.filter(Boolean) : [];
         
@@ -34,13 +35,32 @@ class ProductRepository {
             if (maxPrice !== undefined) where.price.lte = maxPrice;
         }
 
+        // Build orderBy based on sort parameter
+        let orderBy: any = { name: 'asc' }; // default
+        if (sort) {
+            switch (sort) {
+                case 'priceAsc':
+                    orderBy = { price: 'asc' };
+                    break;
+                case 'priceDesc':
+                    orderBy = { price: 'desc' };
+                    break;
+                case 'name':
+                    orderBy = { name: 'asc' };
+                    break;
+                case 'nameDesc':
+                    orderBy = { name: 'desc' };
+                    break;
+                default:
+                    orderBy = { name: 'asc' };
+            }
+        }
+
         const products = await prisma.product.findMany({
             where,
             skip: (page - 1) * size,
             take: size,
-            orderBy: {
-                name: 'asc',
-            },
+            orderBy,
             select: {
                 id: true,
                 name: true,

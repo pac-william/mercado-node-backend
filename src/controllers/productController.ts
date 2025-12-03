@@ -9,7 +9,7 @@ export class ProductController {
     async getProducts(req: Request, res: Response) {
         Logger.controller('Product', 'getProducts', 'query', req.query);
         try {
-            const { page, size, marketId, name, minPrice, maxPrice, categoryId: categoryIds } = QueryBuilder.from(req.query)
+            const { page, size, marketId, name, minPrice, maxPrice, categoryId: categoryIds, sort } = QueryBuilder.from(req.query)
                 .withNumber('page', 1)
                 .withNumber('size', 10)
                 .withString('marketId')
@@ -17,6 +17,7 @@ export class ProductController {
                 .withNumber('minPrice')
                 .withNumber('maxPrice')
                 .withArray('categoryId')
+                .withString('sort')
                 .build();
 
             const elasticSearchEnv = process.env.ELASTICSEARCH_URL;
@@ -38,7 +39,7 @@ export class ProductController {
 
                 products = await productService.getProductsElasticSearch(name, page, size, categoryNames, marketId);
             } else {
-                products = await productService.getProducts(page, size, marketId, name, minPrice, maxPrice, normalizedCategoryIds);
+                products = await productService.getProducts(page, size, marketId, name, minPrice, maxPrice, normalizedCategoryIds, sort);
             }
             Logger.successOperation('ProductController', 'getProducts');
             return res.status(200).json({
@@ -68,17 +69,18 @@ export class ProductController {
         Logger.controller('Product', 'getProductsByMarket', 'query', req.query);
         try {
             const { marketId } = req.params;
-            const { page, size, categoryId: categoryIds } = QueryBuilder.from(req.query)
+            const { page, size, categoryId: categoryIds, sort } = QueryBuilder.from(req.query)
                 .withNumber('page', 1)
                 .withNumber('size', 10)
                 .withArray('categoryId')
+                .withString('sort')
                 .build();
 
             const normalizedCategoryIds = Array.isArray(categoryIds)
                 ? categoryIds.filter((id): id is string => typeof id === 'string' && id.trim().length > 0)
                 : [];
 
-            const products = await productService.getProducts(page, size, marketId, undefined, undefined, undefined, normalizedCategoryIds);
+            const products = await productService.getProducts(page, size, marketId, undefined, undefined, undefined, normalizedCategoryIds, sort);
             Logger.successOperation('ProductController', 'getProductsByMarket');
             return res.status(200).json({
                 products: products.products,

@@ -32,10 +32,11 @@ class ProductService {
         name?: string,
         minPrice?: number,
         maxPrice?: number,
-        categoryIds: string[] = []
+        categoryIds: string[] = [],
+        sort?: string
     ) {
         const count = await productRepository.countProducts(marketId, name, minPrice, maxPrice, categoryIds);
-        const products = await productRepository.getProducts(page, size, marketId, name, minPrice, maxPrice, categoryIds);
+        const products = await productRepository.getProducts(page, size, marketId, name, minPrice, maxPrice, categoryIds, sort);
         return new ProductPaginatedResponse(products, new Meta(page, size, count, Math.ceil(count / size), count));
     }
 
