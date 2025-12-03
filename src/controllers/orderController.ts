@@ -103,6 +103,32 @@ export class OrderController {
             return res.status(500).json({ message: "Erro interno do servidor" });
         }
     }
+
+    async updateOrderStatus(req: Request, res: Response) {
+        Logger.controller('Order', 'updateOrderStatus', 'params', req.params);
+        try {
+            const { id } = req.params;
+            const { status } = req.body;
+
+            if (!status) {
+                return res.status(400).json({ message: "Status é obrigatório" });
+            }
+
+            const orderUpdateDTO = OrderUpdateDTO.parse({ status });
+            const order = await orderService.updateOrder(id, orderUpdateDTO);
+            Logger.successOperation('OrderController', 'updateOrderStatus');
+            return res.status(200).json(toOrderResponseDTO(order));
+        } catch (error) {
+            Logger.errorOperation('OrderController', 'updateOrderStatus', error);
+            if (error instanceof Error) {
+                if (error.message.includes('não encontrado')) {
+                    return res.status(404).json({ message: error.message });
+                }
+                return res.status(400).json({ message: error.message });
+            }
+            return res.status(500).json({ message: "Erro interno do servidor" });
+        }
+    }
 }
 
 export const orderController = new OrderController();

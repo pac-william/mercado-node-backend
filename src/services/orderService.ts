@@ -6,6 +6,7 @@ import { orderRepository } from "../repositories/orderRepository";
 import { Logger } from '../utils/logger';
 import { prisma } from '../utils/prisma';
 import { couponService } from './couponService';
+import { notifyNewOrder, notifyOrderStatusUpdate } from './orderNotificationService';
 
 class OrderService {
     async createOrder(userId: string, orderDTO: OrderDTO) {
@@ -78,6 +79,10 @@ class OrderService {
             Logger.info('OrderService', 'createOrder', 'Cart cleared after order creation');
         }
 
+        notifyNewOrder(userId, order.id, order.total, market.name).catch((error) => {
+            Logger.errorOperation('OrderService', 'notifyNewOrder', error.message);
+        });
+
         return order;
     }
 
@@ -92,7 +97,25 @@ class OrderService {
     }
 
     async updateOrder(id: string, orderUpdateDTO: OrderUpdateDTO) {
-        return await orderRepository.updateOrder(id, orderUpdateDTO);
+        const currentOrder = await orderRepository.getOrderById(id);
+        if (!currentOrder) {
+            throw new Error('Pedido não encontrado');
+        }
+
+        const oldStatus = currentOrder.status;
+        const order = await orderRepository.updateOrder(id, orderUpdateDTO);
+        if (orderUpdateDTO.status && orderUpdateDTO.status !== oldStatus) {
+            notifyOrderStatusUpdate(
+                currentOrder.userId,
+                order.id,
+                orderUpdateDTO.status as any,
+                oldStatus as any
+            ).catch((error) => {
+                Logger.errorOperation('OrderService', 'notifyOrderStatusUpdate', error.message);
+            });
+        }
+
+        return order;
     }
 
     async assignDeliverer(orderId: string, assignDelivererDTO: AssignDelivererDTO) {
