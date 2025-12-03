@@ -143,6 +143,90 @@ export const orderPaths = {
             }
         }
     },
+    "/api/v1/orders/market/{marketId}": {
+        "get": {
+            "tags": ["Orders"],
+            "summary": "Listar pedidos por mercado",
+            "description": "Retorna uma lista paginada de pedidos de um mercado específico com filtros opcionais.",
+            "security": [{ "bearerAuth": [] }],
+            "parameters": [
+                {
+                    "name": "marketId",
+                    "in": "path",
+                    "description": "ID do mercado",
+                    "required": true,
+                    "schema": { "type": "string" }
+                },
+                {
+                    "name": "page",
+                    "in": "query",
+                    "description": "Número da página",
+                    "required": false,
+                    "schema": { "type": "integer", "default": 1 }
+                },
+                {
+                    "name": "size",
+                    "in": "query",
+                    "description": "Tamanho da página",
+                    "required": false,
+                    "schema": { "type": "integer", "default": 10 }
+                },
+                {
+                    "name": "status",
+                    "in": "query",
+                    "description": "Status do pedido",
+                    "required": false,
+                    "schema": { 
+                        "type": "string", 
+                        "enum": ["PENDING", "CONFIRMED", "PREPARING", "READY_FOR_DELIVERY", "OUT_FOR_DELIVERY", "DELIVERED", "CANCELLED"] 
+                    }
+                },
+                {
+                    "name": "delivererId",
+                    "in": "query",
+                    "description": "ID do entregador",
+                    "required": false,
+                    "schema": { "type": "string" }
+                }
+            ],
+            "responses": {
+                "200": {
+                    "description": "Lista de pedidos retornada com sucesso",
+                    "content": {
+                        "application/json": {
+                            "schema": { "$ref": "#/components/schemas/OrderPaginatedResponse" }
+                        }
+                    }
+                },
+                "401": {
+                    "description": "Usuário não autenticado",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string", "example": "Usuário não autenticado" }
+                                }
+                            }
+                        }
+                    }
+                },
+                "500": {
+                    "description": "Erro interno do servidor",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string" }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
     "/api/v1/orders/{id}": {
         "get": {
             "tags": ["Orders"],

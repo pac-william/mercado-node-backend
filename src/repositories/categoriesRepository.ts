@@ -6,11 +6,27 @@ import { prisma } from "../utils/prisma";
 class CategoriesRepository {
     async createCategory(data: CategoriesDTO) {
         const slug = data.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+        const description = data.description || "";
+        const existingCategory = await prisma.categories.findUnique({
+            where: { name: data.name }
+        });
+        if (existingCategory) {
+            if (existingCategory.slug !== slug || (existingCategory.description || "") !== description) {
+                return await prisma.categories.update({
+                    where: { id: existingCategory.id },
+                    data: {
+                        slug,
+                        description
+                    }
+                });
+            }
+            return existingCategory;
+        }
         const category = await prisma.categories.create({
             data: {
                 name: data.name,
                 slug: slug,
-                description: data.description || ""
+                description: description
             }
         });
         return category;
