@@ -289,3 +289,18 @@ model Campaign {
   @@index([endDate])
   @@unique([marketId, slot, startDate, endDate])
 }
+
+model NotificationToken {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String?  @db.ObjectId // ID do usuário (opcional - pode ser null para usuários não logados)
+  deviceId  String?  // Identificador único do dispositivo (para usuários não logados)
+  fcmToken  String   @unique // Token FCM do Firebase (obrigatório e único)
+  platform  String   // "android", "ios" ou "web"
+  isActive  Boolean  @default(true) // Se o token está ativo
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([deviceId])
+  @@index([isActive])
+}
