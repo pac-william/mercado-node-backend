@@ -252,16 +252,16 @@ model Chat {
 }
 
 model Message {
-  id        String       @id @default(auto()) @map("_id") @db.ObjectId
-  chatId    String       @db.ObjectId // ID do chat
-  chat      Chat         @relation(fields: [chatId], references: [id], onDelete: Cascade)
-  username  String       // Nome do usuário que enviou
-  userId    String       @db.ObjectId // ID do usuário que enviou (cliente ou lojista)
-  message   String       // Conteúdo da mensagem
+  id        String        @id @default(auto()) @map("_id") @db.ObjectId
+  chatId    String        @db.ObjectId // ID do chat
+  chat      Chat          @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  username  String // Nome do usuário que enviou
+  userId    String        @db.ObjectId // ID do usuário que enviou (cliente ou lojista)
+  message   String // Conteúdo da mensagem
   status    MessageStatus @default(SENT) // Status da mensagem
-  readAt    DateTime?    // Quando a mensagem foi lida pelo destinatário
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
+  readAt    DateTime? // Quando a mensagem foi lida pelo destinatário
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
 
   @@index([chatId])
   @@index([userId])
@@ -275,27 +275,27 @@ model Campaign {
   marketId  String         @db.ObjectId
   title     String
   imageUrl  String
-  slot      Int            // 1 a 8
+  slot      Int // 1 a 8
   startDate DateTime
   endDate   DateTime?
   status    CampaignStatus @default(DRAFT)
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
 
+  @@unique([marketId, slot, startDate, endDate])
   @@index([marketId])
   @@index([slot])
   @@index([status])
   @@index([startDate])
   @@index([endDate])
-  @@unique([marketId, slot, startDate, endDate])
 }
 
 model NotificationToken {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   userId    String?  @db.ObjectId // ID do usuário (opcional - pode ser null para usuários não logados)
-  deviceId  String?  // Identificador único do dispositivo (para usuários não logados)
+  deviceId  String? // Identificador único do dispositivo (para usuários não logados)
   fcmToken  String   @unique // Token FCM do Firebase (obrigatório e único)
-  platform  String   // "android", "ios" ou "web"
+  platform  String // "android", "ios" ou "web"
   isActive  Boolean  @default(true) // Se o token está ativo
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -303,4 +303,22 @@ model NotificationToken {
   @@index([userId])
   @@index([deviceId])
   @@index([isActive])
+}
+
+model Notification {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String    @db.ObjectId // ID do usuário que recebeu a notificação
+  title     String // Título da notificação
+  body      String // Corpo da notificação
+  type      String // Tipo: "NEW_ORDER", "ORDER_STATUS_UPDATE", etc.
+  data      Json? // Dados adicionais (orderId, status, etc.)
+  isRead    Boolean   @default(false) // Se a notificação foi lida
+  readAt    DateTime? // Quando foi lida
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+  @@index([type])
 }
