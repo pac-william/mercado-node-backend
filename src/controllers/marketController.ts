@@ -17,6 +17,8 @@ export class MarketController {
                 managersIds,
                 userLatitude,
                 userLongitude,
+                sort,
+                distance,
             } = QueryBuilder.from(req.query)
                 .withNumber('page', 1)
                 .withNumber('size', 10)
@@ -26,6 +28,8 @@ export class MarketController {
                 .withArray('managersIds')
                 .withNumber('userLatitude')
                 .withNumber('userLongitude')
+                .withString('sort')
+                .withNumber('distance')
                 .build();
 
             const markets = await marketService.getMarkets(
@@ -36,7 +40,9 @@ export class MarketController {
                 ownerId,
                 managersIds,
                 userLatitude,
-                userLongitude
+                userLongitude,
+                sort,
+                distance
             );
             Logger.successOperation('MarketController', 'getMarkets');
             return res.status(200).json(markets);

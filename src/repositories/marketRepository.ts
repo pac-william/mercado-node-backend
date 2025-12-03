@@ -42,7 +42,9 @@ class MarketRepository {
         ownerId?: string,
         managersIds?: string[],
         userLatitude?: number,
-        userLongitude?: number
+        userLongitude?: number,
+        sort?: string,
+        distance?: number
     ) {
         const whereClause: any = {};
         
@@ -58,25 +60,24 @@ class MarketRepository {
             whereClause.managersIds = { hasSome: managersIds };
         }
         
+        // Fetch all markets first (we'll paginate after filtering and sorting)
         const marketsRaw = await prisma.market.findMany({
             where: whereClause,
             include: {
                 address: true
             },
-            skip: (page - 1) * size,
-            take: size,
         });
 
         const hasUserLocation = typeof userLatitude === "number" && typeof userLongitude === "number";
 
-        const markets = marketsRaw.map((market: any) => {
+        let markets = marketsRaw.map((market: any) => {
             const addressString = market.address 
                 ? `${market.address.street}, ${market.address.number}${market.address.complement ? ` - ${market.address.complement}` : ''} - ${market.address.neighborhood}, ${market.address.city} - ${market.address.state}`
                 : '';
 
             const latitude = market.address?.latitude ?? null;
             const longitude = market.address?.longitude ?? null;
-            const distance = hasUserLocation && latitude !== null && longitude !== null
+            const calculatedDistance = hasUserLocation && latitude !== null && longitude !== null
                 ? calculateDistanceInKm(userLatitude!, userLongitude!, latitude, longitude)
                 : null;
             
@@ -92,17 +93,55 @@ class MarketRepository {
                 updatedAt: market.updatedAt,
                 latitude,
                 longitude,
-                distance,
+                distance: calculatedDistance,
             };
         });
 
-        if (hasUserLocation) {
-            markets.sort((a, b) => {
-                if (a.distance === null && b.distance === null) return 0;
-                if (a.distance === null) return 1;
-                if (b.distance === null) return -1;
-                return a.distance - b.distance;
-            });
+        // Filter by maximum distance if provided
+        if (distance !== undefined && distance > 0) {
+            markets = markets.filter((m) => m.distance !== null && m.distance <= distance);
+        }
+
+        // Sort markets
+        if (sort) {
+            switch (sort) {
+                case 'distance':
+                    if (hasUserLocation) {
+                        markets.sort((a, b) => {
+                            if (a.distance === null && b.distance === null) return 0;
+                            if (a.distance === null) return 1;
+                            if (b.distance === null) return -1;
+                            return a.distance - b.distance;
+                        });
+                    }
+                    break;
+                case 'name':
+                    markets.sort((a, b) => a.name.localeCompare(b.name));
+                    break;
+                case 'rating':
+                    // Rating not implemented yet, fallback to name
+                    markets.sort((a, b) => a.name.localeCompare(b.name));
+                    break;
+                case 'deliveryTime':
+                    // Delivery time not implemented yet, fallback to name
+                    markets.sort((a, b) => a.name.localeCompare(b.name));
+                    break;
+                default:
+                    // Default sort by name
+                    markets.sort((a, b) => a.name.localeCompare(b.name));
+            }
+        } else {
+            // Default: sort by distance if user location available, otherwise by name
+            if (hasUserLocation) {
+                markets.sort((a, b) => {
+                    if (a.distance === null && b.distance === null) return 0;
+                    if (a.distance === null) return 1;
+                    if (b.distance === null) return -1;
+                    return a.distance - b.distance;
+                });
+            } else {
+                markets.sort((a, b) => a.name.localeCompare(b.name));
+            }
         }
 
         return markets;

@@ -41,20 +41,32 @@ class MarketService {
         ownerId?: string,
         managersIds?: string[],
         userLatitude?: number,
-        userLongitude?: number
+        userLongitude?: number,
+        sort?: string,
+        distance?: number
     ) {
-        const count = await marketRepository.count(name, address, ownerId, managersIds);
-        const marketsData = await marketRepository.getMarkets(
-            page,
-            size,
+        // Get all filtered and sorted markets (without pagination to count correctly)
+        const allMarketsData = await marketRepository.getMarkets(
+            1,
+            999999, // Get all to count properly
             name,
             address,
             ownerId,
             managersIds,
             userLatitude,
-            userLongitude
+            userLongitude,
+            sort,
+            distance
         );
-        const markets = marketsData.map((m: any) => ({
+        
+        const totalCount = allMarketsData.length;
+        
+        // Apply pagination
+        const startIndex = (page - 1) * size;
+        const endIndex = startIndex + size;
+        const paginatedMarketsData = allMarketsData.slice(startIndex, endIndex);
+        
+        const markets = paginatedMarketsData.map((m: any) => ({
             id: m.id,
             name: m.name,
             address: m.address,
@@ -68,8 +80,8 @@ class MarketService {
             longitude: m.longitude,
             distance: m.distance,
         }));
-        const totalPages = count > 0 ? Math.ceil(count / size) : 0;
-        const meta = new Meta(page, size, count, totalPages, count);
+        const totalPages = totalCount > 0 ? Math.ceil(totalCount / size) : 0;
+        const meta = new Meta(page, size, totalCount, totalPages, totalCount);
         return {
             markets,
             meta: {
