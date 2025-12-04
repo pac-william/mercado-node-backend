@@ -10,7 +10,7 @@ datasource db {
 model Market {
   id             String   @id @default(auto()) @map("_id") @db.ObjectId
   name           String
-  address        String?
+  address        String
   profilePicture String?
   ownerId        String   @db.ObjectId
   managersIds    String[] @db.ObjectId

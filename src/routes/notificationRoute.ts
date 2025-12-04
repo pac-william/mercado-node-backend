@@ -9,7 +9,6 @@ router.post('/unregister', notificationController.unregisterToken.bind(notificat
 
 router.post('/notify', validateToken, notificationController.sendNotification.bind(notificationController));
 router.post('/notify-user/:userId', validateToken, notificationController.sendNotificationToUser.bind(notificationController));
-router.post('/notify-new-order', validateToken, notificationController.notifyNewOrder.bind(notificationController));
 
 router.post('/notify-device/:deviceId', validateToken, notificationController.sendNotificationToDevice.bind(notificationController));
 router.get('/user/:userId/tokens', validateToken, notificationController.getUserTokens.bind(notificationController));

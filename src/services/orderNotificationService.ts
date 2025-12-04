@@ -1,12 +1,10 @@
 import { notificationTokenRepository } from '../repositories/notificationTokenRepository';
 import { notificationRepository } from '../repositories/notificationRepository';
-import { sendPushNotificationToMultiple } from './notificationService';
+import { sendPushNotification } from './notificationService';
 import { Logger } from '../utils/logger';
 import { OrderStatus } from '@prisma/client';
 
-/**
- * Mapeia status de pedido para mensagens amigáveis
- */
+
 const getStatusMessage = (status: OrderStatus): string => {
   const statusMap: Record<OrderStatus, string> = {
     PENDING: 'Pendente',
@@ -31,6 +29,7 @@ export async function notifyNewOrder(
     if (tokens.length === 0) {
       return;
     }
+    const token = tokens[0];
 
     const title = '🎉 Novo pedido recebido';
     const body = marketName
@@ -44,13 +43,7 @@ export async function notifyNewOrder(
       ...(marketName && { marketName }),
     };
 
-    const result = await sendPushNotificationToMultiple(tokens, {
-      title,
-      body,
-      data: notificationData,
-    });
-
-    await notificationRepository.createNotification({
+    const notification = await notificationRepository.createNotification({
       userId,
       title,
       body,
@@ -58,16 +51,23 @@ export async function notifyNewOrder(
       data: notificationData,
     });
 
-    Logger.info(
-      'OrderNotificationService',
-      'notifyNewOrder',
-      {
-        userId,
-        orderId,
-        tokensSent: result.successCount,
-        tokensFailed: result.failureCount,
-      }
-    );
+    const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
+    if (notification.createdAt < oneMinuteAgo) {
+      Logger.info(
+        'OrderNotificationService',
+        'notifyNewOrder',
+        `Notificação duplicada detectada para pedido ${orderId}, pulando envio de push`
+      );
+      return;
+    }
+
+    const result = await sendPushNotification({
+      token,
+      title,
+      body,
+      data: notificationData,
+    });
+
   } catch (error: any) {
     Logger.errorOperation(
       'OrderNotificationService',
@@ -95,9 +95,10 @@ export async function notifyOrderStatusUpdate(
       return;
     }
 
+    const token = tokens[0];
     const statusMessage = getStatusMessage(newStatus);
     const title = '📦 Status atualizado';
-    const body = `Seu pedido #${orderId} agora está com status: ${statusMessage}`;
+    const body = `Seu pedido #${orderId} mudou para: ${statusMessage}`;
 
     const notificationData = {
       type: 'ORDER_STATUS_UPDATE',
@@ -107,17 +108,25 @@ export async function notifyOrderStatusUpdate(
       ...(oldStatus && { oldStatus }),
     };
 
-    const result = await sendPushNotificationToMultiple(tokens, {
-      title,
-      body,
-      data: notificationData,
-    });
-
-    await notificationRepository.createNotification({
+    const notification = await notificationRepository.createNotification({
       userId,
       title,
       body,
       type: 'ORDER_STATUS_UPDATE',
+      data: notificationData,
+    });
+
+
+    const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
+    if (notification.createdAt < oneMinuteAgo) {
+
+      return;
+    }
+
+    const result = await sendPushNotification({
+      token,
+      title,
+      body,
       data: notificationData,
     });
 
@@ -129,12 +138,17 @@ export async function notifyOrderStatusUpdate(
         orderId,
         oldStatus,
         newStatus,
-        tokensSent: result.successCount,
-        tokensFailed: result.failureCount,
+        notificationId: notification.id,
+        pushSent: result.success,
+        pushError: result.error,
       }
     );
   } catch (error: any) {
-
+    Logger.errorOperation(
+      'OrderNotificationService',
+      'notifyOrderStatusUpdate',
+      `Erro ao enviar notificação de atualização de status: ${error.message}`
+    );
   }
 }
 

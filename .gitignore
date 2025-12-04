@@ -6,4 +6,3 @@ coverage
 .claude
 uploads/*
 !uploads/.gitkeep
-service-account.json

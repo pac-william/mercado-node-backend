@@ -114,13 +114,19 @@ class NotificationTokenRepository {
         userId,
         isActive: true,
       },
+      distinct: ['fcmToken'],
       select: {
         fcmToken: true,
+        updatedAt: true,
+      },
+      orderBy: {
+        updatedAt: 'desc',
       },
     });
-
-    return tokens.map((token: { fcmToken: string }) => token.fcmToken);
+  
+    return tokens.map(t => t.fcmToken);
   }
+  
 
   async getDeviceTokens(deviceId: string): Promise<string[]> {
     const tokens = await prisma.notificationToken.findMany({

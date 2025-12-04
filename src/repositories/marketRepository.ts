@@ -73,6 +73,14 @@ class MarketRepository {
         const market = await prisma.market.findUnique({
             where: { id }
         });
+
+        if (market) {
+            return {
+                ...market,
+                address: market.address || 'Endereço não informado',
+            };
+        }
+        
         return market;
     }
 
