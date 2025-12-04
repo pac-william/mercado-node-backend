@@ -12,6 +12,7 @@ router.get('/:id', validateToken, orderController.getOrderById);
 // Rotas protegidas
 router.post('/', validateToken, orderController.createOrder);
 router.put('/:id', validateToken, orderController.updateOrder);
+router.patch('/:id/status', validateToken, orderController.updateOrderStatus);
 router.post('/:id/assign-deliverer', validateToken, orderController.assignDeliverer);
 
 export default router;

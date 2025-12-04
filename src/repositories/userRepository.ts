@@ -139,6 +139,16 @@ class UserRepository {
         });
         return user;
     }
+
+    async getUserIdByNotificationToken(notificationToken: string) {
+        const user = await prisma.notificationToken.findUnique({
+            where: { fcmToken: notificationToken },
+            select: {
+                userId: true,
+            },
+        });
+        return user?.userId;
+    }
 }
 
 export const userRepository = new UserRepository();

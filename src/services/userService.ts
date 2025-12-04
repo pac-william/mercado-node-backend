@@ -71,6 +71,15 @@ class UserService {
 
         return await userRepository.deleteUser(id);
     }
+
+    async getUserIdByNotificationToken(notificationToken: string) {
+
+        const user = await userRepository.getUserIdByNotificationToken(notificationToken);
+        if (!user) {
+            throw new Error("Usuário não encontrado");
+        }
+        return user;
+    }
 }
 
 export const userService = new UserService();

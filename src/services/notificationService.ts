@@ -98,24 +98,11 @@ export async function sendPushNotification(
         };
 
         const response = await admin.messaging().send(message);
-
-        Logger.info(
-            'NotificationService',
-            'Notificação enviada com sucesso',
-            { messageId: response }
-        );
-
         return {
             success: true,
             messageId: response,
         };
     } catch (error: any) {
-        Logger.errorOperation(
-            'NotificationService',
-            'sendPushNotification',
-            `Erro ao enviar notificação: ${error.message}`
-        );
-
         if (error.code === 'messaging/invalid-registration-token' ||
             error.code === 'messaging/registration-token-not-registered') {
             return {

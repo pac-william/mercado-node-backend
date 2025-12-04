@@ -9,6 +9,7 @@ import delivererRoute from './delivererRoute';
 import deliverySettingsRoute from './deliverySettingsRoute';
 import geocodingRoute from './geocodingRoute';
 import marketRoute from './marketRoute';
+import notificationRoute from './notificationRoute';
 import orderRoute from './orderRoute';
 import productRoute from './productRoute';
 import suggestionRoute from './suggestionRoute';
@@ -33,5 +34,6 @@ export default {
     reportsRoute,
     chatRoute,
     geocodingRoute,
-    campaignRoute
+    campaignRoute,
+    notificationRoute
 };
