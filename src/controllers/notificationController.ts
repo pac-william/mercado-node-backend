@@ -6,6 +6,7 @@ import {
   sendPushNotificationToMultiple,
 } from '../services/notificationService';
 import { Logger } from '../utils/logger';
+import { userService } from '../services/userService';
 
 export class NotificationController {
 
@@ -392,16 +393,35 @@ export class NotificationController {
         });
       }
 
+      let actualUserId = userId;
+      const isAuth0Id = userId.includes('|') || userId.length > 24;
+      
+      if (isAuth0Id) {
+        try {
+          const user = await userService.getUserByAuth0Id(userId);
+          actualUserId = user.id;
+        } catch (error: any) {
+          return res.status(404).json({
+            success: false,
+            error: 'Usuário não encontrado com o auth0Id fornecido',
+          });
+        }
+      }
+
       const success = await notificationTokenRepository.associateTokenToUser(
         fcmToken,
-        userId
+        actualUserId
       );
 
       if (success) {
         Logger.info(
           'NotificationController',
           'Token associado ao usuário',
-          { userId, tokenId: fcmToken.substring(0, 20) + '...' }
+          { 
+            userId: actualUserId, 
+            auth0Id: isAuth0Id ? userId : undefined, 
+            tokenId: fcmToken.substring(0, 20) + '...' 
+          }
         );
       }
 
@@ -446,12 +466,18 @@ export class NotificationController {
         data: data || { type: 'TEST' },
       });
 
+      const userId = await userService.getUserIdByNotificationToken(token);
+
+      await notificationRepository.createNotification({
+        userId,
+        title: title || 'Notificação de teste',
+        body: body || 'Esta é uma notificação de teste do sistema',
+        data: data || { type: 'TEST' },
+        type: 'TEST',
+      });
+
+
       if (result.success) {
-        Logger.info(
-          'NotificationController',
-          'testNotification',
-          { messageId: result.messageId }
-        );
         return res.status(200).json({
           success: true,
           message: 'Notificação de teste enviada com sucesso',
