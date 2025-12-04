@@ -21,20 +21,16 @@ export interface SendNotificationOptions {
 
 
 export function initializeFirebaseAdmin(): void {
-
-    if (firebaseApp) {
-        return;
-    }
+    if (firebaseApp) return;
 
     try {
-        const serviceAccountPath = path.join(
-            process.cwd(),
-            'service-account.json'
-        );
-
-        const serviceAccount = JSON.parse(readFileSync(serviceAccountPath, 'utf-8'));
+        const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT!);
         firebaseApp = admin.initializeApp({
-            credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
+            credential: admin.credential.cert({
+                projectId: serviceAccount.project_id,
+                clientEmail: serviceAccount.client_email,
+                privateKey: serviceAccount.private_key.replace(/\\n/g, '\n'),
+            }),
         });
 
         Logger.info('NotificationService', 'Firebase Admin SDK inicializado com sucesso');
@@ -47,7 +43,6 @@ export function initializeFirebaseAdmin(): void {
         throw error;
     }
 }
-
 /**
  * Verifica se o Firebase Admin está inicializado
  */
