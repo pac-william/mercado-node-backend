@@ -237,6 +237,8 @@ enum PaymentMethod {
   DEBIT_CARD
   PIX
   CASH
+  MEAL_VOUCHER  // Vale Alimentação
+  FOOD_VOUCHER  // Vale Refeição
 }
 
 enum MessageStatus {
@@ -343,4 +345,34 @@ model Campaign {
   @@index([status])
   @@index([startDate])
   @@index([endDate])
+}
+
+model PaymentSettings {
+  id                    String   @id @default(auto()) @map("_id") @db.ObjectId
+  marketId              String   @unique @db.ObjectId
+  // Formas de pagamento aceitas
+  acceptsCreditCard    Boolean  @default(true)
+  acceptsDebitCard    Boolean  @default(true)
+  acceptsPix          Boolean  @default(true)
+  acceptsCash         Boolean  @default(true)
+  acceptsMealVoucher  Boolean  @default(false) // Vale Alimentação
+  acceptsFoodVoucher  Boolean  @default(false) // Vale Refeição
+  // Configurações PIX
+  pixKey               String?  // Chave PIX (CPF, CNPJ, Email, Telefone, Chave Aleatória)
+  pixKeyType           PixKeyType? // Tipo da chave PIX
+  pixMerchantName      String?  // Nome do recebedor
+  pixMerchantCity      String?  // Cidade do recebedor
+  pixMerchantZipCode   String?  // CEP do recebedor
+  // Configurações gerais
+  isActive             Boolean  @default(true)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+enum PixKeyType {
+  CPF
+  CNPJ
+  EMAIL
+  PHONE
+  RANDOM_KEY
 }

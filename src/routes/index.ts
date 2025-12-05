@@ -10,6 +10,7 @@ import deliverySettingsRoute from './deliverySettingsRoute';
 import geocodingRoute from './geocodingRoute';
 import marketOperatingHoursRoute from './marketOperatingHoursRoute';
 import marketRoute from './marketRoute';
+import paymentSettingsRoute from './paymentSettingsRoute';
 import orderRoute from './orderRoute';
 import productRoute from './productRoute';
 import reportsRoute from './reportsRoute';
@@ -34,6 +35,7 @@ export default {
     uploadRoute,
     deliverySettingsRoute,
     marketOperatingHoursRoute,
+    paymentSettingsRoute,
     reportsRoute,
     chatRoute,
     geocodingRoute,
