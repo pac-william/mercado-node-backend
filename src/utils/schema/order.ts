@@ -483,7 +483,7 @@ export const orderSchemas = {
             "discount": { "type": "number", "format": "float", "example": 5.00 },
             "paymentMethod": { 
                 "type": "string", 
-                "enum": ["CREDIT_CARD", "DEBIT_CARD", "PIX", "CASH"],
+                "enum": ["CREDIT_CARD", "DEBIT_CARD", "PIX", "CASH", "MEAL_VOUCHER", "FOOD_VOUCHER"],
                 "example": "CREDIT_CARD" 
             },
             "items": {
@@ -509,7 +509,7 @@ export const orderSchemas = {
             "addressId": { "type": "string", "example": "507f1f77bcf86cd799439016" },
             "paymentMethod": { 
                 "type": "string", 
-                "enum": ["CREDIT_CARD", "DEBIT_CARD", "PIX", "CASH"],
+                "enum": ["CREDIT_CARD", "DEBIT_CARD", "PIX", "CASH", "MEAL_VOUCHER", "FOOD_VOUCHER"],
                 "example": "CREDIT_CARD" 
             },
             "couponCode": { "type": "string", "example": "DESCONTO10" },

@@ -9,6 +9,8 @@ export * from './couponDTO';
 export * from './delivererDTO';
 export * from './deliverySettingsDTO';
 export * from './marketDTO';
+export * from './marketOperatingHoursDTO';
+export * from './paymentSettingsDTO';
 export * from './orderDTO';
 export * from './productDTO';
 export * from './suggestionDTO';

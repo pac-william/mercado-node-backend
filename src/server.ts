@@ -49,6 +49,8 @@ app.use('/api/v1/categories', routes.categoriesRouter);
 app.use('/api/v1/subcategories', routes.subcategoryRoute);
 app.use('/api/v1/deliverers', routes.delivererRoute);
 app.use('/api/v1/delivery-settings', routes.deliverySettingsRoute);
+app.use('/api/v1/market-operating-hours', routes.marketOperatingHoursRoute);
+app.use('/api/v1/payment-settings', routes.paymentSettingsRoute);
 app.use('/api/v1/orders', routes.orderRoute);
 app.use('/api/v1/suggestions', routes.suggestionRoute);
 app.use('/api/v1/addresses', routes.addressRoute);
