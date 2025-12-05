@@ -45,10 +45,9 @@ class ProductElasticSearch {
         bool: {
           must: [
             {
-              match: {
+              match_phrase: {
                 name: {
-                  query: productName,
-                  fuzziness: "AUTO"
+                  query: productName
                 }
               }
             }
