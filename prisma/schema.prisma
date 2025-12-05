@@ -263,6 +263,25 @@ model DeliverySettings {
   updatedAt      DateTime @updatedAt
 }
 
+model MarketOperatingHours {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  marketId    String   @db.ObjectId
+  dayOfWeek   Int?     // 0-6 (Domingo-Sábado), null para feriados
+  startTime   String   // Formato HH:mm (ex: "08:00")
+  endTime     String   // Formato HH:mm (ex: "18:00")
+  isHoliday   Boolean  @default(false) // Se é um feriado
+  holidayDate DateTime? // Data do feriado (se isHoliday = true)
+  isClosed    Boolean  @default(false) // Se está fechado neste horário
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([marketId])
+  @@index([dayOfWeek])
+  @@index([holidayDate])
+  @@index([marketId, dayOfWeek])
+  @@index([marketId, isHoliday, holidayDate])
+}
+
 model Suggestion {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   userId    String   @db.ObjectId // ID do usuário (sem relação)

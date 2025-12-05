@@ -8,6 +8,7 @@ import couponRoute from './couponRoute';
 import delivererRoute from './delivererRoute';
 import deliverySettingsRoute from './deliverySettingsRoute';
 import geocodingRoute from './geocodingRoute';
+import marketOperatingHoursRoute from './marketOperatingHoursRoute';
 import marketRoute from './marketRoute';
 import orderRoute from './orderRoute';
 import productRoute from './productRoute';
@@ -32,6 +33,7 @@ export default {
     cartItemRoute,
     uploadRoute,
     deliverySettingsRoute,
+    marketOperatingHoursRoute,
     reportsRoute,
     chatRoute,
     geocodingRoute,
