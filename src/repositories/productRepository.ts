@@ -5,7 +5,34 @@ import { ProductDTO, ProductUpdateDTO } from "../dtos/productDTO";
 import { prisma } from "../utils/prisma";
 
 class ProductRepository {
+    async checkSkuExists(marketId: string, sku: string, excludeProductId?: string): Promise<boolean> {
+        if (!sku) return false;
+        
+        const where: any = {
+            marketId,
+            sku,
+        };
+        
+        if (excludeProductId) {
+            where.id = { not: excludeProductId };
+        }
+        
+        const existingProduct = await prisma.product.findFirst({
+            where,
+        });
+        
+        return !!existingProduct;
+    }
+
     async createProduct(productDTO: ProductDTO) {
+        // Validar se SKU já existe para este mercado
+        if (productDTO.sku) {
+            const skuExists = await this.checkSkuExists(productDTO.marketId, productDTO.sku);
+            if (skuExists) {
+                throw new Error(`SKU "${productDTO.sku}" já existe para este mercado`);
+            }
+        }
+        
         const product = await prisma.product.create({
             data: productDTO,
         });
@@ -248,6 +275,14 @@ class ProductRepository {
     }
 
     async updateProduct(id: string, productDTO: ProductDTO) {
+        // Validar se SKU já existe para este mercado (excluindo o produto atual)
+        if (productDTO.sku) {
+            const skuExists = await this.checkSkuExists(productDTO.marketId, productDTO.sku, id);
+            if (skuExists) {
+                throw new Error(`SKU "${productDTO.sku}" já existe para este mercado`);
+            }
+        }
+        
         const product = await prisma.product.update({
             where: { id },
             data: productDTO,
@@ -256,6 +291,25 @@ class ProductRepository {
     }
 
     async updateProductPartial(id: string, productUpdateDTO: ProductUpdateDTO) {
+        // Se o SKU está sendo atualizado, validar se já existe para este mercado
+        if (productUpdateDTO.sku) {
+            // Buscar o produto atual para obter o marketId
+            const currentProduct = await prisma.product.findUnique({
+                where: { id },
+                select: { marketId: true },
+            });
+            
+            if (!currentProduct) {
+                throw new Error("Produto não encontrado");
+            }
+            
+            const marketId = productUpdateDTO.marketId || currentProduct.marketId;
+            const skuExists = await this.checkSkuExists(marketId, productUpdateDTO.sku, id);
+            if (skuExists) {
+                throw new Error(`SKU "${productUpdateDTO.sku}" já existe para este mercado`);
+            }
+        }
+        
         const product = await prisma.product.update({
             where: { id },
             data: productUpdateDTO,

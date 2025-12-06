@@ -59,8 +59,22 @@ export class ProductController {
             const product = await productService.createProduct(productDTO);
             Logger.successOperation('ProductController', 'createProduct');
             return res.status(201).json(product);
-        } catch (error) {
+        } catch (error: any) {
             Logger.errorOperation('ProductController', 'createProduct', error);
+            
+            // Erro de validação do Zod
+            if (error.name === 'ZodError') {
+                return res.status(400).json({ 
+                    message: "Dados inválidos", 
+                    errors: error.errors 
+                });
+            }
+            
+            // Erro de SKU duplicado
+            if (error.message && error.message.includes('já existe para este mercado')) {
+                return res.status(400).json({ message: error.message });
+            }
+            
             return res.status(500).json({ message: "Erro interno do servidor" });
         }
     }
@@ -113,8 +127,22 @@ export class ProductController {
             const product = await productService.updateProduct(id, productDTO);
             Logger.successOperation('ProductController', 'updateProduct');
             return res.status(200).json(product);
-        } catch (error) {
+        } catch (error: any) {
             Logger.errorOperation('ProductController', 'updateProduct', error);
+            
+            // Erro de validação do Zod
+            if (error.name === 'ZodError') {
+                return res.status(400).json({ 
+                    message: "Dados inválidos", 
+                    errors: error.errors 
+                });
+            }
+            
+            // Erro de SKU duplicado
+            if (error.message && error.message.includes('já existe para este mercado')) {
+                return res.status(400).json({ message: error.message });
+            }
+            
             return res.status(500).json({ message: "Erro interno do servidor" });
         }
     }
@@ -127,8 +155,22 @@ export class ProductController {
             const product = await productService.updateProductPartial(id, productUpdateDTO);
             Logger.successOperation('ProductController', 'updateProductPartial');
             return res.status(200).json(product);
-        } catch (error) {
+        } catch (error: any) {
             Logger.errorOperation('ProductController', 'updateProductPartial', error);
+            
+            // Erro de validação do Zod
+            if (error.name === 'ZodError') {
+                return res.status(400).json({ 
+                    message: "Dados inválidos", 
+                    errors: error.errors 
+                });
+            }
+            
+            // Erro de SKU duplicado
+            if (error.message && error.message.includes('já existe para este mercado')) {
+                return res.status(400).json({ message: error.message });
+            }
+            
             return res.status(500).json({ message: "Erro interno do servidor" });
         }
     }

@@ -5,6 +5,9 @@ import { validateToken } from '../middleware/validateToken';
 const router = Router();
 const paymentSettingsController = new PaymentSettingsController();
 
+// Rota pública - formas de pagamento aceitas (para checkout)
+router.get('/market/:marketId/accepted-methods', paymentSettingsController.getAcceptedPaymentMethods.bind(paymentSettingsController));
+
 // Rotas protegidas
 router.get('/market/:marketId', validateToken, paymentSettingsController.getPaymentSettingsByMarketId.bind(paymentSettingsController));
 router.post('/', validateToken, paymentSettingsController.createPaymentSettings.bind(paymentSettingsController));

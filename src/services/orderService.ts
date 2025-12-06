@@ -10,6 +10,7 @@ import { userRepository } from "../repositories/userRepository";
 import { Logger } from '../utils/logger';
 import { prisma } from "../utils/prisma";
 import { couponService } from './couponService';
+import { marketOperatingHoursService } from './marketOperatingHoursService';
 
 class OrderService {
     async createOrder(userId: string, orderDTO: OrderDTO) {
@@ -23,6 +24,12 @@ class OrderService {
         const market = await marketRepository.getMarketById(orderDTO.marketId);
         if (!market) {
             throw new Error('Mercado não encontrado');
+        }
+
+        // Verificar se o mercado está aberto
+        const isOpen = await marketOperatingHoursService.isMarketOpen(orderDTO.marketId);
+        if (!isOpen) {
+            throw new Error('O mercado está fechado no momento. Não é possível realizar pedidos fora do horário de funcionamento.');
         }
 
         const address = await addressRepository.getAddressById(orderDTO.addressId);

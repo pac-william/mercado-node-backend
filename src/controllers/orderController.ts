@@ -51,6 +51,9 @@ export class OrderController {
                 if (error.message.includes('não encontrado')) {
                     return res.status(404).json({ message: error.message });
                 }
+                if (error.message.includes('fechado') || error.message.includes('horário de funcionamento')) {
+                    return res.status(400).json({ message: error.message });
+                }
                 if (error.message.includes('cupom') || error.message.includes('Cupom')) {
                     return res.status(400).json({ message: error.message });
                 }

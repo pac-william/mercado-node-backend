@@ -85,8 +85,22 @@ export class MarketOperatingHoursController {
         try {
             const { marketId } = req.params;
             const operatingHours = await marketOperatingHoursService.getOperatingHoursByMarketId(marketId);
+            
+            // Se não há horários cadastrados, retornar que é 24hrs
+            if (operatingHours.length === 0) {
+                Logger.successOperation('MarketOperatingHoursController', 'getOperatingHoursByMarketId');
+                return res.status(200).json({
+                    is24Hours: true,
+                    message: "Mercado funciona 24 horas por dia",
+                    hours: []
+                });
+            }
+            
             Logger.successOperation('MarketOperatingHoursController', 'getOperatingHoursByMarketId');
-            return res.status(200).json(this.addCompatibilityFieldsArray(operatingHours));
+            return res.status(200).json({
+                is24Hours: false,
+                hours: this.addCompatibilityFieldsArray(operatingHours)
+            });
         } catch (error) {
             Logger.errorOperation('MarketOperatingHoursController', 'getOperatingHoursByMarketId', error);
             return res.status(500).json({ message: "Erro interno do servidor" });

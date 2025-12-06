@@ -25,6 +25,30 @@ class PaymentSettingsService {
         return paymentSettingsRepository.toDomain(paymentSettings);
     }
 
+    async getAcceptedPaymentMethods(marketId: string): Promise<{
+        acceptsCreditCard: boolean;
+        acceptsDebitCard: boolean;
+        acceptsPix: boolean;
+        acceptsCash: boolean;
+        acceptsMealVoucher: boolean;
+        acceptsFoodVoucher: boolean;
+    } | null> {
+        const paymentSettings = await this.getPaymentSettingsByMarketId(marketId);
+        
+        if (!paymentSettings || !paymentSettings.isActive) {
+            return null;
+        }
+
+        return {
+            acceptsCreditCard: paymentSettings.acceptsCreditCard,
+            acceptsDebitCard: paymentSettings.acceptsDebitCard,
+            acceptsPix: paymentSettings.acceptsPix,
+            acceptsCash: paymentSettings.acceptsCash,
+            acceptsMealVoucher: paymentSettings.acceptsMealVoucher,
+            acceptsFoodVoucher: paymentSettings.acceptsFoodVoucher,
+        };
+    }
+
     async generatePixQRCode(marketId: string, dto: GeneratePixQRCodeDTO): Promise<PixQRCode> {
         // Busca as configurações do mercado
         const paymentSettings = await this.getPaymentSettingsByMarketId(marketId);

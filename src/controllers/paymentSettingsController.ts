@@ -71,6 +71,32 @@ export class PaymentSettingsController {
         }
     }
 
+    async getAcceptedPaymentMethods(req: Request, res: Response) {
+        Logger.controller('PaymentSettings', 'getAcceptedPaymentMethods', 'params', req.params);
+        try {
+            const { marketId } = req.params;
+            const paymentMethods = await paymentSettingsService.getAcceptedPaymentMethods(marketId);
+            
+            if (!paymentMethods) {
+                return res.status(404).json({ 
+                    message: "Configurações de pagamento não encontradas ou mercado inativo",
+                    acceptsCreditCard: false,
+                    acceptsDebitCard: false,
+                    acceptsPix: false,
+                    acceptsCash: false,
+                    acceptsMealVoucher: false,
+                    acceptsFoodVoucher: false,
+                });
+            }
+
+            Logger.successOperation('PaymentSettingsController', 'getAcceptedPaymentMethods');
+            return res.status(200).json(paymentMethods);
+        } catch (error) {
+            Logger.errorOperation('PaymentSettingsController', 'getAcceptedPaymentMethods', error);
+            return res.status(500).json({ message: "Erro interno do servidor" });
+        }
+    }
+
     async generatePixQRCode(req: Request, res: Response) {
         Logger.controller('PaymentSettings', 'generatePixQRCode', 'params', req.params);
         try {
